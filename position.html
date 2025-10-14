@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Posiciones Abiertas — Emiratos Dubai Trading</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <style>
+    :root{
+      --red-brand:#c62828;
+      --white-brand:#ffffff;
+      --yellow-btn:#ffd400;
+      --panel: rgba(255,255,255,0.02);
+      --muted:#9aa4ad;
+      --green:#22c55e;
+      --danger:#ef4444;
+    }
+    html, body { height:100%; margin:0; font-family:'Poppins',system-ui,Arial; background:linear-gradient(180deg,#03060a 0%,#071322 60%); color:#e6eef6; -webkit-font-smoothing:antialiased; }
+    .glass { background: var(--panel); backdrop-filter: blur(8px); border-radius:12px; border:1px solid rgba(255,255,255,0.03); }
+    .shadow-spot { box-shadow: 0 10px 30px rgba(2,6,23,0.6); }
+    .muted { color: var(--muted); }
+    .btn-copy { background: linear-gradient(90deg,var(--yellow-btn),#ffda66); color:#07121a; font-weight:700; border-radius:999px; padding:8px 12px; cursor:pointer; transition: all .15s; }
+    .btn-copy:hover { opacity:0.9; }
+    .btn-deposit { background: var(--yellow-btn); color:#07121a; padding:8px 12px; border-radius:999px; font-weight:700; cursor:pointer; transition: all .15s; }
+    .btn-deposit:hover { opacity:0.9; }
+    .table-row { transition: background .12s ease; border-radius:10px; }
+    .table-row:hover { background: rgba(255,255,255,0.01); }
+    .row-grid { display:grid; grid-template-columns:56px 1fr 160px 110px 110px minmax(90px,1fr); gap:12px; align-items:center; }
+    .col-name { min-width:120px; }
+    .col-coin { min-width:140px; }
+    .col-pnl { text-align:right; }
+    .col-vol { text-align:right; }
+    .col-copy { display:flex; justify-content:flex-end; }
+    @media (max-width:900px){
+      .row-grid { grid-template-columns:44px 1fr auto; gap:8px; }
+      .col-name { display:flex; flex-direction:column; overflow:hidden; }
+      .col-coin { display:block; font-size:.9rem; color:var(--muted); margin-top:2px; text-overflow: ellipsis; white-space: nowrap; overflow:hidden; }
+      .col-pnl, .col-vol { display:none; }
+      .col-copy { justify-self:end; min-width:fit-content; }
+    }
+  </style>
+</head>
+<body class="min-h-screen">
+
+<!-- Header -->
+<header class="w-full fixed top-0 left-0 z-40">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between glass shadow-spot">
+    
+    <!-- Logo + Nav -->
+    <div class="flex items-center gap-4">
+      <!-- SVG Logo: EMIRATOS DUBAI TRADING -->
+      <svg class="w-36 h-auto" viewBox="0 0 400 90" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Emiratos Dubai Trading">
+        <rect x="0" y="0" width="90" height="90" fill="#C62828"/>
+        <g transform="translate(12,10) scale(0.65)">
+          <path d="M36 6 L70 20 L56 44 L36 36 L22 44 Z" fill="#fff" />
+          <path d="M40 48 C48 40, 70 40, 72 48 C74 56, 48 68, 40 68 C32 68, 8 56, 10 48 C12 40, 32 40, 40 48 Z" fill="#fff" opacity="0.95"/>
+        </g>
+        <g transform="translate(110,20)">
+          <text x="0" y="28" fill="#C62828" font-family="Poppins, Helvetica, Arial" font-weight="700" font-size="28">EMIRATOS</text>
+          <text x="0" y="54" fill="#C62828" font-family="Poppins, Helvetica, Arial" font-weight="600" font-size="22">DUBAI TRADING</text>
+        </g>
+      </svg>
+
+      <!-- Nav -->
+      <nav class="hidden md:flex items-center gap-4 text-sm muted">
+        <a href="#" class="hover:text-white transition">Inicio</a>
+        <a href="#" class="hover:text-white transition">Traders</a>
+        <a href="#" class="hover:text-white transition">Estadísticas</a>
+      </nav>
+    </div>
+
+    <!-- User Info + Balance -->
+    <div class="flex items-center gap-4">
+      <div class="text-sm muted desktop-hide-sm">Balance</div>
+      <div class="text-sm font-semibold">USDT 3,254.12</div>
+      <button id="depositBtn" class="btn-deposit ml-2">Depositar</button>
+
+      <div class="ml-4 flex items-center gap-3">
+        <div class="text-right mr-2 hidden sm:block">
+          <div class="text-sm">Hola, <span class="font-semibold">Ahmed</span></div>
+          <div class="text-xs muted">Nivel: Pro</div>
+        </div>
+        <div class="w-9 h-9 rounded-full bg-gray-300/10 flex items-center justify-center text-sm">A</div>
+      </div>
+    </div>
+
+  </div>
+</header>
+
+<!-- Header Móvil Bottom -->
+<div class="mobile-header glass shadow-spot hidden fixed bottom-0 left-0 w-full z-50 px-4 py-2 flex items-center justify-between md:hidden">
+  <!-- Logo + texto -->
+  <div class="flex items-center gap-2">
+    <svg class="w-12 h-auto" viewBox="0 0 400 90" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="0" width="90" height="90" fill="#C62828"/>
+      <g transform="translate(12,10) scale(0.5)">
+        <path d="M36 6 L70 20 L56 44 L36 36 L22 44 Z" fill="#fff" />
+        <path d="M40 48 C48 40, 70 40, 72 48 C74 56, 48 68, 40 68 C32 68, 8 56, 10 48 C12 40, 32 40, 40 48 Z" fill="#fff" opacity="0.95"/>
+      </g>
+    </svg>
+    <div class="flex flex-col text-xs">
+      <span class="font-bold text-red-700">EMIRATOS</span>
+      <span class="font-semibold text-red-700">DUBAI TRADING</span>
+    </div>
+  </div>
+
+  <!-- Saldo con borde -->
+  <div class="balance glass px-3 py-1 rounded-lg text-sm font-semibold text-center border border-white/20 flex-1 mx-2">
+    USDT 3,254.12
+  </div>
+
+  <!-- Botón depositar -->
+  <button class="btn-deposit px-3 py-1 text-xs">Depositar</button>
+
+  <!-- Avatar -->
+  <div class="w-9 h-9 rounded-full bg-gray-300/10 flex items-center justify-center text-sm">A</div>
+</div>
+
+<!-- Navegación móvil con dropdown -->
+<div class="mobile-nav fixed bottom-14 left-0 w-full z-50 flex justify-center md:hidden">
+  <div class="glass px-4 py-1 rounded-xl shadow-spot flex gap-4 text-xs text-white font-semibold">
+    <a href="#" class="hover:text-yellow-400 transition">Inicio</a>
+    <a href="#" class="hover:text-yellow-400 transition">Traders</a>
+    <div class="relative">
+      <button id="navDropdownBtn" class="hover:text-yellow-400 transition">Estadísticas ▾</button>
+      <div id="navDropdown" class="hidden absolute bottom-6 left-0 bg-gray-800/80 glass rounded-lg p-2 flex flex-col gap-1 text-xs">
+        <a href="#" class="hover:text-yellow-400 transition">Resumen</a>
+        <a href="#" class="hover:text-yellow-400 transition">Detalles</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+@media (max-width:640px){
+  header { display: none; }
+
+  .mobile-header { display: flex; }
+
+  .mobile-header svg { width: 48px; height:auto; }
+  .mobile-header .balance { font-size: 0.75rem; }
+  .mobile-header .btn-deposit { font-size:0.75rem; padding:4px 8px; }
+
+  /* Dropdown nav */
+  #navDropdown { display: none; }
+  #navDropdown.show { display: flex; }
+
+}
+</style>
+
+<script>
+const navBtn = document.getElementById('navDropdownBtn');
+const navMenu = document.getElementById('navDropdown');
+navBtn?.addEventListener('click', ()=>{ navMenu.classList.toggle('show'); });
+</script>
+
+
+
+<main class="max-w-7xl mx-auto px-4 pt-24 pb-12">
+
+  <!-- PnL Charts -->
+  <section class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+    <div class="chart-container" data-aos="fade-up">
+      <h2 class="text-lg font-semibold mb-2">PnL Diario</h2>
+      <canvas id="dailyPnL" height="180"></canvas>
+    </div>
+    <div class="chart-container" data-aos="fade-up">
+      <h2 class="text-lg font-semibold mb-2">PnL Semanal</h2>
+      <canvas id="weeklyPnL" height="180"></canvas>
+    </div>
+  </section>
+
+  <!-- Open Positions Table -->
+  <section class="glass p-4 shadow-spot" data-aos="fade-up">
+    <h2 class="text-lg font-semibold mb-4">Posiciones Activas</h2>
+    <div id="positionsList" class="space-y-2"></div>
+  </section>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+AOS.init({ duration:600, once:true });
+
+const positions = [
+  { name:'LION1', coin:'LION1/USDT', pnl:+37.95, vol:'1.2M', type:'Long' },
+  { name:'ETHPRO', coin:'ETH/USDT', pnl:-12.34, vol:'2.1M', type:'Short' },
+  { name:'ALPHA', coin:'ALP/USDT', pnl:+8.35, vol:'330k', type:'Long' },
+  { name:'NOVA', coin:'NOVA/USDT', pnl:-5.12, vol:'150k', type:'Long' }
+];
+
+function createRow(pos){
+  const wrapper=document.createElement('div');
+  wrapper.className='table-row p-2';
+  wrapper.innerHTML=`
+    <div class="grid grid-cols-6 items-center gap-2 row-grid">
+      <div class="col-img"><div class="w-11 h-11 rounded-full bg-gray-800 flex items-center justify-center text-sm">${pos.name[0]}</div></div>
+      <div class="col-name"><div class="text-sm font-semibold">${pos.name}</div><div class="text-xs muted md:hidden">${pos.coin}</div></div>
+      <div class="col-coin hidden md:flex items-center text-sm muted">${pos.coin}</div>
+      <div class="col-pnl text-right ${pos.pnl>=0?'text-green-400':'text-red-400'} font-semibold">${pos.pnl>=0?'+':''}${pos.pnl.toFixed(2)}%</div>
+      <div class="col-vol text-sm text-gray-300 text-right">${pos.vol}</div>
+      <div class="col-copy flex justify-end"><button class="btn-copy copy-pos" data-name="${pos.name}">Copy</button></div>
+    </div>
+  `;
+  return wrapper;
+}
+
+const positionsList = document.getElementById('positionsList');
+positions.forEach(p=>positionsList.appendChild(createRow(p)));
+
+// Copy functionality
+document.addEventListener('click', e=>{
+  const cp=e.target.closest('.copy-pos');
+  if(cp){
+    const name=cp.dataset.name||'pos';
+    navigator.clipboard.writeText(JSON.stringify({action:'copy-position', trader:name, ts:Date.now()}))
+    .then(()=>alert(`Posición ${name} copiada ✅`))
+    .catch(()=>alert('No se pudo copiar'));
+  }
+});
+
+// Chart.js
+const dailyCtx = document.getElementById('dailyPnL').getContext('2d');
+const weeklyCtx = document.getElementById('weeklyPnL').getContext('2d');
+
+new Chart(dailyCtx, {
+  type:'line',
+  data:{
+    labels:['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'],
+    datasets:[{label:'PnL Diario %', data:[2.3,3.1,-1.2,4.5,1.2,2.9,3.7], borderColor:'#22c55e', backgroundColor:'rgba(34,197,94,0.2)', tension:0.3}]
+  },
+  options:{responsive:true, maintainAspectRatio:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}}}
+});
+
+new Chart(weeklyCtx, {
+  type:'bar',
+  data:{
+    labels:['Semana 1','Semana 2','Semana 3','Semana 4'],
+    datasets:[{label:'PnL Semanal %', data:[5.2,-2.3,4.8,3.1], backgroundColor:'#22c55e'}]
+  },
+  options:{responsive:true, maintainAspectRatio:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}}}
+});
+</script>
+</body>
+</html>

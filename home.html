@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Emiratos Dubai Trading — CopyTrading Profesional</title>
+  <meta name="description" content="Emiratos Dubai Trading: copia estrategias de traders expertos, simula tus ganancias y crece con seguridad.">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- AOS (animations) -->
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <!-- Chart.js for sparklines (copy-traders) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root{--gold:#b88b18;--dark:#08121a;--green-main:#22c55e}
+    body{font-family:'Poppins',system-ui,Arial;background:linear-gradient(180deg,#03060a 0%, #071322 60%);color:#e6eef6;scroll-behavior:smooth}
+    .glass{backdrop-filter: blur(8px); background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.04)}
+    .glass-2{backdrop-filter: blur(6px); background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border:1px solid rgba(255,255,255,0.04)}
+    .shadow-spot{box-shadow: 0 10px 30px rgba(2,6,23,0.6)}
+    .bar-step{height:8px;border-radius:6px;cursor:pointer}
+    .active-step{background:linear-gradient(90deg,var(--gold),#ffd27a)}
+    .inactive-step{background:rgba(255,255,255,0.06)}
+    .notif{position:fixed;right:20px;bottom:20px;z-index:9999;background:rgba(34,197,94,0.95);color:#04111a;padding:10px 14px;border-radius:10px;box-shadow:0 8px 30px rgba(2,6,23,0.6);transform:translateY(20px);opacity:0;transition:all .35s}
+    .notif.show{opacity:1;transform:translateY(0)}
+    .copy-btn{transition:transform .12s ease}
+    .copy-btn:active{transform:scale(.98)}
+    /* ROI meter */
+    .roi-meter { height: 18px; border-radius: 999px; background: rgba(255,255,255,0.06); overflow: hidden; position: relative; }
+    .roi-fill { height: 100%; width: 0%; background: linear-gradient(90deg,var(--green-main), #16a34a); transition: width 700ms cubic-bezier(.2,.9,.2,1); box-shadow: 0 6px 20px rgba(16,185,129,0.12) inset; }
+    .roi-label { font-weight:700; font-size:0.95rem; }
+    .spark-canvas{width:100%!important;height:100%!important}
+    /* small responsive tweaks */
+    @media (max-width:640px){ .desktop-hide-sm{display:none} }
+	
+	#investRange {
+    width: 20rem;
+}
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center p-6">
+
+  <!-- Header -->
+  <header class="w-full max-w-6xl flex items-center justify-between py-6">
+    <div class="flex items-center gap-4">
+      <div class="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-500 to-amber-400 flex items-center justify-center text-dark font-bold"><img src="emi.jpg" > </img></div>
+      <div>
+        <h1 class="text-xl font-semibold">Emiratos Dubai Trading</h1>
+        <p class="text-sm text-gray-300">CopyTrading profesional — Transparencia, Rendimientos, Seguridad</p>
+      </div>
+    </div>
+    <nav class="hidden md:flex gap-6 items-center text-sm text-gray-300">
+      <a href="#simulador" class="hover:text-white">Simulador</a>
+      <a href="#top-copy" class="hover:text-white">Top Traders</a>
+      <a href="#testimonios" class="px-3 py-2 rounded-md bg-gradient-to-r from-yellow-500 to-amber-400 text-dark font-semibold">Invierte ahora</a>
+    </nav>
+  </header>
+
+  <!-- Main -->
+  <main class="w-full max-w-6xl">
+
+    <!-- Hero + Simulador -->
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+<div data-aos="fade-up" class="space-y-6 aos-init aos-animate">
+      <h2 class="text-4xl md:text-5xl font-extrabold leading-tight">Copia traders expertos. Crece con seguridad.</h2>
+      <p class="text-gray-300 max-w-xl">Emiratos Dubai Trading te permite replicar estrategias de solo los mejores traders verificados. Aumenta tus ganancias en segundos y ajusta el margen para ver su impacto.</p>
+
+      <div class="mt-4 flex gap-3">
+        <a href="#simulador" class="px-5 py-3 rounded-md bg-gradient-to-r from-yellow-500 to-amber-400 text-dark font-semibold">Invertir ahora</a>
+        <a href="#testimonios" class="px-5 py-3 rounded-md border border-gray-600 text-gray-200">Ver testimonios</a>
+		
+      </div>
+
+      <div class="mt-6 grid grid-cols-3 gap-3 text-center">
+        <div class="glass p-4 rounded-md shadow-spot">
+          <div class="text-xs text-gray-300">Inversores activos</div>
+          <div class="text-2xl font-bold">+150,000</div>
+        </div>
+        <div class="glass p-4 rounded-md shadow-spot">
+          <div class="text-xs text-gray-300">Rendimiento medio</div>
+          <div class="text-2xl font-bold">7x</div>
+        </div>
+        <div class="glass p-4 rounded-md shadow-spot">
+          <div class="text-xs text-gray-300">Años</div>
+          <div class="text-2xl font-bold">3+</div>
+        </div>
+      </div>
+	  <h1></h1>
+<svg viewBox="0 0 900 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="logoTitle logoDesc">
+  <title id="logoTitle">Emiratos Dubai Trading</title>
+  <desc id="logoDesc">Professional logo in red and white inspired by the UAE style</desc>
+
+  <!-- Fondo principal sólido rojo -->
+  <rect x="0" y="0" width="900" height="220" rx="18" ry="18" fill="#C8102E"/>
+
+  <!-- Franja blanca izquierda -->
+  <rect x="20" y="20" width="140" height="180" rx="12" ry="12" fill="#FFFFFF"/>
+
+  <!-- Emblema central tipo ala -->
+  <g transform="translate(90,110)">
+    <polygon points="-40,-40 40,-40 80,0 40,40 -40,40 -80,0" fill="#C8102E"/>
+    <path d="M -40,-8 C -10,-40 10,-40 36,-8 C 6,-6 -6,8 -36,8 C -20,4 -8,0 -40,-8 Z" fill="#FFFFFF" transform="scale(0.9)"/>
+  </g>
+
+  <!-- Texto principal -->
+  <g transform="translate(190,72)">
+    <text x="0" y="0" font-family="Montserrat, Helvetica, Arial, sans-serif" font-weight="800" font-size="64" fill="#FFFFFF" letter-spacing="1">
+      Emiratos
+    </text>
+    <text x="0" y="72" font-family="Montserrat, Helvetica, Arial, sans-serif" font-weight="600" font-size="36" fill="#FFFFFF" letter-spacing="1">
+      Dubai Trading
+    </text>
+  </g>
+
+  <!-- Subrayado dorado -->
+  <rect x="190" y="105" width="370" height="6" rx="3" fill="#FFD700"/>
+
+  <!-- Lema en inglés -->
+  <text x="190" y="160" font-family="Montserrat, Helvetica, Arial, sans-serif" font-weight="500" font-size="16" fill="#FFEEDC">
+    Performance · Transparency · Trading
+  </text>
+</svg>
+
+	  
+    </div>
+	
+
+      <!-- SIMULADOR (misma tarjeta, ahora con barra ROI dentro) -->
+      <aside id="simulador" class="glass-2 p-6 rounded-2xl shadow-spot" data-aos="fade-up" aria-labelledby="simulador-title">
+        <h3 id="simulador-title" class="text-lg font-semibold">Calculador de ganancias</h3>
+        <p class="text-sm text-gray-300 mb-4">Ajusta inversión y margen. Inversión máxima: <strong>1,000,000 USD</strong>.</p>
+
+        <!-- Inversión -->
+        <div class="mb-4">
+          <label class="text-xs text-gray-400">Inversión</label>
+          <div class="flex items-center gap-3 mt-2">
+            <input id="investRange" type="range" min="100" max="1000000" step="100" value="1000" class="w-full accent-yellow-500" />
+            <div class="w-44 text-right">
+              <div class="text-sm">Valor: <span id="investVal" class="font-semibold">1,000</span> USD</div>
+              <div class="mt-2 flex gap-2 text-xs text-gray-300 justify-end">
+                <button class="px-2 py-1 border rounded hover:bg-white/10 transition" data-preset="500">500</button>
+                <button class="px-2 py-1 border rounded hover:bg-white/10 transition" data-preset="1000">1k</button>
+                <button class="px-2 py-1 border rounded hover:bg-white/10 transition" data-preset="10000">10k</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Margen -->
+        <div class="mb-4">
+          <label class="text-xs text-gray-400">Margen</label>
+          <div class="mt-3 grid grid-cols-10 gap-2 items-center">
+            <div id="bars" class="col-span-8 flex gap-2"></div>
+            <div class="col-span-2 text-right">
+              <div class="text-xs text-gray-300">Margen: <span id="marginVal">1.0</span></div>
+              <div class="text-xs text-gray-400">(1.0 = 100%)</div>
+            </div>
+          </div>
+          <div class="mt-3">
+            <input id="marginRange" type="range" min="0.1" max="1.0" step="0.1" value="1.0" class="w-full accent-yellow-500" />
+          </div>
+        </div>
+
+        <!-- Resultados + ROI meter (barra animada) -->
+        <div class="mt-4 p-4 rounded-lg bg-gradient-to-br from-white/5 to-transparent border border-white/10">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <div class="text-xs text-gray-300">Inversión</div>
+              <div class="text-2xl font-bold"><span id="displayInvestment">1,000</span> USD</div>
+            </div>
+
+            <div>
+              <div class="text-xs text-gray-300">Margen</div>
+              <div class="text-2xl font-bold"><span id="displayMargin">1.0</span> (100%)</div>
+            </div>
+
+            <div>
+              <div class="text-xs text-gray-300">Total proyectado</div>
+              <div class="text-2xl font-bold text-yellow-300"><span id="projectedTotal">7,000</span> USD</div>
+            </div>
+
+            <div class="text-right">
+              <div class="text-xs text-gray-300">ROI (30D)</div>
+              <div id="roiVal" class="text-2xl roi-label text-green-400">+600.00%</div>
+            </div>
+          </div>
+
+          <hr class="my-4 border-white/10" />
+
+          <!-- ROI meter & percentage label above it -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <div class="text-xs text-gray-300">Medidor visual del ROI</div>
+                <div id="roiPctLabel" class="text-xs text-gray-300 font-semibold">+600.00%</div>
+              </div>
+              <div class="roi-meter" aria-hidden="true">
+                <div id="roiFill" class="roi-fill" style="width:0%"></div>
+              </div>
+              <div class="mt-2 text-xs text-gray-400">La barra muestra una representación visual del ROI (cap visual al 2000% para evitar overflow).</div>
+            </div>
+
+            <div>
+              <div class="text-xs text-gray-300">Ganancia estimada (fórmula: inversión × margen × 7)</div>
+              <div class="text-lg font-semibold mt-1">Ganancia estimada: <span id="estimatedProfit">7,000</span> USD</div>
+              <div class="mt-4">
+                <div class="w-full bg-white/5 h-3 rounded-full overflow-hidden">
+                  <div id="progress" class="h-3 rounded-full transition-all duration-500" style="width:70%; background:linear-gradient(90deg,var(--gold),#ffd27a)"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 flex gap-3">
+          <a id="cta" href="#" class="flex-1 text-center px-4 py-3 rounded-md bg-gradient-to-r from-yellow-500 to-amber-400 text-dark font-semibold">Invierte ahora</a>
+          <a href="#top-copy" class="px-4 py-3 rounded-md border border-gray-600 hover:bg-white/10 transition">Ver Top Traders</a>
+        </div>
+      </aside>
+    </section>
+
+    <!-- Copy Traders (debajo del simulador) -->
+    <section id="top-copy" class="mt-12" data-aos="fade-up" aria-labelledby="top-copy-title">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 id="top-copy-title" class="text-3xl font-extrabold">Top Lead traders — Highest ROI</h2>
+          <p class="text-sm text-gray-300">Traders destacados</p>
+        </div>
+      </div>
+
+      <div id="tradersGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Cards rendered by JS -->
+      </div>
+    </section>
+
+    <!-- Testimonios -->
+    <section id="testimonios" class="mt-12 glass p-6 rounded-2xl" data-aos="fade-up">
+      <h3 class="text-2xl font-semibold">Testimonios</h3>
+      <p class="text-sm text-gray-300">Reseñas</p>
+      <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="p-4 rounded-lg bg-gradient-to-br from-white/5 to-transparent">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-full bg-gray-300/20 flex items-center justify-center">A</div>
+            <div>
+              <div class="font-semibold">Mack Wilson</div>
+              <div class="text-xs text-gray-400">Inversora — 5 estrellas</div>
+            </div>
+          </div>
+          <p class="mt-3 text-sm text-gray-200">"Excellent platform, I am satisfied with my results."</p>
+        </div>
+
+        <div class="p-4 rounded-lg bg-gradient-to-br from-white/5 to-transparent">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-full bg-gray-300/20 flex items-center justify-center">J</div>
+            <div>
+              <div class="font-semibold">Rodrick M.</div>
+              <div class="text-xs text-gray-400">Trader copiado — 5 estrellas</div>
+            </div>
+          </div>
+          <p class="mt-3 text-sm text-gray-200">"I discovered this platform on YouTube, without a doubt the best."</p>
+        </div>
+
+        <div class="p-4 rounded-lg bg-gradient-to-br from-white/5 to-transparent">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-full bg-gray-300/20 flex items-center justify-center">M</div>
+            <div>
+              <div class="font-semibold">Caroline Montoya</div>
+              <div class="text-xs text-gray-400">Inversora — 5 estrellas</div>
+            </div>
+          </div>
+          <p class="mt-3 text-sm text-gray-200">"I've been using it for several months, so far no problems and my withdrawals arrive on time."</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="w-full max-w-6xl mt-12 text-sm text-gray-400 flex justify-between items-center">
+    <div>© <span id="year"></span> Emiratos Dubai Trading</div>
+    <div>Hecho con ❤️ · <span class="text-gray-300">xelegram.com</span></div>
+  </footer>
+
+  <!-- Notification -->
+  <div id="notif" class="notif" role="status" aria-live="polite">Copiado ✅</div>
+
+  <!-- AOS + script -->
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>
+    AOS.init({duration:700, once:true});
+    // Utilities
+    const $ = s => document.querySelector(s);
+    const $$ = s => Array.from(document.querySelectorAll(s));
+    function money(n){ return Number(n).toLocaleString(); }
+    function showNotif(text, color='green'){
+      const el = document.getElementById('notif');
+      el.textContent = text;
+      el.style.background = color === 'green' ? 'rgba(34,197,94,0.95)' : 'rgba(59,130,246,0.95)';
+      el.classList.add('show');
+      setTimeout(()=> el.classList.remove('show'), 1600);
+    }
+
+    // Simulator elements
+    const investRange = $('#investRange');
+    const investVal = $('#investVal');
+    const investDisplay = $('#displayInvestment');
+    const marginRange = $('#marginRange');
+    const marginVal = $('#marginVal');
+    const displayMargin = $('#displayMargin');
+    const estimatedProfit = $('#estimatedProfit');
+    const projectedTotal = $('#projectedTotal');
+    const progress = $('#progress');
+    const roiVal = $('#roiVal');
+    const roiFill = $('#roiFill');
+    const roiPctLabel = $('#roiPctLabel');
+    const bars = $('#bars');
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Create margin bars
+    function createBars(){
+      bars.innerHTML = '';
+      for(let i=1;i<=10;i++){
+        const val = (i/10).toFixed(1);
+        const el = document.createElement('div');
+        el.className = 'bar-step inactive-step';
+        el.style.flex = '1';
+        el.dataset.value = val;
+        el.title = val + ' (ej. 0.1 = 10%)';
+        el.addEventListener('click', ()=>{ marginRange.value = val; updateAll(); });
+        bars.appendChild(el);
+      }
+    }
+    createBars();
+
+    function updateBarVisuals(m){
+      $$('#bars .bar-step').forEach(b=>{
+        const v = Number(b.dataset.value);
+        b.classList.toggle('active-step', v <= m);
+        b.classList.toggle('inactive-step', v > m);
+      });
+    }
+
+    // Calculations
+    function calcProjection(invest, margin){
+      return Math.round(invest * margin * 7);
+    }
+    function calcROI(total, invest){
+      if(invest <= 0) return 0;
+      return ((total / invest - 1) * 100);
+    }
+
+    // map ROI number to visual % for the bar (cap for visualization)
+    function roiToVisualPct(roi){
+      // Avoid infinite width — we'll cap visual at 2000% (i.e., 20x) => 100% width
+      const cap = 2000; // 2000% => full bar
+      const pct = Math.max(-100, Math.min(cap, roi)); // clamp
+      // Convert to 0..100
+      const visual = (pct / cap) * 100;
+      return visual;
+    }
+
+    function updateAll(){
+      const invest = Number(investRange.value);
+      const margin = Number(marginRange.value);
+      investVal.textContent = money(invest);
+      investDisplay.textContent = money(invest);
+      marginVal.textContent = margin.toFixed(1);
+      displayMargin.textContent = margin.toFixed(1);
+
+      const total = calcProjection(invest, margin);
+      estimatedProfit.textContent = money(total);
+      projectedTotal.textContent = money(total);
+
+      // progress (same as before, relative to cap)
+      const cap = 140000;
+      const pct = Math.min(100, Math.round((total / cap) * 100));
+      progress.style.width = pct + '%';
+
+      // ROI
+      const roi = calcROI(total, invest); // could be large
+      const roiText = (roi >= 0 ? '+' : '') + roi.toFixed(2) + '%';
+      roiVal.textContent = roiText;
+      roiPctLabel.textContent = roiText;
+
+      // Color class
+      roiVal.classList.toggle('text-green-400', roi >= 0);
+      roiVal.classList.toggle('text-red-400', roi < 0);
+      roiPctLabel.classList.toggle('text-green-400', roi >= 0);
+      roiPctLabel.classList.toggle('text-red-400', roi < 0);
+
+      // Animate ROI meter
+      const visual = roiToVisualPct(roi);
+      // Add slight easing by setting width
+      roiFill.style.width = visual + '%';
+      // For extremely negative ROI, show some min fill
+      if(roi < 0) {
+        roiFill.style.background = 'linear-gradient(90deg,#fca5a5,#f87171)';
+      } else {
+        roiFill.style.background = 'linear-gradient(90deg,var(--green-main), #16a34a)';
+      }
+
+      updateBarVisuals(margin);
+    }
+
+    // Events
+    investRange.addEventListener('input', updateAll);
+    marginRange.addEventListener('input', updateAll);
+    $$('#simulador [data-preset]').forEach(btn => {
+      btn.addEventListener('click', ()=> { investRange.value = btn.dataset.preset; updateAll(); });
+    });
+
+    // init
+    updateAll();
+
+    // -------------------------
+    // Copy Traders (mock data) + sparklines
+    // -------------------------
+    const traders = [
+      { id:'online', name:'Online', roi:12004.55, wr:32.97, drawdown:0.79, profits:24288.15, aum:122767.26, users:'1,999/1,999', color:'rgba(34,197,94,1)'},
+      { id:'crypto-star', name:'Crypto STaR', roi:11253.82, wr:85.81, drawdown:13.18, profits:316.88, aum:31334.1, users:'340/2,000', color:'rgba(16,185,129,1)'},
+      { id:'hyper-growth', name:'Hyper Growth', roi:10407.93, wr:79.89, drawdown:3.91, profits:266.15, aum:41942.78, users:'417/2,000', color:'rgba(250,204,21,1)'},
+      { id:'lee-bking', name:'Lee BKing88', roi:9910.24, wr:90.16, drawdown:1.76, profits:499.82, aum:246375.97, users:'1,719/2,000', color:'rgba(34,197,94,1)'}
+    ];
+
+    const grid = $('#tradersGrid');
+
+    function genSparkData(len=22, seed=0.02){
+      const arr = [];
+      let v = seed + Math.random()*0.04;
+      for(let i=0;i<len;i++){
+        v += (Math.random()*0.02 - 0.01) + 0.02;
+        v = Math.max(0, Math.min(v, seed + 1.0));
+        arr.push(parseFloat(v.toFixed(4)));
+      }
+      const mn = Math.min(...arr), mx = Math.max(...arr);
+      return arr.map(x => ((x - mn) / (mx - mn || 1)));
+    }
+
+    traders.forEach((t, idx) => {
+      const card = document.createElement('article');
+      card.className = 'glass p-4 rounded-2xl shadow-spot flex flex-col justify-between min-h-[300px]';
+      card.innerHTML = `
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-full flex items-center justify-center font-bold" style="background:${t.color}; color: #00110a">${t.name.split(' ').map(s=>s[0]).slice(0,2).join('').toUpperCase()}</div>
+              <div>
+                <div class="text-white font-semibold">${t.name}</div>
+                <div class="text-xs text-gray-400">${t.users}</div>
+              </div>
+            </div>
+            <div class="text-xs text-gray-400">#${idx+1}</div>
+          </div>
+
+          <div class="mb-2">
+            <div class="text-xs text-gray-400">30D PnL%</div>
+            <div class="text-2xl font-bold text-green-400">+${Number(t.roi).toLocaleString()}</div>
+            <div class="text-xs text-gray-400">+${t.profits}</div>
+          </div>
+
+          <div class="h-14 mb-3">
+            <canvas id="spark-${idx}" class="spark-canvas"></canvas>
+          </div>
+
+          <ul class="text-xs text-gray-300 space-y-1 mb-3">
+            <li>Win Rate: <span class="float-right text-white">${t.wr}%</span></li>
+            <li>Max drawdown: <span class="float-right text-white">${t.drawdown}%</span></li>
+            <li>Total Profits: <span class="float-right text-white">${t.profits}</span></li>
+            <li>AUM: <span class="float-right text-white">${Number(t.aum).toLocaleString()}</span></li>
+          </ul>
+        </div>
+
+        <div class="mt-2 flex gap-2">
+          <button class="flex-1 py-2 rounded-full bg-yellow-400 text-black font-semibold copy-btn" data-id="${t.id}" aria-label="Copiar ${t.name}">Copy</button>
+          <button class="w-12 h-10 rounded-full bg-white/6 flex items-center justify-center" title="Notificar">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+          </button>
+        </div>
+      `;
+      grid.appendChild(card);
+
+      // create sparkline
+      const canvas = document.getElementById(`spark-${idx}`);
+      if(canvas){
+        const ctx = canvas.getContext('2d');
+        const data = genSparkData(22, 0.02 + Math.random()*0.08);
+        new Chart(ctx, {
+          type: 'line',
+          data: { labels: data.map((_,i)=>i+1), datasets:[{ data, borderColor: t.color, backgroundColor: t.color.replace('1)', '0.08)') || 'rgba(34,197,94,0.08)', fill:true, pointRadius:0, tension: .35 }]},
+          options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}, tooltip:{enabled:false}}, scales:{x:{display:false}, y:{display:false}}}
+        });
+      }
+    });
+
+    // copy behavior
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('.copy-btn');
+      if(!btn) return;
+      const id = btn.dataset.id || ('trader_' + Date.now());
+      const payload = JSON.stringify({ action:'copy-trader', traderId: id, ts: Date.now() });
+      navigator.clipboard.writeText(payload).then(()=>{
+        showNotif('Estrategia copiada al portapapeles ✅');
+        const prev = btn.innerHTML;
+        btn.textContent = 'Copiado';
+        setTimeout(()=> btn.innerHTML = prev, 1400);
+      }).catch(()=> {
+        showNotif('No se pudo copiar — permite portapapeles', 'blue');
+      });
+    });
+
+    // keyboard accessibility for buttons
+    document.querySelectorAll('button, a').forEach(el=>{
+      el.addEventListener('keydown', e => { if(e.key === 'Enter') el.click(); });
+    });
+
+  </script>
+</body>
+</html>

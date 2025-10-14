@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dashboard — Emiratos Dubai Trading</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<style>
+:root{
+  --red-brand:#c62828;
+  --white-brand:#ffffff;
+  --yellow-btn:#ffd400;
+  --panel: rgba(255,255,255,0.02);
+  --muted:#9aa4ad;
+  --green:#22c55e;
+  --danger:#ef4444;
+}
+
+html, body { 
+  height:100%; 
+  margin:0; 
+  font-family:'Poppins',system-ui,Arial; 
+  background:linear-gradient(180deg,#03060a 0%,#071322 60%); 
+  color:#e6eef6; 
+  -webkit-font-smoothing:antialiased; 
+}
+
+.glass { 
+  background: var(--panel); 
+  backdrop-filter: blur(8px); 
+  border-radius:12px; 
+  border:1px solid rgba(255,255,255,0.03); 
+}
+
+.shadow-spot { 
+  box-shadow: 0 10px 30px rgba(2,6,23,0.6); 
+}
+
+.muted { color: var(--muted); }
+
+.btn-copy { 
+  background: linear-gradient(90deg,var(--yellow-btn),#ffda66); 
+  color:#07121a; 
+  font-weight:700; 
+  border-radius:999px; 
+  padding:6px 10px; 
+  cursor:pointer; 
+  transition: all .15s; 
+  white-space: nowrap; 
+  font-size:0.8rem;
+  min-width:60px;
+  text-align:center;
+}
+.btn-copy:hover { opacity:0.9; }
+
+.btn-deposit { 
+  background: var(--yellow-btn); 
+  color:#07121a; 
+  padding:6px 10px; 
+  border-radius:999px; 
+  font-weight:700; 
+  cursor:pointer; 
+  transition: all .15s; 
+}
+.btn-deposit:hover { opacity:0.9; }
+
+.table-row { 
+  transition: background .12s ease; 
+  border-radius:10px; 
+  width: 100%; 
+}
+.table-row:hover { 
+  background: rgba(255,255,255,0.01); 
+}
+
+/* Grid filas ganadores/perdedores */
+.row-grid {
+  display: grid;
+  grid-template-columns: 40px 1fr 100px 60px 60px 70px;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+}
+
+.col-name { min-width:80px; overflow:hidden; }
+.col-coin { min-width:100px; overflow:hidden; text-overflow: ellipsis; white-space: nowrap; }
+.col-pnl { text-align:right; width:60px; flex-shrink:0; }
+.col-vol { text-align:right; width:60px; flex-shrink:0; }
+.col-copy { display:flex; justify-content:flex-end; width:70px; flex-shrink:0; }
+
+/* Responsive móvil: mostrar toda info hasta PnL */
+@media (max-width:900px){
+  .row-grid {
+    grid-template-columns: 36px 1fr 70px 60px auto;
+    gap:6px;
+  }
+  .col-name { display:flex; flex-direction:column; overflow:hidden; }
+  .col-coin, .col-vol { display:inline-block; font-size:0.75rem; color:var(--muted); text-overflow: ellipsis; white-space: nowrap; overflow:hidden; }
+  .col-pnl { font-size:0.8rem; }
+  .col-copy { min-width:50px; padding-left:4px; }
+}
+
+/* Header responsive */
+header .max-w-7xl {
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+header .flex.items-center.gap-4 {
+  flex-wrap: wrap;
+}
+
+header .flex.items-center.gap-4:nth-child(2) {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+@media (max-width:640px) {
+  header svg.w-36 { width: 28rem; height:auto; }
+  #depositBtn { padding:6px 8px; font-size:0.75rem; }
+  header .text-right.mr-2.hidden.sm\:block { display:none; }
+  header .desktop-hide-sm { display:none; }
+}
+
+/* Toast */
+.toast{
+  position:fixed;
+  bottom:30px;
+  right:30px;
+  padding:12px 18px;
+  border-radius:10px;
+  color:#fff;
+  font-weight:600;
+  opacity:0;
+  transition:opacity .2s;
+}
+.toast.show{opacity:1;}
+</style>
+</head>
+<body class="min-h-screen">
+
+<!-- Header -->
+<header class="w-full fixed top-0 left-0 z-40">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between glass shadow-spot">
+    
+    <!-- Logo + Nav -->
+    <div class="flex items-center gap-4">
+      <!-- SVG Logo -->
+      <svg class="w-36 h-auto" viewBox="0 0 400 90" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Emiratos Dubai Trading">
+        <rect x="0" y="0" width="90" height="90" fill="#C62828"/>
+        <g transform="translate(12,10) scale(0.65)">
+          <path d="M36 6 L70 20 L56 44 L36 36 L22 44 Z" fill="#fff" />
+          <path d="M40 48 C48 40, 70 40, 72 48 C74 56, 48 68, 40 68 C32 68, 8 56, 10 48 C12 40, 32 40, 40 48 Z" fill="#fff" opacity="0.95"/>
+        </g>
+        <g transform="translate(110,20)">
+          <text x="0" y="28" fill="#C62828" font-family="Poppins, Helvetica, Arial" font-weight="700" font-size="28">EMIRATOS</text>
+          <text x="0" y="54" fill="#C62828" font-family="Poppins, Helvetica, Arial" font-weight="600" font-size="22">DUBAI TRADING</text>
+        </g>
+      </svg>
+
+      <!-- Nav -->
+      <nav class="hidden md:flex items-center gap-4 text-sm muted">
+        <a href="#" class="hover:text-white transition">Inicio</a>
+        <a href="#" class="hover:text-white transition">Traders</a>
+        <a href="#" class="hover:text-white transition">Estadísticas</a>
+      </nav>
+    </div>
+
+    <!-- User Info + Balance -->
+    <div class="flex items-center gap-4">
+      <div class="text-sm muted desktop-hide-sm">Balance</div>
+      <div class="text-sm font-semibold">USDT 3,254.12</div>
+      <button id="depositBtn" class="btn-deposit ml-2">Depositar</button>
+
+      <div class="ml-4 flex items-center gap-3">
+        <div class="text-right mr-2 hidden sm:block">
+          <div class="text-sm">Hola, <span class="font-semibold">Ahmed</span></div>
+          <div class="text-xs muted">Nivel: Pro</div>
+        </div>
+        <div class="w-9 h-9 rounded-full bg-gray-300/10 flex items-center justify-center text-sm">A</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Header Móvil Bottom -->
+<!-- Header Móvil Bottom -->
+<div class="mobile-header glass shadow-spot hidden fixed bottom-0 left-0 w-full z-50 px-4 py-2 flex items-center justify-between md:hidden">
+  <!-- Logo + texto -->
+  <div class="flex items-center gap-2">
+    <svg class="w-12 h-auto" viewBox="0 0 400 90" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="0" width="90" height="90" fill="#C62828"/>
+      <g transform="translate(12,10) scale(0.5)">
+        <path d="M36 6 L70 20 L56 44 L36 36 L22 44 Z" fill="#fff" />
+        <path d="M40 48 C48 40, 70 40, 72 48 C74 56, 48 68, 40 68 C32 68, 8 56, 10 48 C12 40, 32 40, 40 48 Z" fill="#fff" opacity="0.95"/>
+      </g>
+    </svg>
+    <div class="flex flex-col text-xs">
+      <span class="font-bold text-red-700">EMIRATOS</span>
+      <span class="font-semibold text-red-700">DUBAI TRADING</span>
+    </div>
+  </div>
+
+  <!-- Saldo con borde -->
+  <div class="balance glass px-3 py-1 rounded-lg text-sm font-semibold text-center border border-white/20 flex-1 mx-2">
+    USDT 3,254.12
+  </div>
+
+  <!-- Botón depositar -->
+  <button class="btn-deposit px-3 py-1 text-xs">Depositar</button>
+
+  <!-- Avatar -->
+  <div class="w-9 h-9 rounded-full bg-gray-300/10 flex items-center justify-center text-sm">A</div>
+</div>
+
+<!-- Navegación móvil con dropdown -->
+<div class="mobile-nav fixed bottom-14 left-0 w-full z-50 flex justify-center md:hidden">
+  <div class="glass px-4 py-1 rounded-xl shadow-spot flex gap-4 text-xs text-white font-semibold">
+    <a href="#" class="hover:text-yellow-400 transition">Inicio</a>
+    <a href="#" class="hover:text-yellow-400 transition">Traders</a>
+    <div class="relative">
+      <button id="navDropdownBtn" class="hover:text-yellow-400 transition">Estadísticas ▾</button>
+      <div id="navDropdown" class="hidden absolute bottom-6 left-0 bg-gray-800/80 glass rounded-lg p-2 flex flex-col gap-1 text-xs">
+        <a href="#" class="hover:text-yellow-400 transition">Resumen</a>
+        <a href="#" class="hover:text-yellow-400 transition">Detalles</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+@media (max-width:640px){
+  header { display: none; }
+
+  .mobile-header { display: flex; }
+
+  .mobile-header svg { width: 48px; height:auto; }
+  .mobile-header .balance { font-size: 0.75rem; }
+  .mobile-header .btn-deposit { font-size:0.75rem; padding:4px 8px; }
+
+  /* Dropdown nav */
+  #navDropdown { display: none; }
+  #navDropdown.show { display: flex; }
+
+}
+</style>
+
+<script>
+const navBtn = document.getElementById('navDropdownBtn');
+const navMenu = document.getElementById('navDropdown');
+navBtn?.addEventListener('click', ()=>{ navMenu.classList.toggle('show'); });
+</script>
+
+
+<main class="max-w-7xl mx-auto px-4 pt-28 pb-12">
+
+  <!-- Search / Filter -->
+  <div class="flex flex-col md:flex-row gap-4 mb-6 items-center justify-between">
+    <div class="flex items-center gap-3 w-full md:w-auto">
+      <input id="searchInput" placeholder="Buscar trader o moneda..." class="glass p-2 rounded-md w-full md:w-64 text-sm" />
+      <select id="filterSelect" class="glass p-2 rounded-md text-sm">
+        <option value="all">Todos</option>
+        <option value="gain">Ganancia</option>
+        <option value="loss">Pérdida</option>
+      </select>
+    </div>
+    <div class="text-sm muted">Última actualización: ahora</div>
+  </div>
+
+  <!-- Traders columns -->
+  <section class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <div class="glass p-4 shadow-spot" data-aos="fade-up">
+      <div class="flex items-center justify-between mb-3">
+        <div>
+          <h3 class="text-lg font-semibold">Traders — Ganancia</h3>
+          <div class="text-xs muted">Últimos movimientos (porcentaje positivo)</div>
+        </div>
+        <div class="text-sm muted">Top performers</div>
+      </div>
+      <div id="leftList" class="space-y-2 py-2"></div>
+    </div>
+
+    <div class="glass p-4 shadow-spot" data-aos="fade-up">
+      <div class="flex items-center justify-between mb-3">
+        <div>
+          <h3 class="text-lg font-semibold">Traders — Pérdida</h3>
+          <div class="text-xs muted">Movimientos recientes (porcentaje negativo)</div>
+        </div>
+        <div class="text-sm muted">Monitoreo</div>
+      </div>
+      <div id="rightList" class="space-y-2 py-2"></div>
+    </div>
+  </section>
+
+  <!-- Summary / Featured Copy Trading -->
+  <section class="mb-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="glass p-6 shadow-spot" data-aos="fade-up">
+      <h2 class="text-2xl font-extrabold">Futures Copy Trading</h2>
+      <p class="text-sm muted mb-6">Copia a traders líderes y automatiza tu inversión.</p>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <div class="text-3xl font-bold">1,350+</div>
+          <div class="text-xs muted">Lead Traders</div>
+        </div>
+        <div>
+          <div class="text-3xl font-bold">$12.59M</div>
+          <div class="text-xs muted">Cumulative Profits</div>
+        </div>
+      </div>
+      <div class="mt-6">
+        <button id="moreBtn" class="btn-copy">Depositar</button>
+      </div>
+    </div>
+
+    <div class="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+      <article class="glass p-4 rounded-2xl shadow-spot" data-aos="fade-up">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-400 to-sky-500 flex items-center justify-center">B</div>
+            <div>
+              <div class="font-semibold">BlingBling~</div>
+              <div class="text-xs muted">👥 2,000 copiers</div>
+            </div>
+          </div>
+          <div class="text-right">
+            <canvas id="sparkFeatured1" class="w-full h-6"></canvas>
+            <div class="text-xs muted">30D PnL%</div>
+            <div class="text-2xl font-bold text-green-400">+2,047.82%</div>
+            <div class="text-xs muted">AUM 179,071.21</div>
+          </div>
+        </div>
+        <div class="mt-3 flex justify-end">
+          <button class="btn-copy copy-featured" data-id="blingbling">Copy</button>
+        </div>
+      </article>
+
+      <article class="glass p-4 rounded-2xl shadow-spot" data-aos="fade-up">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-full bg-sky-800 flex items-center justify-center">R</div>
+            <div>
+              <div class="font-semibold">Rizz</div>
+              <div class="text-xs muted">👥 500 copiers</div>
+            </div>
+          </div>
+          <div class="text-right">
+            <canvas id="sparkFeatured2" class="w-full h-6"></canvas>
+            <div class="text-xs muted">30D PnL%</div>
+            <div class="text-2xl font-bold text-green-400">+535.87%</div>
+            <div class="text-xs muted">AUM 28,629.31</div>
+          </div>
+        </div>
+        <div class="mt-3 flex justify-end">
+          <button class="btn-copy copy-featured" data-id="rizz">Copy</button>
+        </div>
+      </article>
+    </div>
+  </section>
+
+</main>
+
+<div id="toast" class="toast"></div>
+
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  AOS.init({ duration:600, once:true });
+
+  const $ = s=>document.querySelector(s);
+  const $$ = s=>Array.from(document.querySelectorAll(s));
+  const toast = $('#toast');
+  function showToast(msg, ok=true){ toast.textContent=msg; toast.style.background=ok?'rgba(34,197,94,0.95)':'rgba(245,158,11,0.95)'; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'),1500); }
+
+  const tradersGain = [
+    { name:'LION1', coin:'LION1/USDT', pnl:37.95, vol:'1.2M' },
+    { name:'SUNRISE', coin:'SUN/USDT', pnl:24.12, vol:'520k' },
+    { name:'ETHPRO', coin:'ETH/USDT', pnl:12.87, vol:'2.1M' },
+    { name:'ALPHA', coin:'ALP/USDT', pnl:8.35, vol:'330k' },
+    { name:'NOVA', coin:'NOVA/USDT', pnl:5.12, vol:'150k' }
+  ];
+  const tradersLoss = [
+    { name:'AOL', coin:'AOL/USDT', pnl:-4.79, vol:'39.068M' },
+    { name:'BSC', coin:'BSC/USDT', pnl:-0.27, vol:'55.539M' },
+    { name:'USELESS', coin:'USE/USDT', pnl:-9.65, vol:'17.980M' },
+    { name:'LONG', coin:'LONG/USDT', pnl:-8.91, vol:'139.219M' },
+    { name:'SMALL', coin:'SML/USDT', pnl:-2.45, vol:'48k' }
+  ];
+
+function createRow(item, positive=true){
+  const wrapper = document.createElement('div');
+  wrapper.className = 'table-row p-2 glass';
+  wrapper.innerHTML = `
+    <div class="row-grid">
+      <div class="col-img">
+        <div class="w-11 h-11 rounded-full bg-gray-800 flex items-center justify-center text-sm">${item.name[0]||'?'}</div>
+      </div>
+      <div class="col-name">
+        <div class="text-sm font-semibold truncate">${item.name}</div>
+        <div class="text-xs muted md:hidden truncate">${item.coin}</div>
+      </div>
+      <div class="col-coin hidden md:flex items-center text-sm muted truncate">${item.coin}</div>
+      <div class="col-pnl text-right">
+        <div class="${positive?'text-green-400 font-semibold':'text-red-400 font-semibold'}">
+          ${item.pnl>0? '+'+item.pnl.toFixed(2)+'%' : item.pnl.toFixed(2)+'%'}
+        </div>
+      </div>
+      <div class="col-vol text-sm text-gray-300 text-right">${item.vol}</div>
+      <div class="col-copy">
+        <button class="btn-copy copy-row" data-name="${item.name}" aria-label="Copy ${item.name}">Copy</button>
+      </div>
+    </div>
+  `;
+  return wrapper;
+}
+
+const leftList = $('#leftList'), rightList = $('#rightList');
+function renderLists(filter='all', search=''){
+  leftList.innerHTML=''; rightList.innerHTML='';
+  const q=(search||'').trim().toLowerCase();
+  tradersGain.forEach(t=>{ if(filter!=='all'&&filter!=='gain') return; if(q&&!(`${t.name} ${t.coin}`.toLowerCase().includes(q))) return; leftList.appendChild(createRow(t,true)); });
+  tradersLoss.forEach(t=>{ if(filter!=='all'&&filter!=='loss') return; if(q&&!(`${t.name} ${t.coin}`.toLowerCase().includes(q))) return; rightList.appendChild(createRow(t,false)); });
+}
+renderLists();
+
+$('#searchInput').addEventListener('input',e=>renderLists($('#filterSelect').value,e.target.value));
+$('#filterSelect').addEventListener('change',e=>renderLists(e.target.value,$('#searchInput').value));
+
+document.addEventListener('click',ev=>{
+  const cp=ev.target.closest('.copy-row');
+  if(cp){
+    const name=cp.dataset.name||'trader';
+    const payload=JSON.stringify({action:'copy', trader:name, ts:Date.now()});
+    navigator.clipboard.writeText(payload).then(()=>{ showToast(`Copiado ${name} ✅`); const prev=cp.innerHTML; cp.textContent='Copiado'; setTimeout(()=>cp.innerHTML=prev,1200); }).catch(()=>showToast('No se pudo copiar',false));
+  }
+  const cf=ev.target.closest('.copy-featured');
+  if(cf){ const id=cf.dataset.id||'featured'; navigator.clipboard.writeText(JSON.stringify({action:'copy-featured', id, ts:Date.now()})).then(()=>showToast('Estrategia copiada ✅')); }
+  const depositBtn=ev.target.closest('#depositBtn');
+  if(depositBtn) showToast('Ir a Depositar (demo)');
+  const moreBtn=ev.target.closest('#moreBtn');
+  if(moreBtn) showToast('Abrir modal de depósito (demo)');
+});
+
+// Sparkline charts
+const sparkData1 = [1200,1250,1300,1280,1400,1380,1450]; // BlingBling~
+const sparkData2 = [500,520,510,530,540,560,580]; // Rizz
+
+const createSparkline = (ctx,data,color) => new Chart(ctx,{
+  type:'line',
+  data:{ labels:data.map((_,i)=>i+1), datasets:[{ data:data, borderColor:color, borderWidth:2, fill:false, tension:0.3, pointRadius:0 }] },
+  options:{ responsive:true, maintainAspectRatio:true, plugins:{legend:{display:false}}, scales:{x:{display:false}, y:{display:false}}, }
+});
+
+createSparkline(document.getElementById('sparkFeatured1'), sparkData1, '#22c55e');
+createSparkline(document.getElementById('sparkFeatured2'), sparkData2, '#22c55e');
+
+</script>
+</body>
+</html>
