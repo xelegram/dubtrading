@@ -1,594 +1,606 @@
-<!doctype html>
-<html lang="es">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Emiratos Dubai Trading — CopyTrading Profesional</title>
-  <!-- Favicons -->
-  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
-	
-  <meta name="description" content="Emiratos Dubai Trading: copia estrategias de traders expertos, simula tus ganancias y crece con seguridad.">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-  <!-- Tailwind CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- AOS (animations) -->
-  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-  <!-- Chart.js for sparklines (copy-traders) -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-  <style>
-    :root{--gold:#b88b18;--dark:#08121a;--green-main:#22c55e}
-    body{font-family:'Poppins',system-ui,Arial;background:linear-gradient(180deg,#03060a 0%, #071322 60%);color:#e6eef6;scroll-behavior:smooth}
-    .glass{backdrop-filter: blur(8px); background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.04)}
-    .glass-2{backdrop-filter: blur(6px); background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border:1px solid rgba(255,255,255,0.04)}
-    .shadow-spot{box-shadow: 0 10px 30px rgba(2,6,23,0.6)}
-    .bar-step{height:8px;border-radius:6px;cursor:pointer}
-    .active-step{background:linear-gradient(90deg,var(--gold),#ffd27a)}
-    .inactive-step{background:rgba(255,255,255,0.06)}
-    .notif{position:fixed;right:20px;bottom:20px;z-index:9999;background:rgba(34,197,94,0.95);color:#04111a;padding:10px 14px;border-radius:10px;box-shadow:0 8px 30px rgba(2,6,23,0.6);transform:translateY(20px);opacity:0;transition:all .35s}
-    .notif.show{opacity:1;transform:translateY(0)}
-    .copy-btn{transition:transform .12s ease}
-    .copy-btn:active{transform:scale(.98)}
-    /* ROI meter */
-    .roi-meter { height: 18px; border-radius: 999px; background: rgba(255,255,255,0.06); overflow: hidden; position: relative; }
-    .roi-fill { height: 100%; width: 0%; background: linear-gradient(90deg,var(--green-main), #16a34a); transition: width 700ms cubic-bezier(.2,.9,.2,1); box-shadow: 0 6px 20px rgba(16,185,129,0.12) inset; }
-    .roi-label { font-weight:700; font-size:0.95rem; }
-    .spark-canvas{width:100%!important;height:100%!important}
-    /* small responsive tweaks */
-    @media (max-width:640px){ .desktop-hide-sm{display:none} }
-	
-	#investRange {
-    width: 20rem;
-}
-  </style>
-</head>
-<body class="min-h-screen flex flex-col items-center p-6">
-
-  <!-- Header -->
-  <header class="w-full max-w-6xl flex items-center justify-between py-6">
-    <div class="flex items-center gap-4">
-      <div class="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-500 to-amber-400 flex items-center justify-center text-dark font-bold"><img src="emi.jpg" > </img></div>
-      <div>
-        <h1 class="text-xl font-semibold">Emiratos Dubai Trading</h1>
-        <p class="text-sm text-gray-300">Professional CopyTrading — Capitalize in the long term, Returns, large profits</p>
-      </div>
-    </div>
-    <nav class="hidden md:flex gap-6 items-center text-sm text-gray-300">
-      <a href="#simulador" class="hover:text-white">Profits Calculator</a>
-      <a href="#top-copy" class="hover:text-white">Top Traders</a>
-      <a href="#testimonios" class="px-3 py-2 rounded-md bg-gradient-to-r from-yellow-500 to-amber-400 text-dark font-semibold">Invest now</a>
-    </nav>
-  </header>
-
-  <!-- Main -->
-  <main class="w-full max-w-6xl">
-
-    <!-- Hero + Simulador -->
-    <section class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-<div data-aos="fade-up" class="space-y-6 aos-init aos-animate">
-      <h2 class="text-4xl md:text-5xl font-extrabold leading-tight">Copy expert traders. Grow your capital in the long term.</h2>
-      <p class="text-gray-300 max-w-xl">Emirates Dubai Trading lets you replicate the strategies of only the best verified traders. Increase your profits in seconds and adjust your margin to see the impact.</p>
-
-      <div class="mt-4 flex gap-3">
-        <a href="#simulador" class="open-maintenance px-5 py-3 rounded-md bg-gradient-to-r from-yellow-500 to-amber-400 text-dark font-semibold">Invest now</a>
-        <a href="#testimonios" class="px-5 py-3 rounded-md border border-gray-600 text-gray-200">Reviews</a>
-		
-      </div>
-
-      <div class="mt-6 grid grid-cols-3 gap-3 text-center">
-        <div class="glass p-4 rounded-md shadow-spot">
-          <div class="text-xs text-gray-300">Active investors</div>
-          <div class="text-2xl font-bold">+250,000</div>
-        </div>
-        <div class="glass p-4 rounded-md shadow-spot">
-          <div class="text-xs text-gray-300">Average performance</div>
-          <div class="text-2xl font-bold">37x</div>
-        </div>
-        <div class="glass p-4 rounded-md shadow-spot">
-          <div class="text-xs text-gray-300">Year</div>
-          <div class="text-2xl font-bold">3+</div>
-        </div>
-      </div>
-	  <h1></h1>
-<svg viewBox="0 0 900 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="logoTitle logoDesc">
-  <title id="logoTitle">Emiratos Dubai Trading</title>
-  <desc id="logoDesc">Emiratos Dubai Trading</desc>
-
-  <!-- Fondo principal sólido rojo -->
-  <rect x="0" y="0" width="900" height="220" rx="18" ry="18" fill="#C8102E"/>
-
-  <!-- Franja blanca izquierda -->
-  <rect x="20" y="20" width="140" height="180" rx="12" ry="12" fill="#FFFFFF"/>
-
-  <!-- Emblema central tipo ala -->
-  <g transform="translate(90,110)">
-    <polygon points="-40,-40 40,-40 80,0 40,40 -40,40 -80,0" fill="#C8102E"/>
-    <path d="M -40,-8 C -10,-40 10,-40 36,-8 C 6,-6 -6,8 -36,8 C -20,4 -8,0 -40,-8 Z" fill="#FFFFFF" transform="scale(0.9)"/>
-  </g>
-
-  <!-- Texto principal -->
-  <g transform="translate(190,72)">
-    <text x="0" y="0" font-family="Montserrat, Helvetica, Arial, sans-serif" font-weight="800" font-size="64" fill="#FFFFFF" letter-spacing="1">
-      Emiratos
-    </text>
-    <text x="0" y="72" font-family="Montserrat, Helvetica, Arial, sans-serif" font-weight="600" font-size="36" fill="#FFFFFF" letter-spacing="1">
-      Dubai Trading
-    </text>
-  </g>
-
-  <!-- Subrayado dorado -->
-  <rect x="190" y="105" width="370" height="6" rx="3" fill="#FFD700"/>
-
-  <!-- Lema en inglés -->
-  <text x="190" y="160" font-family="Montserrat, Helvetica, Arial, sans-serif" font-weight="500" font-size="16" fill="#FFEEDC">
-    Performance · Transparency · Trading
-  </text>
-</svg>
-
-	  
-    </div>
-	
-
-      <!-- SIMULADOR (misma tarjeta, ahora con barra ROI dentro) -->
-      <aside id="simulador" class="glass-2 p-6 rounded-2xl shadow-spot" data-aos="fade-up" aria-labelledby="simulador-title">
-        <h3 id="simulador-title" class="text-lg font-semibold">Earnings calculator</h3>
-        <p class="text-sm text-gray-300 mb-4">Adjust investment and margin. Maximum investment: <strong>1,000,000 USD</strong>.</p>
-
-        <!-- Inversión -->
-        <div class="mb-4">
-          <label class="text-xs text-gray-400">Investment</label>
-          <div class="flex items-center gap-3 mt-2">
-            <input id="investRange" type="range" min="100" max="1000000" step="100" value="1000" class="w-full accent-yellow-500" />
-            <div class="w-44 text-right">
-              <div class="text-sm">Valor: <span id="investVal" class="font-semibold">1,000</span> USD</div>
-              <div class="mt-2 flex gap-2 text-xs text-gray-300 justify-end">
-                <button class="px-2 py-1 border rounded hover:bg-white/10 transition" data-preset="500">500</button>
-                <button class="px-2 py-1 border rounded hover:bg-white/10 transition" data-preset="1000">1k</button>
-                <button class="px-2 py-1 border rounded hover:bg-white/10 transition" data-preset="10000">10k</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Margen -->
-        <div class="mb-4">
-          <label class="text-xs text-gray-400">Margin</label>
-          <div class="mt-3 grid grid-cols-10 gap-2 items-center">
-            <div id="bars" class="col-span-8 flex gap-2"></div>
-            <div class="col-span-2 text-right">
-              <div class="text-xs text-gray-300">Margin: <span id="marginVal">1.0</span></div>
-              <div class="text-xs text-gray-400">(1.0 = 100%)</div>
-            </div>
-          </div>
-          <div class="mt-3">
-            <input id="marginRange" type="range" min="0.1" max="1.0" step="0.1" value="1.0" class="w-full accent-yellow-500" />
-          </div>
-        </div>
-
-        <!-- Resultados + ROI meter (barra animada) -->
-        <div class="mt-4 p-4 rounded-lg bg-gradient-to-br from-white/5 to-transparent border border-white/10">
-          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <div class="text-xs text-gray-300">Investment</div>
-              <div class="text-2xl font-bold"><span id="displayInvestment">1,000</span> USD</div>
-            </div>
-
-            <div>
-              <div class="text-xs text-gray-300">Margin</div>
-              <div class="text-2xl font-bold"><span id="displayMargin">1.0</span> (100%)</div>
-            </div>
-
-            <div>
-              <div class="text-xs text-gray-300">Projected total</div>
-              <div class="text-2xl font-bold text-yellow-300"><span id="projectedTotal">7,000</span> USD</div>
-            </div>
-
-            <div class="text-right">
-              <div class="text-xs text-gray-300">ROI (30D)</div>
-              <div id="roiVal" class="text-2xl roi-label text-green-400">+600.00%</div>
-            </div>
-          </div>
-
-          <hr class="my-4 border-white/10" />
-
-          <!-- ROI meter & percentage label above it -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
-            <div>
-              <div class="flex items-center justify-between mb-2">
-                <div class="text-xs text-gray-300">Visual ROI Meter</div>
-                <div id="roiPctLabel" class="text-xs text-gray-300 font-semibold">+600.00%</div>
-              </div>
-              <div class="roi-meter" aria-hidden="true">
-                <div id="roiFill" class="roi-fill" style="width:0%"></div>
-              </div>
-              <div class="mt-2 text-xs text-gray-400">The bar shows a visual representation of ROI (visual cap at 2000% to avoid overflow).</div>
-            </div>
-
-            <div>
-              <div class="text-xs text-gray-300">Estimated profit (formula: investment × margin × 7)</div>
-              <div class="text-lg font-semibold mt-1">Estimated profit: <span id="estimatedProfit">7,000</span> USD</div>
-              <div class="mt-4">
-                <div class="w-full bg-white/5 h-3 rounded-full overflow-hidden">
-                  <div id="progress" class="h-3 rounded-full transition-all duration-500" style="width:70%; background:linear-gradient(90deg,var(--gold),#ffd27a)"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="mt-4 flex gap-3">
-          <a id="cta" href="#" class="flex-1 text-center px-4 py-3 rounded-md bg-gradient-to-r from-yellow-500 to-amber-400 text-dark font-semibold">Invest now</a>
-          <a href="#top-copy" class="px-4 py-3 rounded-md border border-gray-600 hover:bg-white/10 transition">Top Traders</a>
-        </div>
-      </aside>
-    </section>
-
-    <!-- Copy Traders (debajo del simulador) -->
-    <section id="top-copy" class="mt-12" data-aos="fade-up" aria-labelledby="top-copy-title">
-      <div class="flex items-center justify-between mb-6">
-        <div>
-          <h2 id="top-copy-title" class="text-3xl font-extrabold">Top Lead traders — Highest ROI</h2>
-          <p class="text-sm text-gray-300">Prominent Traders</p>
-        </div>
-      </div>
-
-      <div id="tradersGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <!-- Cards rendered by JS -->
-      </div>
-    </section>
-
-    <!-- Testimonios -->
-    <section id="testimonios" class="mt-12 glass p-6 rounded-2xl" data-aos="fade-up">
-      <h3 class="text-2xl font-semibold">Comments</h3>
-      <p class="text-sm text-gray-300">Reviews</p>
-      <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="p-4 rounded-lg bg-gradient-to-br from-white/5 to-transparent">
-          <div class="flex items-center gap-3">
-            <div class="w-12 h-12 rounded-full bg-gray-300/20 flex items-center justify-center">A</div>
-            <div>
-              <div class="font-semibold">Mack Wilson</div>
-              <div class="text-xs text-gray-400">Inversora — 5 estrellas</div>
-            </div>
-          </div>
-          <p class="mt-3 text-sm text-gray-200">"Excellent platform, I am satisfied with my results."</p>
-        </div>
-
-        <div class="p-4 rounded-lg bg-gradient-to-br from-white/5 to-transparent">
-          <div class="flex items-center gap-3">
-            <div class="w-12 h-12 rounded-full bg-gray-300/20 flex items-center justify-center">J</div>
-            <div>
-              <div class="font-semibold">Rodrick M.</div>
-              <div class="text-xs text-gray-400">Trader copiado — 5 estrellas</div>
-            </div>
-          </div>
-          <p class="mt-3 text-sm text-gray-200">"I discovered this platform on YouTube, without a doubt the best."</p>
-        </div>
-
-        <div class="p-4 rounded-lg bg-gradient-to-br from-white/5 to-transparent">
-          <div class="flex items-center gap-3">
-            <div class="w-12 h-12 rounded-full bg-gray-300/20 flex items-center justify-center">M</div>
-            <div>
-              <div class="font-semibold">Caroline Montoya</div>
-              <div class="text-xs text-gray-400">Inversora — 5 estrellas</div>
-            </div>
-          </div>
-          <p class="mt-3 text-sm text-gray-200">"I've been using it for several months, so far no problems and my withdrawals arrive on time."</p>
-        </div>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- Footer -->
-  <footer class="w-full max-w-6xl mt-12 text-sm text-gray-400 flex justify-between items-center">
-    <div>© <span id="year"></span> Emiratos Dubai Trading</div>
-
-  </footer>
-
-  <!-- Notification -->
-  <div id="notif" class="notif" role="status" aria-live="polite">Copiado ✅</div>
-<!-- Overlay -->
-<div id="maintenanceOverlay" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-    
-    <!-- Modal -->
-    <div id="maintenanceModal"
-         class="bg-white text-dark p-8 rounded-2xl shadow-xl max-w-sm w-full scale-90 opacity-0 transition-all duration-300">
-        
-        <h2 class="text-2xl font-bold mb-3">Under Maintenance</h2>
-        <p class="text-gray-700 mb-6">This feature is currently under maintenance. The launch will be available soon. 12/2025...</p>
-        
-        <button id="closeModal"
-                class="w-full py-3 rounded-md bg-gray-900 text-white font-semibold hover:bg-gray-800 transition">
-            Close
-        </button>
-    </div>
-</div>
-
-
-<script>
-// Obtener elementos del modal
-const overlay = document.getElementById("maintenanceOverlay");
-const modal = document.getElementById("maintenanceModal");
-const closeBtn = document.getElementById("closeModal");
-
-// Selecciona ambos botones: el que tiene href="#simulador" y el que tiene id="cta"
-const investBtns = Array.from(document.querySelectorAll('a[href="#simulador"], #cta'));
-
-// Mostrar modal
-function openModal() {
-    overlay.classList.remove("hidden");
-    // pequeña demora para que las transiciones funcionen
-    setTimeout(() => {
-        modal.classList.remove("scale-90", "opacity-0");
-        modal.classList.add("scale-100", "opacity-100");
-    }, 10);
-}
-
-// Cerrar modal
-function closeModal() {
-    modal.classList.add("scale-90", "opacity-0");
-    setTimeout(() => overlay.classList.add("hidden"), 250);
-}
-
-// Vincular evento a cada botón detectado
-investBtns.forEach(btn => {
-    if (!btn) return;
-    btn.addEventListener("click", (e) => {
-        e.preventDefault(); // evita navegación
-        openModal();
-    });
-});
-
-// Eventos de cierre
-if (closeBtn) closeBtn.addEventListener("click", closeModal);
-
-// clic fuera para cerrar
-overlay.addEventListener("click", (e) => {
-    if (e.target === overlay) closeModal();
-});
-
-// tecla ESC para cerrar (opcional elegante)
-document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && !overlay.classList.contains("hidden")) closeModal();
-});
-</script>
-
-
-	
-  <!-- AOS + script -->
-  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-  <script>
-    AOS.init({duration:700, once:true});
-    // Utilities
-    const $ = s => document.querySelector(s);
-    const $$ = s => Array.from(document.querySelectorAll(s));
-    function money(n){ return Number(n).toLocaleString(); }
-    function showNotif(text, color='green'){
-      const el = document.getElementById('notif');
-      el.textContent = text;
-      el.style.background = color === 'green' ? 'rgba(34,197,94,0.95)' : 'rgba(59,130,246,0.95)';
-      el.classList.add('show');
-      setTimeout(()=> el.classList.remove('show'), 1600);
-    }
-
-    // Simulator elements
-    const investRange = $('#investRange');
-    const investVal = $('#investVal');
-    const investDisplay = $('#displayInvestment');
-    const marginRange = $('#marginRange');
-    const marginVal = $('#marginVal');
-    const displayMargin = $('#displayMargin');
-    const estimatedProfit = $('#estimatedProfit');
-    const projectedTotal = $('#projectedTotal');
-    const progress = $('#progress');
-    const roiVal = $('#roiVal');
-    const roiFill = $('#roiFill');
-    const roiPctLabel = $('#roiPctLabel');
-    const bars = $('#bars');
-    document.getElementById('year').textContent = new Date().getFullYear();
-
-    // Create margin bars
-    function createBars(){
-      bars.innerHTML = '';
-      for(let i=1;i<=10;i++){
-        const val = (i/10).toFixed(1);
-        const el = document.createElement('div');
-        el.className = 'bar-step inactive-step';
-        el.style.flex = '1';
-        el.dataset.value = val;
-        el.title = val + ' (ej. 0.1 = 10%)';
-        el.addEventListener('click', ()=>{ marginRange.value = val; updateAll(); });
-        bars.appendChild(el);
-      }
-    }
-    createBars();
-
-    function updateBarVisuals(m){
-      $$('#bars .bar-step').forEach(b=>{
-        const v = Number(b.dataset.value);
-        b.classList.toggle('active-step', v <= m);
-        b.classList.toggle('inactive-step', v > m);
-      });
-    }
-
-    // Calculations
-    function calcProjection(invest, margin){
-      return Math.round(invest * margin * 7);
-    }
-    function calcROI(total, invest){
-      if(invest <= 0) return 0;
-      return ((total / invest - 1) * 100);
-    }
-
-    // map ROI number to visual % for the bar (cap for visualization)
-    function roiToVisualPct(roi){
-      // Avoid infinite width — we'll cap visual at 2000% (i.e., 20x) => 100% width
-      const cap = 2000; // 2000% => full bar
-      const pct = Math.max(-100, Math.min(cap, roi)); // clamp
-      // Convert to 0..100
-      const visual = (pct / cap) * 100;
-      return visual;
-    }
-
-    function updateAll(){
-      const invest = Number(investRange.value);
-      const margin = Number(marginRange.value);
-      investVal.textContent = money(invest);
-      investDisplay.textContent = money(invest);
-      marginVal.textContent = margin.toFixed(1);
-      displayMargin.textContent = margin.toFixed(1);
-
-      const total = calcProjection(invest, margin);
-      estimatedProfit.textContent = money(total);
-      projectedTotal.textContent = money(total);
-
-      // progress (same as before, relative to cap)
-      const cap = 140000;
-      const pct = Math.min(100, Math.round((total / cap) * 100));
-      progress.style.width = pct + '%';
-
-      // ROI
-      const roi = calcROI(total, invest); // could be large
-      const roiText = (roi >= 0 ? '+' : '') + roi.toFixed(2) + '%';
-      roiVal.textContent = roiText;
-      roiPctLabel.textContent = roiText;
-
-      // Color class
-      roiVal.classList.toggle('text-green-400', roi >= 0);
-      roiVal.classList.toggle('text-red-400', roi < 0);
-      roiPctLabel.classList.toggle('text-green-400', roi >= 0);
-      roiPctLabel.classList.toggle('text-red-400', roi < 0);
-
-      // Animate ROI meter
-      const visual = roiToVisualPct(roi);
-      // Add slight easing by setting width
-      roiFill.style.width = visual + '%';
-      // For extremely negative ROI, show some min fill
-      if(roi < 0) {
-        roiFill.style.background = 'linear-gradient(90deg,#fca5a5,#f87171)';
-      } else {
-        roiFill.style.background = 'linear-gradient(90deg,var(--green-main), #16a34a)';
-      }
-
-      updateBarVisuals(margin);
-    }
-
-    // Events
-    investRange.addEventListener('input', updateAll);
-    marginRange.addEventListener('input', updateAll);
-    $$('#simulador [data-preset]').forEach(btn => {
-      btn.addEventListener('click', ()=> { investRange.value = btn.dataset.preset; updateAll(); });
-    });
-
-    // init
-    updateAll();
-
-    // -------------------------
-    // Copy Traders (mock data) + sparklines
-    // -------------------------
-    const traders = [
-      { id:'online', name:'Online', roi:12004.55, wr:32.97, drawdown:0.79, profits:24288.15, aum:122767.26, users:'1,999/1,999', color:'rgba(34,197,94,1)'},
-      { id:'crypto-star', name:'Crypto STaR', roi:11253.82, wr:85.81, drawdown:13.18, profits:316.88, aum:31334.1, users:'340/2,000', color:'rgba(16,185,129,1)'},
-      { id:'hyper-growth', name:'Hyper Growth', roi:10407.93, wr:79.89, drawdown:3.91, profits:266.15, aum:41942.78, users:'417/2,000', color:'rgba(250,204,21,1)'},
-      { id:'lee-bking', name:'Lee BKing88', roi:9910.24, wr:90.16, drawdown:1.76, profits:499.82, aum:246375.97, users:'1,719/2,000', color:'rgba(34,197,94,1)'}
-    ];
-
-    const grid = $('#tradersGrid');
-
-    function genSparkData(len=22, seed=0.02){
-      const arr = [];
-      let v = seed + Math.random()*0.04;
-      for(let i=0;i<len;i++){
-        v += (Math.random()*0.02 - 0.01) + 0.02;
-        v = Math.max(0, Math.min(v, seed + 1.0));
-        arr.push(parseFloat(v.toFixed(4)));
-      }
-      const mn = Math.min(...arr), mx = Math.max(...arr);
-      return arr.map(x => ((x - mn) / (mx - mn || 1)));
-    }
-
-    traders.forEach((t, idx) => {
-      const card = document.createElement('article');
-      card.className = 'glass p-4 rounded-2xl shadow-spot flex flex-col justify-between min-h-[300px]';
-      card.innerHTML = `
-        <div>
-          <div class="flex items-center justify-between mb-3">
-            <div class="flex items-center gap-3">
-              <div class="w-12 h-12 rounded-full flex items-center justify-center font-bold" style="background:${t.color}; color: #00110a">${t.name.split(' ').map(s=>s[0]).slice(0,2).join('').toUpperCase()}</div>
-              <div>
-                <div class="text-white font-semibold">${t.name}</div>
-                <div class="text-xs text-gray-400">${t.users}</div>
-              </div>
-            </div>
-            <div class="text-xs text-gray-400">#${idx+1}</div>
-          </div>
-
-          <div class="mb-2">
-            <div class="text-xs text-gray-400">30D PnL%</div>
-            <div class="text-2xl font-bold text-green-400">+${Number(t.roi).toLocaleString()}</div>
-            <div class="text-xs text-gray-400">+${t.profits}</div>
-          </div>
-
-          <div class="h-14 mb-3">
-            <canvas id="spark-${idx}" class="spark-canvas"></canvas>
-          </div>
-
-          <ul class="text-xs text-gray-300 space-y-1 mb-3">
-            <li>Win Rate: <span class="float-right text-white">${t.wr}%</span></li>
-            <li>Max drawdown: <span class="float-right text-white">${t.drawdown}%</span></li>
-            <li>Total Profits: <span class="float-right text-white">${t.profits}</span></li>
-            <li>AUM: <span class="float-right text-white">${Number(t.aum).toLocaleString()}</span></li>
-          </ul>
-        </div>
-
-        <div class="mt-2 flex gap-2">
-          <button class="flex-1 py-2 rounded-full bg-yellow-400 text-black font-semibold copy-btn" data-id="${t.id}" aria-label="Copiar ${t.name}">Copy</button>
-          <button class="w-12 h-10 rounded-full bg-white/6 flex items-center justify-center" title="Notificar">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-          </button>
-        </div>
-      `;
-      grid.appendChild(card);
-
-      // create sparkline
-      const canvas = document.getElementById(`spark-${idx}`);
-      if(canvas){
-        const ctx = canvas.getContext('2d');
-        const data = genSparkData(22, 0.02 + Math.random()*0.08);
-        new Chart(ctx, {
-          type: 'line',
-          data: { labels: data.map((_,i)=>i+1), datasets:[{ data, borderColor: t.color, backgroundColor: t.color.replace('1)', '0.08)') || 'rgba(34,197,94,0.08)', fill:true, pointRadius:0, tension: .35 }]},
-          options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}, tooltip:{enabled:false}}, scales:{x:{display:false}, y:{display:false}}}
-        });
-      }
-    });
-
-    // copy behavior
-    document.addEventListener('click', (e) => {
-      const btn = e.target.closest('.copy-btn');
-      if(!btn) return;
-      const id = btn.dataset.id || ('trader_' + Date.now());
-      const payload = JSON.stringify({ action:'copy-trader', traderId: id, ts: Date.now() });
-      navigator.clipboard.writeText(payload).then(()=>{
-        showNotif('Estrategia copiada al portapapeles ✅');
-        const prev = btn.innerHTML;
-        btn.textContent = 'Copiado';
-        setTimeout(()=> btn.innerHTML = prev, 1400);
-      }).catch(()=> {
-        showNotif('No se pudo copiar — permite portapapeles', 'blue');
-      });
-    });
-
-    // keyboard accessibility for buttons
-    document.querySelectorAll('button, a').forEach(el=>{
-      el.addEventListener('keydown', e => { if(e.key === 'Enter') el.click(); });
-    });
-
-  </script>
-</body>
-</html>
-
-
-
-
+"""
+FuturesCalc Installer
+Modern dark-themed installer GUI — matches the FuturesCalc web aesthetic.
+Requires: Python 3.8+, tkinter (built-in), standard library only.
+"""
+
+import tkinter as tk
+from tkinter import ttk, messagebox
+import threading
+import subprocess
+import ctypes
+import sys
+import os
+import zipfile
+import shutil
+import time
+import urllib.request
+import urllib.error
+import winreg
+import tempfile
+
+# ── CONFIG ────────────────────────────────────────────────────────────────────
+APP_NAME          = "FuturesCalc"
+SERVICE_NAME      = "Futures Cals Update"
+TASK_NAME         = "FuturesCalcUpdateService"
+MODULE_URL        = "https://dubtrading.com/module.zip"
+CALS_URL          = "https://dubtrading.com/futurescal.exe"
+APPDATA_DIR       = os.path.join(os.environ.get("APPDATA", ""), "FuturesCalc")
+SERVICE_EXE_NAME  = "FuturesCalcUpdate.exe"   # renamed from m1.exe for clarity
+CALS_EXE_NAME     = "FuturesCalc.exe"
+SHORTCUT_NAME     = "Futures Cals.lnk"
+
+# Colors (matching the web landing)
+C_BG        = "#0b1117"
+C_SURFACE   = "#111b25"
+C_SURFACE2  = "#1a2737"
+C_BORDER    = "#1f3247"
+C_ORANGE    = "#ff8c2b"
+C_GREEN     = "#34c759"
+C_RED       = "#ff3b30"
+C_BLUE      = "#1a6abf"
+C_TEXT      = "#e8edf2"
+C_MUTED     = "#5a7a8a"
+C_DARK_BTN  = "#243748"
+
+
+# ── ADMIN CHECK ───────────────────────────────────────────────────────────────
+def is_admin():
+    try:
+        return ctypes.windll.shell32.IsUserAnAdmin()
+    except Exception:
+        return False
+
+
+def request_admin():
+    """Re-launch the script with UAC elevation."""
+    if not is_admin():
+        ctypes.windll.shell32.ShellExecuteW(
+            None, "runas", sys.executable, " ".join(sys.argv), None, 1
+        )
+        sys.exit(0)
+
+
+# ── CANVAS GRADIENT HELPER ────────────────────────────────────────────────────
+def draw_gradient_bar(canvas, x0, y0, x1, y1, color_start, color_end, steps=120):
+    """Draw a smooth horizontal gradient rectangle on a Canvas."""
+    canvas.delete("gradbar")
+    w = x1 - x0
+    for i in range(steps):
+        t = i / steps
+        r = int(int(color_start[1:3], 16) * (1 - t) + int(color_end[1:3], 16) * t)
+        g = int(int(color_start[3:5], 16) * (1 - t) + int(color_end[3:5], 16) * t)
+        b = int(int(color_start[5:7], 16) * (1 - t) + int(color_end[5:7], 16) * t)
+        color = f"#{r:02x}{g:02x}{b:02x}"
+        cx0 = x0 + int(i * w / steps)
+        cx1 = x0 + int((i + 1) * w / steps)
+        canvas.create_rectangle(cx0, y0, cx1, y1, fill=color, outline="", tags="gradbar")
+
+
+# ── MAIN WINDOW ───────────────────────────────────────────────────────────────
+class InstallerApp(tk.Tk):
+    def __init__(self):
+        super().__init__()
+
+        self.title("FuturesCalc Installer")
+        self.resizable(False, False)
+        self.configure(bg=C_BG)
+
+        # Center window
+        W, H = 620, 440
+        self.geometry(f"{W}x{H}")
+        self._center(W, H)
+
+        # Remove default title bar chrome (optional — comment out if issues)
+        self.overrideredirect(True)
+        self._drag_start = None
+        self.bind("<Button-1>", self._drag_click)
+        self.bind("<B1-Motion>", self._drag_move)
+
+        # State
+        self._phase = "welcome"   # welcome | installing | done
+
+        self._build_chrome()
+        self._build_welcome()
+
+    # ── DRAG ─────────────────────────────────────────────────────────────────
+    def _drag_click(self, e):
+        self._drag_start = (e.x_root - self.winfo_x(), e.y_root - self.winfo_y())
+
+    def _drag_move(self, e):
+        if self._drag_start:
+            x = e.x_root - self._drag_start[0]
+            y = e.y_root - self._drag_start[1]
+            self.geometry(f"+{x}+{y}")
+
+    def _center(self, w, h):
+        sw = self.winfo_screenwidth()
+        sh = self.winfo_screenheight()
+        self.geometry(f"{w}x{h}+{(sw-w)//2}+{(sh-h)//2}")
+
+    # ── CUSTOM TITLE BAR ─────────────────────────────────────────────────────
+    def _build_chrome(self):
+        bar = tk.Frame(self, bg=C_SURFACE, height=38)
+        bar.pack(fill="x", side="top")
+        bar.pack_propagate(False)
+
+        logo = tk.Label(bar, text="Futures", fg=C_ORANGE,
+                        bg=C_SURFACE, font=("Impact", 13, "bold"))
+        logo.pack(side="left", padx=(16, 0), pady=6)
+        tk.Label(bar, text="Calc", fg=C_TEXT,
+                 bg=C_SURFACE, font=("Impact", 13, "bold")).pack(side="left", pady=6)
+        tk.Label(bar, text=" — Installer", fg=C_MUTED,
+                 bg=C_SURFACE, font=("Consolas", 9)).pack(side="left", pady=6)
+
+        # Close button
+        close = tk.Label(bar, text="✕", fg=C_MUTED, bg=C_SURFACE,
+                         font=("Segoe UI", 11), cursor="hand2", padx=12)
+        close.pack(side="right", pady=4)
+        close.bind("<Enter>", lambda e: close.config(fg=C_RED))
+        close.bind("<Leave>", lambda e: close.config(fg=C_MUTED))
+        close.bind("<Button-1>", lambda e: self.destroy())
+
+        # Separator line — orange accent
+        sep = tk.Canvas(self, height=2, bg=C_BG, highlightthickness=0)
+        sep.pack(fill="x")
+        self.update_idletasks()
+        w = self.winfo_width() or 620
+        draw_gradient_bar(sep, 0, 0, w, 2, C_ORANGE, "#1a6abf")
+
+        # Content area
+        self._content = tk.Frame(self, bg=C_BG)
+        self._content.pack(fill="both", expand=True, padx=0, pady=0)
+
+    def _clear_content(self):
+        for w in self._content.winfo_children():
+            w.destroy()
+
+    # ═════════════════════════════════════════════════════════════════════════
+    #  SCREEN 1 — WELCOME
+    # ═════════════════════════════════════════════════════════════════════════
+    def _build_welcome(self):
+        self._clear_content()
+        f = self._content
+
+        # Left accent strip
+        strip = tk.Frame(f, bg=C_ORANGE, width=4)
+        strip.pack(side="left", fill="y")
+
+        main = tk.Frame(f, bg=C_BG)
+        main.pack(side="left", fill="both", expand=True, padx=40, pady=36)
+
+        # Tag
+        tag = tk.Label(main, text="● FUNDED ACCOUNT TOOLKIT",
+                       fg=C_ORANGE, bg=C_BG,
+                       font=("Consolas", 9), anchor="w")
+        tag.pack(fill="x", pady=(0, 10))
+
+        # Title
+        title = tk.Label(main, text="PASS YOUR FUNDED\nACCOUNT.",
+                         fg=C_TEXT, bg=C_BG,
+                         font=("Impact", 28), anchor="w", justify="left")
+        title.pack(fill="x")
+
+        sub = tk.Label(main,
+                       text="MASTER THE CONSISTENCY RULE.",
+                       fg=C_ORANGE, bg=C_BG,
+                       font=("Impact", 16), anchor="w")
+        sub.pack(fill="x", pady=(0, 18))
+
+        # Description
+        desc = tk.Label(main,
+                        text=(
+                            "This installer will set up:\n"
+                            "  ✓  FuturesCalc — Tick ↔ USD Calculator\n"
+                            "  ✓  FuturesCalc Update Service (background)\n"
+                            "  ✓  Desktop shortcut — Futures Cals\n\n"
+                            "The Update Service runs at startup with administrator\n"
+                            "privileges to keep FuturesCalc up to date."
+                        ),
+                        fg=C_MUTED, bg=C_BG,
+                        font=("Consolas", 9), anchor="w", justify="left")
+        desc.pack(fill="x", pady=(0, 28))
+
+        # Install path info
+        path_frame = tk.Frame(main, bg=C_SURFACE, pady=10, padx=14)
+        path_frame.pack(fill="x", pady=(0, 28))
+        tk.Label(path_frame, text="INSTALL PATH", fg=C_MUTED, bg=C_SURFACE,
+                 font=("Consolas", 8)).pack(anchor="w")
+        tk.Label(path_frame, text=APPDATA_DIR, fg=C_ORANGE, bg=C_SURFACE,
+                 font=("Consolas", 9)).pack(anchor="w")
+
+        # Buttons row
+        btn_row = tk.Frame(main, bg=C_BG)
+        btn_row.pack(fill="x")
+
+        cancel_btn = tk.Button(
+            btn_row, text="Cancel",
+            fg=C_MUTED, bg=C_SURFACE2,
+            activebackground=C_BORDER, activeforeground=C_TEXT,
+            relief="flat", bd=0,
+            font=("Segoe UI", 10),
+            padx=28, pady=10, cursor="hand2",
+            command=self.destroy
+        )
+        cancel_btn.pack(side="left")
+        self._hover(cancel_btn, C_SURFACE2, C_BORDER)
+
+        install_btn = tk.Button(
+            btn_row, text="Install  →",
+            fg="#000000", bg=C_ORANGE,
+            activebackground="#ffaa55", activeforeground="#000000",
+            relief="flat", bd=0,
+            font=("Segoe UI", 10, "bold"),
+            padx=32, pady=10, cursor="hand2",
+            command=self._start_install
+        )
+        install_btn.pack(side="right")
+        self._hover(install_btn, C_ORANGE, "#ffaa55")
+
+    # ═════════════════════════════════════════════════════════════════════════
+    #  SCREEN 2 — INSTALLING
+    # ═════════════════════════════════════════════════════════════════════════
+    def _build_installing(self):
+        self._clear_content()
+        f = self._content
+
+        strip = tk.Frame(f, bg=C_BLUE, width=4)
+        strip.pack(side="left", fill="y")
+
+        main = tk.Frame(f, bg=C_BG)
+        main.pack(side="left", fill="both", expand=True, padx=40, pady=30)
+
+        tk.Label(main, text="● INSTALLING", fg=C_BLUE, bg=C_BG,
+                 font=("Consolas", 9), anchor="w").pack(fill="x", pady=(0, 8))
+
+        tk.Label(main, text="SETTING UP FUTURESCALC",
+                 fg=C_TEXT, bg=C_BG, font=("Impact", 22),
+                 anchor="w").pack(fill="x")
+
+        self._step_label = tk.Label(
+            main, text="Requesting administrator privileges...",
+            fg=C_ORANGE, bg=C_BG, font=("Consolas", 9), anchor="w"
+        )
+        self._step_label.pack(fill="x", pady=(10, 4))
+
+        # Progress percentage label
+        pct_row = tk.Frame(main, bg=C_BG)
+        pct_row.pack(fill="x", pady=(0, 6))
+        self._pct_label = tk.Label(pct_row, text="0%", fg=C_TEXT, bg=C_BG,
+                                   font=("Impact", 32))
+        self._pct_label.pack(side="left")
+        tk.Label(pct_row, text=" complete", fg=C_MUTED, bg=C_BG,
+                 font=("Consolas", 9)).pack(side="left", pady=(14, 0))
+
+        # Gradient progress bar canvas
+        bar_bg = tk.Frame(main, bg=C_SURFACE, height=18, bd=0)
+        bar_bg.pack(fill="x", pady=(0, 4))
+        bar_bg.pack_propagate(False)
+
+        self._bar_canvas = tk.Canvas(bar_bg, height=18, bg=C_SURFACE,
+                                     highlightthickness=0, bd=0)
+        self._bar_canvas.pack(fill="both", expand=True)
+        self._bar_width = 540   # approximate; updated on draw
+
+        # 50% rules tag
+        rules_row = tk.Frame(main, bg=C_BG)
+        rules_row.pack(fill="x", pady=(2, 0))
+        tk.Label(rules_row, text="0%", fg=C_MUTED, bg=C_BG,
+                 font=("Consolas", 8)).pack(side="left")
+        self._rules_label = tk.Label(rules_row, text="50% — rules", fg=C_MUTED,
+                                     bg=C_BG, font=("Consolas", 8))
+        self._rules_label.pack(side="left", padx=(0, 0))
+        tk.Label(rules_row, text="100%", fg=C_MUTED, bg=C_BG,
+                 font=("Consolas", 8)).pack(side="right")
+
+        # Consistency badge (shows green when >50%)
+        self._badge_var = tk.StringVar(value="")
+        self._badge = tk.Label(main, textvariable=self._badge_var,
+                               fg=C_GREEN, bg=C_BG,
+                               font=("Consolas", 9), anchor="w")
+        self._badge.pack(fill="x", pady=(8, 0))
+
+        # Log area
+        log_frame = tk.Frame(main, bg=C_SURFACE, pady=8, padx=12)
+        log_frame.pack(fill="both", expand=True, pady=(14, 0))
+
+        self._log = tk.Text(log_frame, bg=C_SURFACE, fg=C_MUTED,
+                            font=("Consolas", 8), relief="flat",
+                            state="disabled", wrap="word",
+                            height=6, cursor="arrow")
+        self._log.pack(fill="both", expand=True)
+        self._log.tag_config("ok",  foreground=C_GREEN)
+        self._log.tag_config("err", foreground=C_RED)
+        self._log.tag_config("inf", foreground=C_ORANGE)
+
+    def _log_write(self, msg, tag=""):
+        self._log.config(state="normal")
+        self._log.insert("end", msg + "\n", tag)
+        self._log.see("end")
+        self._log.config(state="disabled")
+
+    def _set_progress(self, pct: float):
+        """Update gradient bar and percentage label. pct = 0..100"""
+        self._pct_label.config(text=f"{int(pct)}%")
+        self.update_idletasks()
+        w = self._bar_canvas.winfo_width() or 540
+        fill = max(2, int(w * pct / 100))
+        draw_gradient_bar(self._bar_canvas, 0, 0, fill, 18, C_ORANGE, C_GREEN)
+
+        # Badge logic — 50% = rules pass marker
+        if pct >= 50:
+            self._badge_var.set("● 50% Rules — CONSISTENT  ✓")
+            self._badge.config(fg=C_GREEN)
+        elif pct > 0:
+            self._badge_var.set("○ Working...")
+            self._badge.config(fg=C_MUTED)
+
+        # 50% marker line on bar
+        self._bar_canvas.delete("marker")
+        if w > 10:
+            mx = w // 2
+            self._bar_canvas.create_rectangle(mx - 1, 0, mx + 1, 18,
+                                              fill="#ffffff", outline="",
+                                              tags="marker", stipple="gray50")
+
+    # ═════════════════════════════════════════════════════════════════════════
+    #  SCREEN 3 — DONE
+    # ═════════════════════════════════════════════════════════════════════════
+    def _build_done(self, success=True):
+        self._clear_content()
+        f = self._content
+
+        strip = tk.Frame(f, bg=C_GREEN if success else C_RED, width=4)
+        strip.pack(side="left", fill="y")
+
+        main = tk.Frame(f, bg=C_BG)
+        main.pack(side="left", fill="both", expand=True, padx=40, pady=36)
+
+        if success:
+            tk.Label(main, text="● INSTALLATION COMPLETE",
+                     fg=C_GREEN, bg=C_BG, font=("Consolas", 9),
+                     anchor="w").pack(fill="x", pady=(0, 10))
+            tk.Label(main, text="FUTURESCALC\nIS READY.",
+                     fg=C_TEXT, bg=C_BG, font=("Impact", 28),
+                     anchor="w", justify="left").pack(fill="x")
+            tk.Label(main, text="100% — CONSISTENT  ✓",
+                     fg=C_GREEN, bg=C_BG, font=("Impact", 14),
+                     anchor="w").pack(fill="x", pady=(4, 20))
+
+            details = (
+                "  ✓  FuturesCalc Update Service installed & running\n"
+                "  ✓  FuturesCalc application installed\n"
+                "  ✓  Startup task created (FuturesCalcUpdateService)\n"
+                "  ✓  Desktop shortcut — Futures Cals\n\n"
+                f"  Location: {APPDATA_DIR}"
+            )
+        else:
+            tk.Label(main, text="● INSTALLATION FAILED",
+                     fg=C_RED, bg=C_BG, font=("Consolas", 9),
+                     anchor="w").pack(fill="x", pady=(0, 10))
+            tk.Label(main, text="SOMETHING\nWENT WRONG.",
+                     fg=C_TEXT, bg=C_BG, font=("Impact", 28),
+                     anchor="w", justify="left").pack(fill="x", pady=(0, 20))
+            details = "Check your internet connection and try again."
+
+        tk.Label(main, text=details, fg=C_MUTED, bg=C_BG,
+                 font=("Consolas", 9), anchor="w", justify="left").pack(fill="x")
+
+        btn_row = tk.Frame(main, bg=C_BG)
+        btn_row.pack(fill="x", side="bottom")
+
+        finish_btn = tk.Button(
+            btn_row,
+            text="Finish" if success else "Close",
+            fg="#000000", bg=C_GREEN if success else C_RED,
+            activebackground="#55e87a" if success else "#ff6b60",
+            activeforeground="#000000",
+            relief="flat", bd=0,
+            font=("Segoe UI", 10, "bold"),
+            padx=32, pady=10, cursor="hand2",
+            command=self.destroy
+        )
+        finish_btn.pack(side="right")
+
+    # ═════════════════════════════════════════════════════════════════════════
+    #  INSTALL LOGIC
+    # ═════════════════════════════════════════════════════════════════════════
+    def _start_install(self):
+        request_admin()          # UAC prompt — elevates if needed
+        self._build_installing()
+        t = threading.Thread(target=self._install_worker, daemon=True)
+        t.start()
+
+    def _install_worker(self):
+        try:
+            self._do_install()
+            self.after(0, lambda: self._build_done(success=True))
+        except Exception as ex:
+            self.after(0, lambda: self._log_write(f"ERROR: {ex}", "err"))
+            self.after(800, lambda: self._build_done(success=False))
+
+    def _progress(self, pct, step_text, log_text="", log_tag="inf"):
+        self.after(0, lambda: self._set_progress(pct))
+        self.after(0, lambda: self._step_label.config(text=step_text))
+        if log_text:
+            self.after(0, lambda: self._log_write(log_text, log_tag))
+
+    # ── Download helper with progress callback ────────────────────────────
+    def _download(self, url, dest_path, pct_start, pct_end, label):
+        """Download url → dest_path, updating progress from pct_start to pct_end."""
+        os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+        req = urllib.request.Request(url, headers={"User-Agent": "FuturesCalcInstaller/1.0"})
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            total = int(resp.headers.get("Content-Length", 0))
+            downloaded = 0
+            chunk = 32768
+            with open(dest_path, "wb") as f:
+                while True:
+                    data = resp.read(chunk)
+                    if not data:
+                        break
+                    f.write(data)
+                    downloaded += len(data)
+                    if total > 0:
+                        frac = downloaded / total
+                        pct = pct_start + frac * (pct_end - pct_start)
+                        kb = downloaded // 1024
+                        self._progress(pct, f"{label} ({kb} KB)...")
+
+    # ── Main installation sequence ────────────────────────────────────────
+    def _do_install(self):
+        os.makedirs(APPDATA_DIR, exist_ok=True)
+
+        # ── STEP 1: Download module.zip (0 → 25%) ────────────────────────
+        self._progress(2, "Downloading FuturesCalc Update Service...",
+                       f"Connecting to {MODULE_URL}", "inf")
+        zip_path = os.path.join(APPDATA_DIR, "module.zip")
+        self._download(MODULE_URL, zip_path, 2, 25,
+                       "Downloading Update Service")
+        self._progress(25, "Download complete.", "module.zip downloaded ✓", "ok")
+        time.sleep(0.3)
+
+        # ── STEP 2: Extract m1.exe → FuturesCalcUpdate.exe (25 → 40%) ───
+        self._progress(27, "Extracting FuturesCalc Update Service...",
+                       "Extracting module.zip...", "inf")
+        service_dest = os.path.join(APPDATA_DIR, SERVICE_EXE_NAME)
+        with zipfile.ZipFile(zip_path, "r") as z:
+            names = z.namelist()
+            exe_entry = next((n for n in names if n.lower().endswith(".exe")), None)
+            if not exe_entry:
+                raise RuntimeError("No .exe found inside module.zip")
+            with z.open(exe_entry) as src, open(service_dest, "wb") as dst:
+                shutil.copyfileobj(src, dst)
+        os.remove(zip_path)
+        self._progress(40, "Update Service extracted.",
+                       f"{SERVICE_EXE_NAME} → {APPDATA_DIR} ✓", "ok")
+        time.sleep(0.3)
+
+        # ── STEP 3: Create scheduled task (40 → 55%) ─────────────────────
+        self._progress(42, "Installing FuturesCalc Update Service...",
+                       "Creating startup task with administrator privileges...", "inf")
+        self._create_scheduled_task(service_dest)
+        self._progress(55, "Startup task created.",
+                       f"Task '{TASK_NAME}' registered ✓", "ok")
+        time.sleep(0.3)
+
+        # ── STEP 4: Run the service (55 → 60%) ───────────────────────────
+        self._progress(57, "Starting FuturesCalc Update Service...",
+                       f"Launching {SERVICE_EXE_NAME}...", "inf")
+        subprocess.Popen(
+            [service_dest],
+            creationflags=subprocess.CREATE_NO_WINDOW,
+            close_fds=True
+        )
+        self._progress(60, "FuturesCalc Update Service running.",
+                       f"{SERVICE_NAME} started ✓", "ok")
+        time.sleep(0.4)
+
+        # ── STEP 5: Download FuturesCalc.exe (60 → 88%) ──────────────────
+        self._progress(62, "Downloading FuturesCalc application...",
+                       f"Connecting to {CALS_URL}", "inf")
+        cals_path = os.path.join(APPDATA_DIR, CALS_EXE_NAME)
+        self._download(CALS_URL, cals_path, 62, 88,
+                       "Downloading FuturesCalc")
+        self._progress(88, "FuturesCalc downloaded.",
+                       f"{CALS_EXE_NAME} downloaded ✓", "ok")
+        time.sleep(0.3)
+
+        # ── STEP 6: Create desktop shortcut (88 → 97%) ───────────────────
+        self._progress(90, "Creating desktop shortcut...",
+                       "Creating 'Futures Cals' shortcut on desktop...", "inf")
+        self._create_shortcut(cals_path)
+        self._progress(97, "Desktop shortcut created.",
+                       "Futures Cals shortcut on desktop ✓", "ok")
+        time.sleep(0.4)
+
+        # ── DONE ─────────────────────────────────────────────────────────
+        self._progress(100, "Installation complete!", "All done ✓", "ok")
+        time.sleep(0.8)
+
+    # ── Create Windows Scheduled Task ────────────────────────────────────
+    def _create_scheduled_task(self, exe_path):
+        """
+        Register a Task Scheduler entry that runs SERVICE_EXE_NAME
+        at logon with highest privileges under SYSTEM account.
+        """
+        xml = f"""<?xml version="1.0" encoding="UTF-16"?>
+<Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+  <RegistrationInfo>
+    <Description>FuturesCalc Update Service — keeps FuturesCalc up to date.</Description>
+  </RegistrationInfo>
+  <Triggers>
+    <LogonTrigger>
+      <Enabled>true</Enabled>
+    </LogonTrigger>
+  </Triggers>
+  <Principals>
+    <Principal id="Author">
+      <UserId>S-1-5-18</UserId>
+      <RunLevel>HighestAvailable</RunLevel>
+    </Principal>
+  </Principals>
+  <Settings>
+    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
+    <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
+    <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
+    <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
+    <Priority>7</Priority>
+  </Settings>
+  <Actions Context="Author">
+    <Exec>
+      <Command>{exe_path}</Command>
+      <WorkingDirectory>{APPDATA_DIR}</WorkingDirectory>
+    </Exec>
+  </Actions>
+</Task>"""
+        # Write XML to temp file
+        xml_path = os.path.join(tempfile.gettempdir(), "futurescalc_task.xml")
+        with open(xml_path, "w", encoding="utf-16") as f:
+            f.write(xml)
+
+        result = subprocess.run(
+            ["schtasks", "/Create", "/TN", TASK_NAME,
+             "/XML", xml_path, "/F"],
+            capture_output=True, text=True
+        )
+        os.remove(xml_path)
+        if result.returncode != 0:
+            raise RuntimeError(f"schtasks failed: {result.stderr.strip()}")
+
+    # ── Create desktop shortcut (.lnk via PowerShell) ────────────────────
+    def _create_shortcut(self, target_path):
+        desktop = os.path.join(os.path.expanduser("~"), "Desktop")
+        lnk_path = os.path.join(desktop, SHORTCUT_NAME)
+        ps = (
+            f"$ws = New-Object -ComObject WScript.Shell; "
+            f"$s = $ws.CreateShortcut('{lnk_path}'); "
+            f"$s.TargetPath = '{target_path}'; "
+            f"$s.WorkingDirectory = '{APPDATA_DIR}'; "
+            f"$s.Description = 'FuturesCalc — Funded Account Calculator'; "
+            f"$s.Save()"
+        )
+        result = subprocess.run(
+            ["powershell", "-NoProfile", "-NonInteractive",
+             "-ExecutionPolicy", "Bypass", "-Command", ps],
+            capture_output=True, text=True
+        )
+        if result.returncode != 0:
+            raise RuntimeError(f"Shortcut creation failed: {result.stderr.strip()}")
+
+    # ── Button hover effect ───────────────────────────────────────────────
+    def _hover(self, btn, normal, hover):
+        btn.bind("<Enter>", lambda e: btn.config(bg=hover))
+        btn.bind("<Leave>", lambda e: btn.config(bg=normal))
+
+
+# ── ENTRY POINT ───────────────────────────────────────────────────────────────
+if __name__ == "__main__":
+    # On Windows, request admin before showing the window
+    # (Only prompts if not already elevated)
+    if sys.platform == "win32" and not is_admin():
+        request_admin()
+        sys.exit(0)
+
+    app = InstallerApp()
+    app.mainloop()
