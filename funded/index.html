@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prop Firm Consistency</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap');
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --bg:#0a0f14; --surface:#111820; --surface2:#1a2535; --border:#1e2f42;
+  --orange:#ff8c2b; --orange-dim:rgba(255,140,43,0.10);
+  --green:#00d084;  --green-dim:rgba(0,208,132,0.10);
+  --red:#ff4757;    --red-dim:rgba(255,71,87,0.10);
+  --blue:#3b9eff;   --blue-dim:rgba(59,158,255,0.10);
+  --text:#e8edf2;   --muted:#4a6a7a;
+}
+html,body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; min-height:100vh; overflow-x:hidden; }
+.screen { display:none; flex-direction:column; min-height:100vh; }
+.screen.active { display:flex; }
+
+/* TOP BAR */
+.top-bar { display:flex; align-items:center; gap:10px; padding:14px 16px 12px; border-bottom:1px solid var(--border); position:relative; }
+.top-bar::after { content:''; position:absolute; bottom:-1px; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,var(--orange),transparent); opacity:0.4; }
+.back-btn { background:var(--surface); border:1px solid var(--border); border-radius:8px; width:30px; height:30px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--muted); font-size:16px; transition:all 0.2s; flex-shrink:0; }
+.back-btn:hover { border-color:var(--orange); color:var(--orange); }
+.top-title { font-family:'Bebas Neue',sans-serif; font-size:17px; letter-spacing:2px; color:#fff; }
+.top-sub { font-size:9px; color:var(--muted); letter-spacing:1.5px; text-transform:uppercase; margin-left:auto; }
+
+/* SCREEN 1 - FIRMS */
+.firms-header { padding:20px 16px 8px; }
+.firms-title { font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:2px; color:#fff; line-height:1.1; }
+.firms-sub { font-size:10px; color:var(--muted); margin-top:5px; }
+.firms-grid { padding:12px 16px 24px; display:flex; flex-direction:column; gap:10px; }
+.firm-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; cursor:pointer; overflow:hidden; transition:all 0.25s; position:relative; }
+.firm-card:hover { border-color:var(--orange); transform:translateY(-1px); box-shadow:0 8px 24px rgba(0,0,0,0.4); }
+.firm-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; opacity:0; transition:opacity 0.25s; background:linear-gradient(90deg,transparent,var(--orange),transparent); }
+.firm-card:hover::before { opacity:1; }
+.firm-card.coming { opacity:0.4; cursor:default; pointer-events:none; }
+.firm-inner { display:flex; align-items:center; gap:14px; padding:16px; }
+.firm-logo { width:52px; height:52px; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.firm-info { flex:1; min-width:0; }
+.firm-name { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:2px; color:#fff; line-height:1; }
+.firm-tagline { font-size:10px; color:var(--muted); margin-top:3px; }
+.firm-tags { display:flex; gap:5px; margin-top:8px; flex-wrap:wrap; }
+.firm-tag { font-size:9px; padding:2px 8px; border-radius:20px; border:1px solid; letter-spacing:0.5px; text-transform:uppercase; }
+.tag-orange { color:var(--orange); border-color:rgba(255,140,43,0.3); background:var(--orange-dim); }
+.tag-green  { color:var(--green);  border-color:rgba(0,208,132,0.3);  background:var(--green-dim); }
+.tag-muted  { color:var(--muted);  border-color:var(--border); }
+.firm-arrow { color:var(--muted); font-size:20px; transition:all 0.2s; flex-shrink:0; }
+.firm-card:hover .firm-arrow { color:var(--orange); transform:translateX(3px); }
+.coming-badge { position:absolute; top:10px; right:10px; font-size:8px; background:var(--surface2); border:1px solid var(--border); border-radius:20px; padding:2px 8px; color:var(--muted); letter-spacing:1px; text-transform:uppercase; }
+
+/* SCREEN 2 - CALC */
+.calc-body { padding:14px 16px 24px; flex:1; }
+.section-label { font-size:9px; letter-spacing:2.5px; text-transform:uppercase; color:var(--muted); margin-bottom:8px; margin-top:16px; }
+.section-label:first-of-type { margin-top:0; }
+.options-row { display:flex; gap:7px; flex-wrap:wrap; }
+.opt-btn { flex:1; min-width:62px; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:9px 6px 8px; cursor:pointer; transition:all 0.2s; text-align:center; position:relative; outline:none; }
+.opt-btn:hover:not(.disabled) { border-color:var(--orange); background:var(--surface2); }
+.opt-btn.active { border-color:var(--orange); background:var(--orange-dim); }
+.opt-btn.disabled { opacity:0.3; cursor:not-allowed; pointer-events:none; }
+.opt-btn::before { content:''; position:absolute; top:7px; left:7px; width:6px; height:6px; border-radius:50%; border:1px solid var(--muted); transition:all 0.2s; }
+.opt-btn.active::before { background:var(--orange); border-color:var(--orange); box-shadow:0 0 5px var(--orange); }
+.opt-name { font-family:'Bebas Neue',sans-serif; font-size:15px; letter-spacing:1px; color:#fff; display:block; }
+.opt-meta { font-size:9px; color:var(--muted); margin-top:1px; display:block; }
+.opt-btn.active .opt-meta { color:var(--orange); }
+.opt-rule { font-size:8px; color:var(--green); margin-top:3px; display:block; }
+.no-rule { color:var(--muted) !important; }
+
+/* DAYS ROW */
+.days-row { display:flex; align-items:center; gap:8px; }
+.days-label { font-size:12px; color:var(--text); flex-shrink:0; }
+.days-stepper { display:flex; align-items:center; background:var(--surface); border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+.step-btn { background:none; border:none; color:var(--orange); font-size:18px; width:34px; height:34px; cursor:pointer; transition:background 0.15s; display:flex; align-items:center; justify-content:center; }
+.step-btn:hover { background:var(--orange-dim); }
+.step-val { font-family:'Bebas Neue',sans-serif; font-size:18px; color:#fff; min-width:32px; text-align:center; }
+
+/* GENERATE BUTTON - BLUE */
+.gen-btn {
+  display:flex; align-items:center; gap:5px;
+  background:linear-gradient(135deg,#3b9eff,#1a7de0);
+  border:none; border-radius:10px; padding:0 12px; height:34px;
+  cursor:pointer; color:#fff; font-family:'DM Sans',sans-serif;
+  font-size:11px; font-weight:600;
+  box-shadow:0 2px 10px rgba(59,158,255,0.35);
+  transition:transform 0.15s,box-shadow 0.25s;
+  position:relative; overflow:hidden; flex-shrink:0;
+}
+.gen-btn::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(255,255,255,0.18),transparent); pointer-events:none; }
+.gen-btn:hover { transform:translateY(-1px); box-shadow:0 0 22px rgba(59,158,255,0.6),0 4px 14px rgba(0,0,0,0.3); }
+.gen-btn:active { transform:translateY(0); }
+.gen-btn.spinning { pointer-events:none; }
+.gen-btn.spinning .gen-icon { animation:spin 0.65s linear infinite; }
+.gen-btn.spinning::after { content:''; position:absolute; top:0; left:-100%; width:60%; height:100%; background:linear-gradient(90deg,transparent,rgba(255,255,255,0.3),transparent); animation:shimmer 0.8s ease-in-out infinite; }
+.gen-icon { width:14px; height:14px; flex-shrink:0; }
+@keyframes spin    { to { transform:rotate(360deg); } }
+@keyframes shimmer { to { left:160%; } }
+
+/* DAYS GRID */
+.days-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:7px; margin-top:10px; max-height:260px; overflow-y:auto; padding-right:2px; }
+.days-grid::-webkit-scrollbar { width:3px; }
+.days-grid::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+
+/* DAY INPUT */
+.day-input-wrap { background:var(--surface); border:1px solid var(--border); border-radius:9px; padding:8px 10px; display:flex; align-items:center; gap:6px; transition:border-color 0.2s; }
+.day-input-wrap:focus-within { border-color:var(--orange); }
+.day-input-wrap.best { border-color:var(--orange); background:var(--orange-dim); }
+.day-input-wrap.loss { border-color:rgba(255,71,87,0.4); background:rgba(255,71,87,0.06); }
+.day-input-wrap.projected { border-color:rgba(59,158,255,0.55); background:rgba(59,158,255,0.07); }
+.day-num { font-size:9px; color:var(--muted); min-width:30px; white-space:nowrap; }
+.day-input-wrap.best .day-num { color:var(--orange); }
+.day-input-wrap.loss .day-num { color:var(--red); }
+.day-input-wrap.projected .day-num { color:var(--blue); }
+.day-input-wrap.projected .dollar-sign { color:var(--blue); opacity:0.7; }
+.day-input-wrap.projected .day-inp { color:var(--blue); }
+.day-inp { background:none; border:none; color:#fff; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600; width:100%; outline:none; text-align:right; }
+.day-inp::placeholder { color:var(--border); font-weight:400; }
+.day-inp.negative { color:var(--red); }
+.dollar-sign { color:var(--muted); font-size:11px; flex-shrink:0; }
+
+/* SUGGEST PILLS */
+.suggest-wrap { margin-top:10px; animation:fadeInUp 0.3s ease-out; }
+@keyframes fadeInUp { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
+.suggest-header { display:flex; align-items:center; gap:6px; margin-bottom:7px; }
+.suggest-dot { width:7px; height:7px; border-radius:50%; background:var(--blue); flex-shrink:0; }
+.suggest-title { font-size:9px; color:var(--blue); letter-spacing:1.5px; text-transform:uppercase; }
+.suggest-row { display:flex; gap:6px; flex-wrap:wrap; }
+.suggest-pill { background:rgba(59,158,255,0.08); border:1px solid rgba(59,158,255,0.3); border-radius:9px; padding:7px 11px; cursor:pointer; transition:all 0.2s; flex:1; min-width:80px; }
+.suggest-pill:hover { background:rgba(59,158,255,0.18); transform:translateY(-1px); box-shadow:0 4px 12px rgba(59,158,255,0.2); }
+.suggest-pill:active { transform:translateY(0); }
+.suggest-pill strong { font-family:'Bebas Neue',sans-serif; font-size:14px; color:var(--blue); display:block; letter-spacing:0.5px; }
+.suggest-pill span { font-size:9px; color:var(--muted); display:block; margin-top:1px; }
+
+/* RESULT CARD */
+.result-card { margin-top:14px; background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:14px; overflow:hidden; transition:all 0.4s; }
+.result-card.pass { border-color:rgba(0,208,132,0.35); background:linear-gradient(135deg,var(--green-dim),var(--surface)); }
+.result-card.fail { border-color:rgba(255,71,87,0.35);  background:linear-gradient(135deg,var(--red-dim),var(--surface)); }
+.result-card.warn { border-color:rgba(255,140,43,0.35);  background:linear-gradient(135deg,var(--orange-dim),var(--surface)); }
+.result-top { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:10px; }
+.result-pct { font-family:'Bebas Neue',sans-serif; font-size:44px; line-height:1; color:var(--muted); transition:color 0.4s; }
+.result-pct sup { font-size:18px; vertical-align:super; }
+.result-card.pass .result-pct { color:var(--green); }
+.result-card.fail .result-pct { color:var(--red); }
+.result-card.warn .result-pct { color:var(--orange); }
+.result-badge { display:flex; align-items:center; gap:5px; padding:4px 10px; border-radius:20px; font-size:10px; font-weight:600; background:var(--surface2); color:var(--muted); transition:all 0.4s; }
+.result-card.pass .result-badge { background:var(--green-dim); color:var(--green); }
+.result-card.fail .result-badge { background:var(--red-dim);   color:var(--red); }
+.result-card.warn .result-badge { background:var(--orange-dim);color:var(--orange); }
+.badge-dot { width:6px; height:6px; border-radius:50%; background:currentColor; }
+.progress-wrap { background:var(--border); border-radius:4px; height:5px; overflow:hidden; margin-bottom:6px; }
+.progress-bar { height:100%; border-radius:4px; width:0%; transition:width 0.6s cubic-bezier(0.4,0,0.2,1); background:var(--muted); }
+.result-card.pass .progress-bar { background:var(--green); }
+.result-card.fail .progress-bar { background:var(--red); }
+.result-card.warn .progress-bar { background:var(--orange); }
+.progress-labels { display:flex; justify-content:space-between; margin-bottom:10px; }
+.progress-labels span { font-size:8px; color:var(--muted); }
+.result-stats { display:flex; gap:6px; flex-wrap:wrap; }
+.stat-pill { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:5px 10px; flex:1; min-width:72px; }
+.stat-key { font-size:8px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; display:block; }
+.stat-val { font-family:'Bebas Neue',sans-serif; font-size:15px; color:#fff; display:block; margin-top:1px; }
+.result-msg { font-size:10px; color:var(--muted); margin-top:10px; line-height:1.5; text-align:center; }
+.result-card.pass .result-msg { color:rgba(0,208,132,0.7); }
+.result-card.fail .result-msg { color:rgba(255,71,87,0.7); }
+.result-card.warn .result-msg { color:rgba(255,140,43,0.7); }
+.result-placeholder { text-align:center; padding:10px 0; color:var(--muted); font-size:11px; }
+html { scrollbar-width:thin; scrollbar-color:var(--border) transparent; }
+
+/* TARGET MODAL */
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:100; align-items:flex-end; justify-content:center; }
+.modal-box { background:var(--surface); border:1px solid var(--border); border-radius:18px 18px 0 0; width:100%; max-width:420px; padding:20px 18px 28px; }
+.modal-handle { width:36px; height:4px; background:var(--border); border-radius:2px; margin:0 auto 18px; }
+.modal-title { font-family:'Bebas Neue',sans-serif; font-size:18px; letter-spacing:2px; color:#fff; margin-bottom:4px; }
+.modal-sub { font-size:10px; color:var(--muted); margin-bottom:16px; }
+.modal-suggest-badge { background:var(--blue-dim); border:1px solid rgba(59,158,255,0.25); border-radius:8px; padding:8px 12px; margin-bottom:12px; display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.modal-suggest-badge span { font-size:10px; color:var(--blue); }
+.modal-use-btn { background:var(--blue); border:none; border-radius:6px; padding:4px 10px; font-size:10px; font-weight:600; color:#fff; cursor:pointer; white-space:nowrap; transition:opacity 0.15s; }
+.modal-use-btn:hover { opacity:0.85; }
+.modal-input-row { display:flex; align-items:center; gap:8px; margin-bottom:12px; }
+.modal-input-label { font-size:11px; color:var(--muted); flex-shrink:0; }
+.modal-input { flex:1; background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:8px 10px; color:#fff; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600; outline:none; transition:border-color 0.2s; }
+.modal-input:focus { border-color:var(--blue); }
+.modal-input:disabled { opacity:0.35; cursor:not-allowed; }
+.modal-actions { display:flex; gap:8px; margin-top:4px; }
+.modal-no-target-btn { background:var(--surface2); border:1px solid var(--border); border-radius:9px; padding:0 14px; height:40px; font-size:11px; color:var(--muted); cursor:pointer; transition:all 0.2s; white-space:nowrap; font-family:'DM Sans',sans-serif; }
+.modal-no-target-btn.active { border-color:var(--orange); color:var(--orange); background:var(--orange-dim); }
+.modal-confirm-btn { flex:1; background:linear-gradient(135deg,#3b9eff,#1a7de0); border:none; border-radius:9px; height:40px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; color:#fff; cursor:pointer; transition:all 0.2s; box-shadow:0 2px 10px rgba(59,158,255,0.3); }
+.modal-confirm-btn:hover { box-shadow:0 0 18px rgba(59,158,255,0.5); }
+</style>
+</head>
+<body>
+
+<!-- SCREEN 1: FIRMS -->
+<div class="screen active" id="screen-firms">
+  <div class="top-bar">
+    <span class="top-title">CONSISTENCY</span>
+    <span class="top-sub">Prop Firms</span>
+  </div>
+  <div class="firms-header">
+    <div class="firms-title">Select<br>Prop Firm</div>
+    <div class="firms-sub">Calculate your consistency rule per prop firm</div>
+  </div>
+  <div class="firms-grid">
+    <div class="firm-card" onclick="goToCalc('tradeify')">
+      <div class="firm-inner">
+        <div class="firm-logo" style="background:linear-gradient(135deg,#1a2a1a,#0d1a0d);border:1px solid rgba(255,140,43,0.2);">
+          <svg viewBox="0 0 40 40" fill="none" width="34" height="34">
+            <polygon points="20,3 35,11 35,29 20,37 5,29 5,11" fill="rgba(255,140,43,0.12)" stroke="#ff8c2b" stroke-width="1.2"/>
+            <rect x="12" y="13" width="16" height="2.5" rx="1.2" fill="#ff8c2b"/>
+            <rect x="18.5" y="13" width="3" height="14" rx="1.2" fill="#ff8c2b"/>
+            <circle cx="20" cy="30" r="1.5" fill="#ff8c2b" opacity="0.6"/>
+          </svg>
+        </div>
+        <div class="firm-info">
+          <div class="firm-name">TRADEIFY</div>
+          <div class="firm-tagline">Futures prop firm · Growth &amp; Lightning</div>
+          <div class="firm-tags">
+            <span class="firm-tag tag-orange">35% Growth</span>
+            <span class="firm-tag tag-orange">40% Select</span>
+            <span class="firm-tag tag-orange">20% Lightning</span>
+            <span class="firm-tag tag-green">AVAILABLE</span>
+          </div>
+        </div>
+        <div class="firm-arrow">&#8250;</div>
+      </div>
+    </div>
+    <div class="firm-card" onclick="goToCalc('apex')">
+      <div class="firm-inner">
+        <div class="firm-logo" style="background:linear-gradient(135deg,#1a1a2e,#0d0d1a);border:1px solid rgba(138,43,226,0.3);">
+          <svg viewBox="0 0 40 40" fill="none" width="34" height="34">
+            <polygon points="20,4 36,30 4,30" fill="rgba(138,43,226,0.15)" stroke="#8a2be2" stroke-width="1.3"/>
+            <line x1="20" y1="4" x2="20" y2="30" stroke="#8a2be2" stroke-width="1" opacity="0.6"/>
+            <line x1="12" y1="22" x2="28" y2="22" stroke="#8a2be2" stroke-width="1" opacity="0.6"/>
+          </svg>
+        </div>
+        <div class="firm-info">
+          <div class="firm-name">APEX TRADER</div>
+          <div class="firm-tagline">Futures prop firm · Intraday &amp; EOD Trail</div>
+          <div class="firm-tags">
+            <span class="firm-tag" style="color:#8a2be2;border-color:rgba(138,43,226,0.3);background:rgba(138,43,226,0.1)">50% Intraday</span>
+            <span class="firm-tag" style="color:#8a2be2;border-color:rgba(138,43,226,0.3);background:rgba(138,43,226,0.1)">50% EOD</span>
+            <span class="firm-tag tag-green">AVAILABLE</span>
+          </div>
+        </div>
+        <div class="firm-arrow">&#8250;</div>
+      </div>
+    </div>
+    <div class="firm-card" onclick="goToCalc('topstep')">
+      <div class="firm-inner">
+        <div class="firm-logo" style="background:linear-gradient(135deg,#0d1a0d,#1a2a1a);border:1px solid rgba(0,180,100,0.3);">
+          <svg viewBox="0 0 40 40" fill="none" width="34" height="34">
+            <rect x="6" y="6" width="28" height="28" rx="6" fill="rgba(0,180,100,0.12)" stroke="#00b464" stroke-width="1.3"/>
+            <polyline points="11,20 17,26 29,14" stroke="#00b464" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="firm-info">
+          <div class="firm-name">TOPSTEP</div>
+          <div class="firm-tagline">Futures prop firm · Step 1 funded</div>
+          <div class="firm-tags">
+            <span class="firm-tag" style="color:#00b464;border-color:rgba(0,180,100,0.3);background:rgba(0,180,100,0.08)">50% limit</span>
+            <span class="firm-tag tag-green">AVAILABLE</span>
+          </div>
+        </div>
+        <div class="firm-arrow">&#8250;</div>
+      </div>
+    </div>
+    <div class="firm-card" onclick="goToCalc('ftmo')">
+      <div class="firm-inner">
+        <div class="firm-logo" style="background:linear-gradient(135deg,#1a1a0d,#2a2a0a);border:1px solid rgba(200,180,0,0.3);">
+          <svg viewBox="0 0 40 40" fill="none" width="34" height="34">
+            <rect x="6" y="6" width="28" height="28" rx="6" fill="rgba(200,180,0,0.12)" stroke="#c8b400" stroke-width="1.3"/>
+            <text x="20" y="25" text-anchor="middle" font-size="10" fill="#c8b400" font-family="sans-serif" font-weight="bold">FTMO</text>
+          </svg>
+        </div>
+        <div class="firm-info">
+          <div class="firm-name">FTMO</div>
+          <div class="firm-tagline">Prop firm · Challenge Phase 1</div>
+          <div class="firm-tags">
+            <span class="firm-tag" style="color:#c8b400;border-color:rgba(200,180,0,0.3);background:rgba(200,180,0,0.08)">50% best day</span>
+            <span class="firm-tag" style="color:#c8b400;border-color:rgba(200,180,0,0.3);background:rgba(200,180,0,0.08)">10% target</span>
+            <span class="firm-tag tag-green">AVAILABLE</span>
+          </div>
+        </div>
+        <div class="firm-arrow">&#8250;</div>
+      </div>
+    </div>
+    <div class="firm-card" onclick="goToCalc('mff')">
+      <div class="firm-inner">
+        <div class="firm-logo" style="background:linear-gradient(135deg,#0d1a2a,#1a2a3a);border:1px solid rgba(0,160,255,0.3);">
+          <svg viewBox="0 0 40 40" fill="none" width="34" height="34">
+            <circle cx="20" cy="20" r="14" fill="rgba(0,160,255,0.12)" stroke="#00a0ff" stroke-width="1.3"/>
+            <text x="20" y="17" text-anchor="middle" font-size="7" fill="#00a0ff" font-family="sans-serif" font-weight="bold">MY</text>
+            <text x="20" y="26" text-anchor="middle" font-size="6" fill="#00a0ff" font-family="sans-serif" font-weight="bold">FUNDED</text>
+          </svg>
+        </div>
+        <div class="firm-info">
+          <div class="firm-name">MY FUNDED FUT.</div>
+          <div class="firm-tagline">Futures prop firm · Rapid, Flex &amp; Pro</div>
+          <div class="firm-tags">
+            <span class="firm-tag" style="color:#00a0ff;border-color:rgba(0,160,255,0.3);background:rgba(0,160,255,0.08)">50% limit</span>
+            <span class="firm-tag" style="color:#00a0ff;border-color:rgba(0,160,255,0.3);background:rgba(0,160,255,0.08)">3 planes</span>
+            <span class="firm-tag tag-green">AVAILABLE</span>
+          </div>
+        </div>
+        <div class="firm-arrow">&#8250;</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN 2: CALC -->
+<div class="screen" id="screen-calc">
+  <div class="top-bar">
+    <div class="back-btn" onclick="goBack()">&#8249;</div>
+    <span class="top-title" id="calc-firm-title">TRADEIFY</span>
+    <span class="top-sub">Consistency</span>
+  </div>
+  <div class="calc-body">
+    <div class="section-label">Account Type</div>
+    <div class="options-row" id="type-row"></div>
+    <div class="section-label">Account Size</div>
+    <div class="options-row" id="size-row"></div>
+    <div class="section-label">Days operated</div>
+    <div class="days-row">
+      <span class="days-label">Total:</span>
+      <div class="days-stepper">
+        <button class="step-btn" onclick="changeDays(-1)">&#8722;</button>
+        <span class="step-val" id="days-val">1</span>
+        <button class="step-btn" onclick="changeDays(1)">+</button>
+      </div>
+      <button class="gen-btn" id="gen-btn" onclick="openTargetModal()">
+        <svg class="gen-icon" id="gen-icon" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+        </svg>
+        Generate Days
+      </button>
+    </div>
+    <div class="days-grid" id="days-grid"></div>
+    <div id="suggest-wrap"></div>
+    <div class="result-card" id="result-card">
+      <div class="result-placeholder">Enter your earnings to calculate</div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal()">
+  <div class="modal-box" id="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-title-text">ACCOUNT TARGET</div>
+    <div class="modal-sub">Optional — suggestions tailored to the target audience</div>
+    <div class="modal-suggest-badge">
+      <span id="modal-suggest-text"></span>
+      <button class="modal-use-btn" id="modal-use-btn" onclick="useSuggestedTarget()">Usar sugerido</button>
+    </div>
+    <div class="modal-input-row">
+      <span class="modal-input-label">Target $</span>
+      <input type="number" class="modal-input" id="modal-target-input" placeholder="Ej: 3000" step="0.01" min="0"/>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-no-target-btn" id="modal-no-target" onclick="toggleNoTarget()">No target</button>
+      <button class="modal-confirm-btn" onclick="confirmGenerate()">Generate suggestions</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var ACCOUNTS = {
+  growth: {
+    sizes:['50k','100k','150k'], limit:35,
+    targets:{'50k':3000,'100k':6000,'150k':9000}
+  },
+  select: {
+    sizes:['50k','100k','150k'], limit:40,
+    targets:{'50k':2500,'100k':6000,'150k':9000}
+  },
+  lightning: {
+    sizes:['25k','50k','100k','150k'], limit:20,
+    targets:{'25k':1500,'50k':3000,'100k':6000,'150k':9000}
+  },
+  apex_intraday: {
+    sizes:['25k','50k','100k','150k'], limit:50,
+    targets:{'25k':1500,'50k':3000,'100k':6000,'150k':9000}
+  },
+  apex_eod: {
+    sizes:['25k','50k','100k','150k'], limit:50,
+    targets:{'25k':1500,'50k':3000,'100k':6000,'150k':9000}
+  },
+  topstep: {
+    sizes:['50k','100k','150k'], limit:50,
+    targets:{'50k':3000,'100k':6000,'150k':9000}
+  },
+  ftmo: {
+    sizes:['10k','25k','50k','100k','200k'], limit:50,
+    targets:{'10k':1000,'25k':2500,'50k':5000,'100k':10000,'200k':20000}
+  },
+  mff_rapid: {
+    sizes:['50k','100k','150k'], limit:50,
+    targets:{'50k':3000,'100k':6000,'150k':9000}
+  },
+  mff_flex: {
+    sizes:['25k','50k'], limit:50,
+    targets:{'25k':1500,'50k':3000}
+  },
+  mff_pro: {
+    sizes:['50k','100k','150k'], limit:50,
+    targets:{'50k':3000,'100k':6000,'150k':9000}
+  }
+};
+
+var state = {
+  type:'growth', size:'50k',
+  days:1, values:[null],
+  projectedFrom:-1,
+  firm:'tradeify'
+};
+
+/* ── NAVIGATION ── */
+function goToCalc(firm) {
+  state.firm = firm;
+  // Set default type per firm
+  if (firm === 'tradeify') {
+    state.type = 'growth';
+  } else if (firm === 'apex') {
+    state.type = 'apex_intraday';
+  } else if (firm === 'topstep') {
+    state.type = 'topstep';
+  } else if (firm === 'ftmo') {
+    state.type = 'ftmo';
+  } else if (firm === 'mff') {
+    state.type = 'mff_rapid';
+  }
+  state.size          = ACCOUNTS[state.type].sizes[0];
+  state.projectedFrom = -1;
+  state.days          = 1;
+  state.values        = [null];
+
+  // Update header title
+  var titles = { tradeify:'TRADEIFY', apex:'APEX TRADER' };
+  document.getElementById('calc-firm-title').textContent = titles[firm] || firm.toUpperCase();
+
+  document.getElementById('screen-firms').classList.remove('active');
+  document.getElementById('screen-calc').classList.add('active');
+  renderTypeRow();
+  renderSizes();
+  renderDaysGrid();
+}
+function goBack() {
+  document.getElementById('screen-calc').classList.remove('active');
+  document.getElementById('screen-firms').classList.add('active');
+}
+
+/* ── TYPE / SIZE ── */
+var FIRM_TYPES = {
+  tradeify: [
+    { type:'growth',    label:'Growth',    meta:'Funding in 1 day',  rule:'35% limit' },
+    { type:'select',    label:'Select',    meta:'Funding in 3 days', rule:'40% limit' },
+    { type:'lightning', label:'Lightning', meta:'Instant', metaColor:'#ff8c2b', rule:'20% limit' }
+  ],
+  apex: [
+    { type:'apex_intraday', label:'Intraday Trail', meta:'Trailing intraday', rule:'50% limit' },
+    { type:'apex_eod',      label:'EOD Trail',      meta:'End of day trail',  rule:'50% limit' }
+  ],
+  topstep: [
+    { type:'topstep', label:'Topstep Funded', meta:'Step 1 program', rule:'50% limit' }
+  ],
+  ftmo: [
+    { type:'ftmo', label:'FTMO Challenge', meta:'Phase 1 · Best day rule', rule:'50% limit' }
+  ],
+  mff: [
+    { type:'mff_rapid', label:'Rapid',  meta:'Standard funded', rule:'50% limit' },
+    { type:'mff_flex',  label:'Flex',   meta:'25k-50k accounts', rule:'50% limit' },
+    { type:'mff_pro',   label:'Pro',    meta:'Pro funded plan',  rule:'50% limit' }
+  ]
+};
+
+function renderTypeRow() {
+  var row   = document.getElementById('type-row');
+  var types = FIRM_TYPES[state.firm] || [];
+  row.innerHTML = '';
+  types.forEach(function(t) {
+    var btn = document.createElement('button');
+    btn.className   = 'opt-btn' + (t.type === state.type ? ' active' : '');
+    btn.dataset.type = t.type;
+    btn.onclick      = function(){ selectType(btn); };
+    var metaStyle    = t.metaColor ? ' style="color:'+t.metaColor+'"' : '';
+    btn.innerHTML    =
+      '<span class="opt-name">'+t.label+'</span>'+
+      '<span class="opt-meta"'+metaStyle+'>'+t.meta+'</span>'+
+      '<span class="opt-rule">'+t.rule+'</span>';
+    row.appendChild(btn);
+  });
+}
+
+function selectType(btn) {
+  state.type = btn.dataset.type;
+  document.querySelectorAll('#type-row .opt-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  state.size = ACCOUNTS[state.type].sizes[0];
+  state.projectedFrom = -1;
+  renderSizes();
+  recalculate();
+}
+function renderSizes() {
+  var row = document.getElementById('size-row');
+  row.innerHTML = '';
+  ACCOUNTS[state.type].sizes.forEach(function(s) {
+    var btn = document.createElement('button');
+    btn.className = 'opt-btn' + (s === state.size ? ' active' : '');
+    btn.dataset.size = s;
+    btn.onclick = function(){ selectSize(btn); };
+    btn.innerHTML = '<span class="opt-name">'+s+'</span>';
+    row.appendChild(btn);
+  });
+}
+function selectSize(btn) {
+  state.size = btn.dataset.size;
+  document.querySelectorAll('#size-row .opt-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  recalculate();
+}
+
+/* ── DAYS ── */
+function changeDays(delta) {
+  var next = Math.max(1, Math.min(30, state.days + delta));
+  if (next === state.days) return;
+  if (state.projectedFrom >= 0 && next <= state.projectedFrom) {
+    state.projectedFrom = -1;
+  }
+  state.days = next;
+  while (state.values.length < next) state.values.push(null);
+  state.values = state.values.slice(0, next);
+  document.getElementById('days-val').textContent = next;
+  renderDaysGrid();
+  recalculate();
+}
+function renderDaysGrid() {
+  var grid = document.getElementById('days-grid');
+  grid.innerHTML = '';
+  for (var i = 0; i < state.days; i++) {
+    var isProj = (state.projectedFrom >= 0 && i >= state.projectedFrom);
+    var wrap = document.createElement('div');
+    wrap.className = 'day-input-wrap' + (isProj ? ' projected' : '');
+    wrap.id = 'wrap-'+i;
+    var v = state.values[i];
+    var lbl = isProj ? 'Proy '+(i+1) : 'Day '+(i+1);
+    wrap.innerHTML =
+      '<span class="day-num" id="lbl-'+i+'">'+lbl+'</span>'+
+      '<span class="dollar-sign">$</span>'+
+      '<input type="number" class="day-inp'+(v !== null && v < 0 ? ' negative':'')+
+      '" placeholder="0.000" step="0.001" data-idx="'+i+'" oninput="onDayInput(this)"'+
+      (v !== null ? ' value="'+v+'"' : '')+'>';
+    grid.appendChild(wrap);
+  }
+}
+function onDayInput(inp) {
+  var idx = parseInt(inp.dataset.idx);
+  var val = parseFloat(inp.value);
+  state.values[idx] = isNaN(val) ? null : val;
+  inp.classList.toggle('negative', !isNaN(val) && val < 0);
+  recalculate();
+}
+
+/* ── RECALCULATE ── */
+function recalculate() {
+  var limit   = ACCOUNTS[state.type].limit;
+  var card    = document.getElementById('result-card');
+  var winners = state.values.filter(function(v){ return v !== null && v > 0; });
+  var losers  = state.values.filter(function(v){ return v !== null && v < 0; });
+  var hasData = state.values.some(function(v){ return v !== null && v !== 0; });
+
+  /* reset labels */
+  for (var i = 0; i < state.days; i++) {
+    var w = document.getElementById('wrap-'+i);
+    var l = document.getElementById('lbl-'+i);
+    if (!w) continue;
+    var isProj = (state.projectedFrom >= 0 && i >= state.projectedFrom);
+    w.classList.remove('best','loss');
+    if (l) l.textContent = isProj ? 'Proy '+(i+1) : 'Day '+(i+1);
+  }
+  state.values.forEach(function(v, i) {
+    if (v !== null && v < 0) {
+      var w = document.getElementById('wrap-'+i);
+      var l = document.getElementById('lbl-'+i);
+      if (w) w.classList.add('loss');
+      if (l) l.textContent = 'Day '+(i+1)+' -';
+    }
+  });
+
+  if (!hasData || limit === null) {
+    card.className = 'result-card';
+    card.innerHTML = '<div class="result-placeholder">Enter your earnings to calculate</div>';
+    return;
+  }
+
+  var totalWin  = winners.reduce(function(a,b){ return a+b; }, 0);
+  var totalLoss = losers.reduce(function(a,b){ return a+b; }, 0);
+  var netTotal  = Math.round((totalWin + totalLoss) * 1e6) / 1e6;
+  var best      = winners.length > 0 ? Math.max.apply(null, winners) : 0;
+  var isNA      = netTotal <= 0;
+  var pctRaw    = (!isNA && best > 0) ? (best / netTotal) * 100 : 0;
+  var pct       = Math.floor(pctRaw * 10) / 10;
+
+  /* highlight best day (non-projected) */
+  if (best > 0) {
+    for (var j = 0; j < state.values.length; j++) {
+      if (state.values[j] === best) {
+        var isProj2 = (state.projectedFrom >= 0 && j >= state.projectedFrom);
+        var bw = document.getElementById('wrap-'+j);
+        var bl = document.getElementById('lbl-'+j);
+        if (bw && !isProj2) { bw.classList.add('best'); bw.classList.remove('loss'); }
+        if (bl && !isProj2) bl.textContent = 'Day '+(j+1)+' *';
+        break;
+      }
+    }
+  }
+
+  var cls, badge, msg;
+  if (isNA) {
+    cls='fail'; badge='N/A';
+    msg='Without a positive net profit, consistency does not apply.';
+  } else if (pct > limit * 1.25) {
+    cls='fail'; badge='Broken ruler';
+    msg='Your best day is the '+pct.toFixed(1)+'% of the net. Limit: '+limit+'%.';
+  } else if (pct > limit) {
+    cls='warn'; badge='in the limit';
+    msg='Slightly over the limit ('+limit+'%). Add more profit days.';
+  } else {
+    cls='pass'; badge='Consistent';
+    var sn = Math.max(0, best*(100/limit) - netTotal);
+    msg = sn > 0 ? 'Additional profit for '+limit+'%: $'+sn.toFixed(3) : 'You follow the rule correctly.';
+  }
+
+  var needed2  = (!isNA && best > 0) ? Math.max(0, best*(100/limit) - netTotal) : 0;
+  var needStr  = isNA ? 'N/A' : (needed2 > 0 ? '$'+needed2.toFixed(3) : 'OK');
+  var barW     = !isNA ? Math.min((pct/limit)*100, 100) : 0;
+  var netColor = netTotal > 0 ? 'var(--green)' : 'var(--red)';
+  var lossStr  = totalLoss < 0
+    ? '-$'+Math.abs(totalLoss).toLocaleString('en-US',{minimumFractionDigits:3,maximumFractionDigits:3})
+    : '$0.000';
+
+  card.className = 'result-card '+cls;
+  card.innerHTML =
+    '<div class="result-top">'+
+      '<div class="result-pct">'+(isNA?'N/A':pct.toFixed(1))+'<sup>'+(isNA?'':'%')+'</sup></div>'+
+      '<div class="result-badge"><div class="badge-dot"></div>'+badge+'</div>'+
+    '</div>'+
+    '<div class="progress-wrap"><div class="progress-bar" style="width:0%"></div></div>'+
+    '<div class="progress-labels"><span>0%</span><span>limit: '+limit+'%</span></div>'+
+    '<div class="result-stats">'+
+      '<div class="stat-pill"><span class="stat-key">Best Day</span>'+
+        '<span class="stat-val">'+(best>0?'$'+best.toLocaleString('en-US',{minimumFractionDigits:3,maximumFractionDigits:3}):'--')+'</span></div>'+
+      '<div class="stat-pill"><span class="stat-key">Total earnings</span>'+
+        '<span class="stat-val" style="color:var(--green)">$'+totalWin.toLocaleString('en-US',{minimumFractionDigits:3,maximumFractionDigits:3})+'</span></div>'+
+      '<div class="stat-pill"><span class="stat-key">Total losses</span>'+
+        '<span class="stat-val" style="color:var(--red)">'+lossStr+'</span></div>'+
+      '<div class="stat-pill"><span class="stat-key">Net P&L</span>'+
+        '<span class="stat-val" style="color:'+netColor+'">$'+netTotal.toLocaleString('en-US',{minimumFractionDigits:3,maximumFractionDigits:3})+'</span></div>'+
+      '<div class="stat-pill"><span class="stat-key">Profit for '+limit+'%</span>'+
+        '<span class="stat-val">'+needStr+'</span></div>'+
+    '</div>'+
+    '<div class="result-msg">'+msg+'</div>';
+
+  requestAnimationFrame(function() {
+    var bar = card.querySelector('.progress-bar');
+    if (bar) bar.style.width = barW+'%';
+  });
+}
+
+/* ── MODAL ── */
+function openTargetModal() {
+  /* clear old projection */
+  if (state.projectedFrom >= 0) {
+    state.values        = state.values.slice(0, state.projectedFrom);
+    state.days          = state.projectedFrom;
+    state.projectedFrom = -1;
+    document.getElementById('days-val').textContent = state.days;
+    document.getElementById('suggest-wrap').innerHTML = '';
+    renderDaysGrid();
+    recalculate();
+  }
+
+  var suggested = ACCOUNTS[state.type].targets[state.size];
+  var inp       = document.getElementById('modal-target-input');
+  var useBtn    = document.getElementById('modal-use-btn');
+  var noBtn     = document.getElementById('modal-no-target');
+  var sugText   = document.getElementById('modal-suggest-text');
+
+  noBtn.classList.remove('active');
+  inp.disabled = false;
+
+  if (suggested) {
+    sugText.textContent = 'Suggested for '+state.size+': $'+suggested.toLocaleString('en-US');
+    useBtn.style.display = 'inline-block';
+    inp.value = suggested;
+  } else {
+    sugText.textContent = 'There is no suggested target audience for this account.';
+    useBtn.style.display = 'none';
+    inp.value = '';
+  }
+
+  var firmNames = { tradeify:'TRADEIFY', apex:'APEX TRADER', topstep:'TOPSTEP', ftmo:'FTMO', mff:'MY FUNDED FUTURES' };
+  var firmName  = firmNames[state.firm] || state.firm.toUpperCase();
+  document.getElementById('modal-title-text').textContent = firmName + ' — ACCOUNT TARGET';
+
+  var overlay = document.getElementById('modal-overlay');
+  overlay.style.display = 'flex';
+  var box = document.getElementById('modal-box');
+  box.style.transform = 'translateY(24px)';
+  box.style.opacity   = '0';
+  requestAnimationFrame(function() {
+    box.style.transition = 'transform 0.25s ease-out,opacity 0.25s ease-out';
+    box.style.transform  = 'translateY(0)';
+    box.style.opacity    = '1';
+  });
+}
+function closeModal() {
+  document.getElementById('modal-overlay').style.display = 'none';
+}
+function useSuggestedTarget() {
+  var suggested = ACCOUNTS[state.type].targets[state.size];
+  if (!suggested) return;
+  document.getElementById('modal-target-input').value    = suggested;
+  document.getElementById('modal-target-input').disabled = false;
+  document.getElementById('modal-no-target').classList.remove('active');
+}
+function toggleNoTarget() {
+  var btn = document.getElementById('modal-no-target');
+  var inp = document.getElementById('modal-target-input');
+  if (btn.classList.contains('active')) {
+    btn.classList.remove('active');
+    inp.disabled = false;
+  } else {
+    btn.classList.add('active');
+    inp.value    = '';
+    inp.disabled = true;
+  }
+}
+function confirmGenerate() {
+  var noBtn  = document.getElementById('modal-no-target');
+  var noTarget = noBtn.classList.contains('active');
+  var raw    = parseFloat(document.getElementById('modal-target-input').value);
+  var target = (!noTarget && !isNaN(raw) && raw > 0) ? raw : null;
+  closeModal();
+  var btn = document.getElementById('gen-btn');
+  btn.classList.add('spinning');
+  setTimeout(function() {
+    btn.classList.remove('spinning');
+    buildSuggestions(target);
+  }, 850);
+}
+
+/* ── BUILD SUGGESTIONS ── */
+function buildSuggestions(target) {
+  var limit    = ACCOUNTS[state.type].limit;
+  var winners  = state.values.filter(function(v){ return v !== null && v > 0; });
+  var losers   = state.values.filter(function(v){ return v !== null && v < 0; });
+  var totalWin = winners.reduce(function(a,b){ return a+b; }, 0);
+  var totalLoss= losers.reduce(function(a,b){ return a+b; }, 0);
+  var netTotal = totalWin + totalLoss;
+  var best     = winners.length > 0 ? Math.max.apply(null, winners) : 0;
+
+  /* anchorDay: el Day proyectado mas alto.
+     Con Days reales: < best real.
+     Sin Days + target: exactamente target*limit/100.
+     Sin Days ni target: 500. */
+  var anchorDay;
+  if (best > 0) {
+    anchorDay = Math.floor(best * 0.99 * 100) / 100;
+  } else if (target) {
+    anchorDay = Math.floor(target * (limit / 100) * 100) / 100;
+  } else {
+    anchorDay = 500;
+  }
+
+  /* Multiples anclas y ratios para cubrir desde conservador hasta agresivo */
+  var anchorLevels = [
+    anchorDay,
+    Math.floor(anchorDay * 0.67 * 100) / 100,
+    Math.floor(anchorDay * 0.47 * 100) / 100,
+    Math.floor(anchorDay * 0.33 * 100) / 100,
+    Math.floor(anchorDay * 0.23 * 100) / 100,
+    Math.floor(anchorDay * 0.16 * 100) / 100,
+    Math.floor(anchorDay * 0.12 * 100) / 100
+  ].filter(function(a){ return a >= 0.50; });
+
+  var serieRatios = [0.99, 0.92, 0.83, 0.72, 0.60, 0.50];
+
+  function buildSerie(anchor, ratio) {
+    if (anchor <= 0) return null;
+    var maxDays = Math.min(30, 30 - state.days);
+    if (maxDays <= 0) return null;
+
+    var serie = [];
+    for (var i = 0; i < maxDays; i++) {
+      var v = Math.floor(anchor * Math.pow(ratio, i) * 100) / 100;
+      serie.push(Math.max(v, 0.01));
+    }
+
+    for (var n = 1; n <= maxDays; n++) {
+      var days = serie.slice(0, n);
+      var pt = Math.round(days.reduce(function(a,b){ return a+b; }, 0) * 1e6) / 1e6;
+      var pn = Math.round((netTotal + pt) * 1e6) / 1e6;
+
+      if (target && pn < target && (target - pn) < 5.0) {
+        var diff = Math.ceil((target - pn) * 100) / 100;
+        days = days.slice();
+        days[days.length - 1] = Math.round((days[days.length - 1] + diff) * 100) / 100;
+        pt = Math.round(days.reduce(function(a,b){ return a+b; }, 0) * 1e6) / 1e6;
+        pn = Math.round((netTotal + pt) * 1e6) / 1e6;
+      }
+
+      var maxProj  = Math.max.apply(null, days);
+      var trueBest = best > 0 ? Math.max(best, maxProj) : maxProj;
+      var projPct  = pn > 0 ? Math.floor((trueBest / pn) * 1000) / 10 : 999;
+      var targetMet = !target || pn >= (target - 0.10);
+
+      if (projPct <= limit && targetMet) {
+        return { numDays:n, days:days, projTotal:pt, projNet:pn, projPct:projPct };
+      }
+    }
+    return null;
+  }
+
+  /* Generar todas las combinaciones anchor x ratio */
+  var allResults = [];
+  anchorLevels.forEach(function(anchor) {
+    serieRatios.forEach(function(ratio) {
+      var r = buildSerie(anchor, ratio);
+      if (r) allResults.push(r);
+    });
+  });
+
+  /* Deduplicar por numDays: mejor projPct (mas cercano al limit) */
+  var byDays = {};
+  allResults.forEach(function(o) {
+    if (!byDays[o.numDays] || o.projPct > byDays[o.numDays].projPct) {
+      byDays[o.numDays] = o;
+    }
+  });
+
+  /* Todas las opciones ordenadas de menor a mayor Days */
+  var allOptions = Object.keys(byDays)
+    .map(Number).sort(function(a,b){ return a-b; })
+    .map(function(k){ return byDays[k]; });
+
+  /* Seleccionar 5 opciones bien distribuidas en el espectro de Days */
+  var options = [];
+  if (allOptions.length <= 5) {
+    options = allOptions;
+  } else {
+    var step = (allOptions.length - 1) / 4;
+    for (var oi = 0; oi < 5; oi++) {
+      var idx = Math.round(oi * step);
+      var opt = allOptions[idx];
+      if (options.length === 0 || options[options.length-1].numDays !== opt.numDays) {
+        options.push(opt);
+      }
+    }
+  }
+
+  if (options.length === 0) {
+    document.getElementById('suggest-wrap').innerHTML =
+      '<div style="font-size:10px;color:var(--muted);margin-top:8px;text-align:center">No hay Days AVAILABLEs suficientes.</div>';
+    return;
+  }
+
+  var titleBase = target
+    ? 'Projection towards $'+target.toLocaleString('en-US')+' · max '+limit+'% consistency'
+    : 'Realistic suggestion for achieving '+limit+'% consistency';
+
+  var html =
+    '<div class="suggest-wrap">'+
+      '<div class="suggest-header">'+
+        '<div class="suggest-dot"></div>'+
+        '<span class="suggest-title">'+titleBase+'</span>'+
+      '</div>'+
+      '<div class="suggest-row">';
+
+  options.forEach(function(opt) {
+    var inRange  = opt.projPct >= (limit - 0.5) && opt.projPct <= limit;
+    var pctColor = inRange ? '#00d084' : (opt.projPct < limit ? '#3b9eff' : '#ff4757');
+    var minVal   = Math.min.apply(null, opt.days);
+    var maxVal   = Math.max.apply(null, opt.days);
+    html +=
+      '<div class="suggest-pill" onclick="applyProjectionDays('+JSON.stringify(opt.days)+')">'
+      +'<strong>$'+minVal.toFixed(2)+' — $'+maxVal.toFixed(2)+'</strong>'
+      +'<span>'+opt.numDays+' Day'+(opt.numDays>1?'s':'')+' · +$'+opt.projTotal.toFixed(2)+'</span>'
+      +'<span style="color:'+pctColor+';font-weight:600">'+opt.projPct.toFixed(1)+'% consist.</span>'
+      +'</div>';
+  });
+
+  html += '</div></div>';
+  document.getElementById('suggest-wrap').innerHTML = html;
+}
+
+/* ── APPLY PROJECTION ── */
+function applyProjection(numDays, perDay) {
+  /* compatibilidad con llamadas antiguas — genera Days iguales */
+  var days = [];
+  for (var i = 0; i < numDays; i++) days.push(perDay);
+  applyProjectionDays(days);
+}
+
+function applyProjectionDays(days) {
+  if (state.projectedFrom >= 0) {
+    state.values        = state.values.slice(0, state.projectedFrom);
+    state.days          = state.projectedFrom;
+    state.projectedFrom = -1;
+  }
+  document.getElementById('suggest-wrap').innerHTML = '';
+
+  var hasRealData = state.values.some(function(v){ return v !== null && v !== 0; });
+  if (!hasRealData) {
+    state.days          = 0;
+    state.values        = [];
+    state.projectedFrom = 0;
+  } else {
+    state.projectedFrom = state.days;
+  }
+
+  var numDays  = days.length;
+  var newTotal = Math.min(30, state.projectedFrom + numDays);
+  state.days   = newTotal;
+  while (state.values.length < newTotal) state.values.push(null);
+  for (var i = state.projectedFrom; i < newTotal; i++) {
+    state.values[i] = days[i - state.projectedFrom];
+  }
+  document.getElementById('days-val').textContent = newTotal;
+  renderDaysGrid();
+  recalculate();
+}
+</script>
+</body>
+</html>
