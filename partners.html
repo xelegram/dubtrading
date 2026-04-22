@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Become a Partner — LegionFutures</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --navy: #020b18;
+  --navy2: #040f20;
+  --blue-deep: #061529;
+  --blue-mid: #0b2147;
+  --accent: #1d5fff;
+  --accent2: #3b82f6;
+  --accent-light: #60a5fa;
+  --glow: #1d5fff33;
+  --text: #e2ecff;
+  --text-muted: #6b8cbc;
+  --text-dim: #2e4a74;
+  --border: #0e2a4a;
+  --border2: #1a3a6a;
+  --green: #00d97e;
+  --green2: #10b981;
+  --red: #ff4560;
+  --card: #050e1d;
+  --font-head: 'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--navy);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* ─── CANVAS BG ─── */
+#canvasWrap {
+  position: fixed; inset: 0; z-index: 0;
+  pointer-events: none; overflow: hidden;
+}
+#candleCanvas { width:100%; height:100%; opacity:0.14; }
+
+/* ─── FLOATING PARTICLES ─── */
+#particleCanvas {
+  position: fixed; inset: 0; z-index: 0;
+  pointer-events: none; opacity: 0.22;
+}
+
+.site { position: relative; z-index: 1; }
+
+/* ─── NAV (identical to main) ─── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px; height: 64px;
+  background: linear-gradient(180deg, #020b18f0 0%, #020b1800 100%);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid #ffffff08;
+}
+.nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.nav-logo-icon {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius: 9px; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 16px #1d5fff44; flex-shrink: 0;
+}
+.nav-logo-text {
+  font-family: var(--font-head); font-size: 17px; font-weight: 700;
+  background: linear-gradient(90deg, #e2ecff 60%, #60a5fa);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  letter-spacing: -0.3px;
+}
+.nav-logo-text em { font-style: normal; font-weight: 400; opacity: 0.7; }
+.nav-links { display: flex; align-items: center; gap: 6px; list-style: none; }
+.nav-links a {
+  color: #94a9c9; font-size: 13px; font-weight: 400;
+  text-decoration: none; padding: 6px 12px; border-radius: 7px;
+  transition: color 0.2s, background 0.2s; font-family: var(--font-body);
+}
+.nav-links a:hover { color: var(--text); background: #ffffff0a; }
+.nav-links a.active { color: var(--accent-light); }
+.nav-actions { display: flex; align-items: center; gap: 10px; }
+.btn-ghost {
+  background: transparent; border: 1px solid var(--border2);
+  color: var(--accent-light); font-size: 13px; font-weight: 500;
+  padding: 7px 18px; border-radius: 8px; cursor: pointer;
+  font-family: var(--font-body); transition: background 0.2s;
+}
+.btn-ghost:hover { background: var(--blue-mid); }
+.btn-cta {
+  background: linear-gradient(135deg, #1a56db, #2563eb);
+  border: none; color: #fff; font-size: 13px; font-weight: 600;
+  padding: 8px 20px; border-radius: 8px; cursor: pointer;
+  font-family: var(--font-body); box-shadow: 0 0 20px #1d5fff30;
+  transition: opacity 0.15s, transform 0.15s;
+}
+.btn-cta:hover { opacity: 0.9; transform: translateY(-1px); }
+.hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; }
+.hamburger span { width: 22px; height: 2px; background: var(--text-muted); border-radius: 2px; }
+.mobile-menu {
+  display: none; position: fixed; inset: 0; z-index: 99;
+  background: #020b18f0; backdrop-filter: blur(16px);
+  flex-direction: column; align-items: center; justify-content: center; gap: 24px;
+}
+.mobile-menu.open { display: flex; }
+.mobile-menu a { font-family: var(--font-head); font-size: 22px; color: var(--text-muted); text-decoration: none; }
+.mobile-close { position: absolute; top: 22px; right: 28px; font-size: 24px; color: var(--text-muted); cursor: pointer; background: none; border: none; }
+
+/* ─── HERO ─── */
+.hero {
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  padding: 110px 40px 70px;
+  position: relative; overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 60% 60% at 50% -10%, #052a6033 0%, transparent 65%),
+    radial-gradient(ellipse 40% 50% at 10% 80%, #00d97e09 0%, transparent 60%),
+    radial-gradient(ellipse 30% 40% at 90% 60%, #1d5fff0a 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.hero-inner {
+  max-width: 1100px; width: 100%;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 60px; align-items: center;
+}
+
+/* LEFT */
+.hero-left {}
+.hero-pill {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: #061a38; border: 1px solid #1e3d7a;
+  padding: 5px 16px 5px 10px; border-radius: 50px;
+  font-size: 11px; font-weight: 500; color: var(--green);
+  letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 24px;
+}
+.pill-dot { width: 7px; height: 7px; background: var(--green); border-radius: 50%; animation: blink 2s infinite; }
+@keyframes blink { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.8)} }
+
+.hero h1 {
+  font-family: var(--font-head);
+  font-size: clamp(36px, 5vw, 60px); font-weight: 800;
+  line-height: 1.05; letter-spacing: -2px; margin-bottom: 18px;
+}
+.hero h1 .g1 {
+  display: block;
+  background: linear-gradient(160deg, #ffffff 0%, #c4d9ff 60%, #93c5fd 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.hero h1 .g2 {
+  display: block;
+  background: linear-gradient(160deg, #00d97e 0%, #10b981 50%, #34d399 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.hero-sub {
+  font-size: 15px; color: #6b8cbc; line-height: 1.75;
+  margin-bottom: 32px; font-weight: 300; max-width: 440px;
+}
+.hero-btns { display: flex; gap: 12px; flex-wrap: wrap; }
+.btn-green {
+  background: linear-gradient(135deg, #059c5a, #00d97e);
+  color: #fff; padding: 13px 30px; border-radius: 10px;
+  font-size: 14px; font-weight: 600; border: none; cursor: pointer;
+  font-family: var(--font-body); letter-spacing: 0.2px;
+  box-shadow: 0 0 32px #00d97e30; transition: transform 0.15s, box-shadow 0.15s;
+}
+.btn-green:hover { transform: translateY(-2px); box-shadow: 0 6px 36px #00d97e45; }
+.btn-outline-w {
+  background: transparent; border: 1px solid #1a3a6a;
+  color: #93c5fd; padding: 13px 26px; border-radius: 10px;
+  font-size: 14px; font-weight: 400; cursor: pointer;
+  font-family: var(--font-body); transition: all 0.2s;
+}
+.btn-outline-w:hover { background: #0a1d3a; border-color: var(--accent); }
+
+/* RIGHT — DONUT CHART */
+.hero-right {
+  display: flex; flex-direction: column; align-items: center; gap: 20px;
+}
+.chart-wrap {
+  position: relative; width: 280px; height: 280px;
+}
+.chart-center {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  pointer-events: none;
+}
+.chart-icon {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: linear-gradient(135deg, #030c1d, #071628);
+  border: 1px solid #1a3a6a;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 6px;
+}
+.chart-label-main {
+  font-family: var(--font-head); font-size: 13px; font-weight: 600;
+  color: var(--text); letter-spacing: 0.3px;
+}
+.chart-label-sub { font-size: 10px; color: var(--text-muted); }
+
+.split-labels {
+  display: flex; align-items: center; gap: 0; width: 100%;
+  background: #040e1c; border: 1px solid var(--border);
+  border-radius: 12px; overflow: hidden;
+}
+.split-side {
+  flex: 1; padding: 14px 18px; text-align: center;
+}
+.split-side:first-child { border-right: 1px solid var(--border); }
+.split-pct {
+  font-family: var(--font-head); font-size: 28px; font-weight: 800;
+  letter-spacing: -1px; margin-bottom: 3px;
+}
+.split-pct.partner { background: linear-gradient(135deg, #00d97e, #34d399); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.split-pct.legion  { background: linear-gradient(135deg, #3b82f6, #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.split-name { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; }
+.split-divider {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 0 12px; color: var(--text-dim); font-size: 11px; font-family: var(--font-head);
+}
+
+/* ─── SECTIONS ─── */
+section { padding: 80px 40px; }
+.sec-label { font-size: 10.5px; font-weight: 600; letter-spacing: 2.5px; text-transform: uppercase; color: var(--accent2); margin-bottom: 10px; }
+.sec-title { font-family: var(--font-head); font-size: clamp(26px, 3.5vw, 42px); font-weight: 700; letter-spacing: -1px; color: var(--text); line-height: 1.1; margin-bottom: 12px; }
+.sec-sub { font-size: 15px; color: var(--text-muted); max-width: 520px; line-height: 1.7; font-weight: 300; }
+.sec-header { margin-bottom: 50px; }
+
+/* ─── OPPORTUNITY SECTION ─── */
+#opportunity { background: #030d1b; }
+.opp-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+}
+
+/* GROWTH PLANT SVG */
+.growth-card {
+  background: #040e1c; border: 1px solid var(--border);
+  border-radius: 20px; padding: 36px;
+  display: flex; flex-direction: column; gap: 24px;
+  position: relative; overflow: hidden;
+}
+.growth-card::before {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0; height: 120px;
+  background: linear-gradient(180deg, transparent, #00d97e06);
+  pointer-events: none;
+}
+.growth-svg-wrap { display: flex; justify-content: center; }
+.growth-svg-wrap svg { filter: drop-shadow(0 0 18px #00d97e40); }
+
+.growth-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.gstat {
+  background: #030c1e; border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px 16px;
+}
+.gstat-num {
+  font-family: var(--font-head); font-size: 22px; font-weight: 700;
+  background: linear-gradient(135deg, #00d97e, #34d399);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  margin-bottom: 3px;
+}
+.gstat-label { font-size: 11px; color: var(--text-muted); font-weight: 300; }
+
+/* DETAILS CARD */
+.details-card {
+  background: #040e1c; border: 1px solid var(--border);
+  border-radius: 20px; padding: 36px;
+  display: flex; flex-direction: column; gap: 0;
+}
+.detail-row {
+  display: flex; gap: 16px; padding: 18px 0;
+  border-bottom: 1px solid #0e2a4a44;
+  align-items: flex-start;
+}
+.detail-row:last-child { border-bottom: none; }
+.detail-icon {
+  width: 40px; height: 40px; border-radius: 11px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.detail-icon.green { background: linear-gradient(135deg, #052a16, #0a3d22); border: 1px solid #0d5c30; }
+.detail-icon.blue  { background: linear-gradient(135deg, #071628, #0c2040); border: 1px solid #1a3a6a; }
+.detail-title { font-family: var(--font-head); font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 5px; }
+.detail-desc { font-size: 12.5px; color: var(--text-muted); line-height: 1.6; font-weight: 300; }
+
+/* ─── TERMS SECTION ─── */
+#terms { background: #020b18; }
+.terms-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+}
+.term-card {
+  background: #040e1c; border: 1px solid var(--border);
+  border-radius: 16px; padding: 28px 24px;
+  transition: border-color 0.2s, transform 0.2s;
+}
+.term-card:hover { border-color: #1e4b8855; transform: translateY(-3px); }
+.term-num {
+  font-family: var(--font-head); font-size: 11px; font-weight: 700;
+  letter-spacing: 2px; text-transform: uppercase; color: var(--text-dim);
+  margin-bottom: 16px;
+}
+.term-title { font-family: var(--font-head); font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
+.term-desc { font-size: 13px; color: var(--text-muted); line-height: 1.7; font-weight: 300; }
+
+.term-highlight {
+  display: inline-block; margin-top: 12px;
+  background: #052a16; border: 1px solid #0d5c30;
+  color: #00d97e; font-size: 11px; font-weight: 600;
+  padding: 4px 12px; border-radius: 20px;
+}
+.term-highlight.blue {
+  background: #071628; border-color: #1a3a6a; color: #60a5fa;
+}
+
+/* ─── BUDGET VISUAL ─── */
+#budget { background: #030d1b; }
+.budget-inner { max-width: 760px; }
+.budget-bar-wrap { margin: 40px 0; }
+.budget-label {
+  display: flex; justify-content: space-between;
+  font-size: 12px; color: var(--text-muted); margin-bottom: 10px;
+}
+.budget-bar {
+  width: 100%; height: 14px; background: #071628; border-radius: 10px;
+  overflow: hidden; margin-bottom: 6px;
+}
+.budget-fill {
+  height: 100%; border-radius: 10px;
+  background: linear-gradient(90deg, #00d97e, #10b981);
+  box-shadow: 0 0 12px #00d97e50;
+  transition: width 1.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.budget-fill.blue {
+  background: linear-gradient(90deg, #1d5fff, #3b82f6);
+  box-shadow: 0 0 12px #1d5fff50;
+}
+.budget-sublabel { font-size: 11px; color: var(--text-dim); }
+
+.budget-highlight {
+  background: linear-gradient(135deg, #052a16, #071e12);
+  border: 1px solid #0d5c30; border-radius: 16px;
+  padding: 28px 32px; margin-top: 36px;
+  display: flex; align-items: center; gap: 20px;
+}
+.bh-icon {
+  width: 48px; height: 48px; flex-shrink: 0; border-radius: 14px;
+  background: linear-gradient(135deg, #052a16, #0a3d22);
+  border: 1px solid #0d5c30;
+  display: flex; align-items: center; justify-content: center;
+}
+.bh-text { font-size: 14px; color: #94c9aa; line-height: 1.65; font-weight: 300; }
+.bh-text strong { color: #00d97e; font-weight: 500; }
+
+/* ─── CTA CONTACT ─── */
+#contact { padding: 60px 40px 90px; }
+.contact-card {
+  max-width: 700px; margin: 0 auto;
+  background: linear-gradient(135deg, #050f24, #0a1e42);
+  border: 1px solid #1a3a7a; border-radius: 22px;
+  padding: 56px 48px; text-align: center; position: relative; overflow: hidden;
+}
+.contact-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, #00d97e, #3b82f6, transparent);
+}
+.contact-card::after {
+  content: '';
+  position: absolute; bottom: -100px; right: -100px;
+  width: 280px; height: 280px; border-radius: 50%;
+  background: radial-gradient(circle, #00d97e08, transparent 70%);
+}
+.contact-title {
+  font-family: var(--font-head); font-size: clamp(26px, 4vw, 42px);
+  font-weight: 800; letter-spacing: -1.5px; margin-bottom: 14px;
+  background: linear-gradient(160deg, #fff 30%, #93c5fd 65%, #00d97e 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.contact-sub { font-size: 15px; color: var(--text-muted); margin-bottom: 32px; font-weight: 300; line-height: 1.7; }
+.contact-email {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: #071628; border: 1px solid #1a3a6a;
+  border-radius: 12px; padding: 14px 24px; margin-bottom: 20px;
+  font-family: var(--font-head); font-size: 16px; font-weight: 600;
+  color: var(--accent-light); text-decoration: none;
+  transition: border-color 0.2s, background 0.2s;
+}
+.contact-email:hover { border-color: var(--accent); background: #0a1f3e; }
+.contact-note { font-size: 12px; color: var(--text-dim); line-height: 1.6; max-width: 420px; margin: 0 auto; }
+.contact-note a { color: var(--accent-light); text-decoration: none; }
+
+/* ─── FOOTER ─── */
+footer {
+  background: #020913; border-top: 1px solid var(--border);
+  padding: 28px 40px;
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;
+}
+.footer-copy { font-size: 11px; color: var(--text-dim); }
+.footer-links { display: flex; gap: 20px; }
+.footer-links a { font-size: 12px; color: var(--text-dim); text-decoration: none; }
+.footer-links a:hover { color: var(--text-muted); }
+
+/* ─── SCROLL REVEAL ─── */
+.reveal { opacity: 0; transform: translateY(22px); transition: opacity 0.65s ease, transform 0.65s ease; }
+.reveal.visible { opacity: 1; transform: none; }
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 900px) {
+  nav { padding: 0 20px; }
+  .nav-links, .nav-actions .btn-ghost { display: none; }
+  .hamburger { display: flex; }
+  .hero-inner { grid-template-columns: 1fr; text-align: center; gap: 40px; }
+  .hero-sub { margin: 0 auto 32px; }
+  .hero-btns { justify-content: center; }
+  .hero-right { order: -1; }
+  .opp-grid { grid-template-columns: 1fr; }
+  .terms-grid { grid-template-columns: 1fr; }
+  section { padding: 60px 20px; }
+  #contact { padding: 40px 20px 70px; }
+  .contact-card { padding: 36px 24px; }
+  footer { flex-direction: column; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- CANVAS BACKGROUNDS -->
+<div id="canvasWrap"><canvas id="candleCanvas"></canvas></div>
+<canvas id="particleCanvas" style="position:fixed;inset:0;z-index:0;pointer-events:none;"></canvas>
+
+<div class="site">
+
+<!-- ─── NAV ─── -->
+<nav>
+  <a href="index.html" class="nav-logo">
+    <div class="nav-logo-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <path d="M7 20h10M9 20v-2c0-1 .5-2 1.5-2.5L13 14c.8-.4 1.5-1.2 1.5-2.5V9c0-1-.4-2-1-2.5C12.8 6 12 5.5 11 5.5H9.5C8.7 5.5 8 5 7.5 4.5L7 4c-.5-.5-1-.5-1.5-.5H5v3l1 1c.5.5 1 .5 1.5.5H8c.5 0 1 .3 1 .8V11c0 .5-.3.8-.8.8H7.5C7 11.8 7 12.5 7 13v5" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <span class="nav-logo-text">Legion<em>Futures</em></span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="index.html#pricing">Programs</a></li>
+    <li><a href="index.html#how">How It Works</a></li>
+    <li><a href="#" class="active">Partnership</a></li>
+  </ul>
+  <div class="nav-actions">
+    <button class="btn-ghost">Sign In</button>
+    <button class="btn-cta">Get Funded</button>
+    <div class="hamburger" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+  <button class="mobile-close" onclick="toggleMenu()">✕</button>
+  <a href="index.html" onclick="toggleMenu()">Home</a>
+  <a href="index.html#pricing" onclick="toggleMenu()">Programs</a>
+  <a href="#" onclick="toggleMenu()">Partnership</a>
+  <button class="btn-cta" style="font-size:16px;padding:14px 36px;">Get Funded</button>
+</div>
+
+<!-- ─── HERO ─── -->
+<section class="hero" id="top">
+  <div class="hero-inner">
+
+    <!-- LEFT -->
+    <div class="hero-left">
+      <div class="hero-pill"><span class="pill-dot"></span>Strategic Partner Opportunity</div>
+      <h1>
+        <span class="g1">Own Half of</span>
+        <span class="g2">Something Real.</span>
+      </h1>
+      <p class="hero-sub">LegionFutures is seeking one strategic growth partner to co-own 50% of the platform. This is not an ad sponsorship — this is equity, revenue share, and a seat at the table from day one.</p>
+      <div class="hero-btns">
+        <button class="btn-green" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Apply for Partnership</button>
+        <button class="btn-outline-w" onclick="document.getElementById('opportunity').scrollIntoView({behavior:'smooth'})">Learn More</button>
+      </div>
+    </div>
+
+    <!-- RIGHT — CHART -->
+    <div class="hero-right">
+      <div class="chart-wrap">
+        <canvas id="donutChart"></canvas>
+        <div class="chart-center">
+          <div class="chart-icon">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+              <path d="M7 23h14M9 23v-2.5c0-1.2.7-2.3 1.8-2.8l3-1.5c1.2-.6 2.2-1.8 2.2-3.7V9.5c0-1.5-.7-3-2-3.8-1-.8-2.4-1.2-3.8-1.2H8.5C7.4 4.5 6.4 4 5.8 3.2L5 2c-.7-.7-1.5-.7-2.2-.7H1v4l2 2c.8.7 1.6 1 2.5 1H7c.8 0 1.5.5 1.5 1.5v4c0 1-.5 1.5-1.5 1.5H6.5C5.5 15.3 5.5 17 5.5 18v5" stroke="url(#kgrad2)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <defs>
+                <linearGradient id="kgrad2" x1="1" y1="2" x2="23" y2="25" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#60a5fa"/><stop offset="1" stop-color="#3b82f6"/>
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          <div class="chart-label-main">Revenue Split</div>
+          <div class="chart-label-sub">50 / 50</div>
+        </div>
+      </div>
+
+      <div class="split-labels">
+        <div class="split-side">
+          <div class="split-pct partner">50%</div>
+          <div class="split-name">Strategic Partner</div>
+        </div>
+        <div class="split-divider">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#1e3d7a" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+        <div class="split-side">
+          <div class="split-pct legion">50%</div>
+          <div class="split-name">LegionFutures</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ─── OPPORTUNITY ─── -->
+<section id="opportunity">
+  <div class="sec-header reveal">
+    <div class="sec-label">The Opportunity</div>
+    <div class="sec-title">Why This Matters Now</div>
+    <div class="sec-sub">We are a lean, focused team building a competitive funded trading platform. We have the product, the infrastructure, and the vision — what we need is the fuel to ignite growth.</div>
+  </div>
+
+  <div class="opp-grid">
+
+    <!-- GROWTH VISUAL CARD -->
+    <div class="growth-card reveal">
+      <div class="growth-svg-wrap">
+        <!-- Animated plant / growth SVG -->
+        <svg id="plantSvg" width="220" height="200" viewBox="0 0 220 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Ground -->
+          <rect x="60" y="182" width="100" height="6" rx="3" fill="#0a3d22" opacity="0.7"/>
+          <!-- Pot -->
+          <path d="M80 182 L76 170 L144 170 L140 182Z" fill="#071e12" stroke="#0d5c30" stroke-width="1"/>
+          <rect x="70" y="162" width="80" height="10" rx="4" fill="#0a2e1a" stroke="#0d5c30" stroke-width="1"/>
+          <!-- Soil -->
+          <ellipse cx="110" cy="162" rx="36" ry="6" fill="#052a16" opacity="0.9"/>
+
+          <!-- Main stem -->
+          <path id="stem" d="M110 162 C110 140 110 120 110 90" stroke="url(#stemGrad)" stroke-width="3.5" stroke-linecap="round" opacity="0">
+            <animate attributeName="opacity" from="0" to="1" dur="0.4s" begin="0.3s" fill="freeze"/>
+            <animate attributeName="d" from="M110 162 C110 162 110 162 110 162" to="M110 162 C110 140 110 120 110 90" dur="1s" begin="0.3s" fill="freeze" calcMode="spline" keySplines="0.22 1 0.36 1"/>
+          </path>
+
+          <!-- Left branch -->
+          <path d="M110 125 C95 118 78 115 68 108" stroke="url(#stemGrad)" stroke-width="2.5" stroke-linecap="round" opacity="0">
+            <animate attributeName="opacity" from="0" to="1" dur="0.3s" begin="1.2s" fill="freeze"/>
+            <animate attributeName="d" from="M110 125 C110 125 110 125 110 125" to="M110 125 C95 118 78 115 68 108" dur="0.7s" begin="1.2s" fill="freeze" calcMode="spline" keySplines="0.22 1 0.36 1"/>
+          </path>
+
+          <!-- Right branch -->
+          <path d="M110 108 C124 100 138 98 150 92" stroke="url(#stemGrad)" stroke-width="2.5" stroke-linecap="round" opacity="0">
+            <animate attributeName="opacity" from="0" to="1" dur="0.3s" begin="1.5s" fill="freeze"/>
+            <animate attributeName="d" from="M110 108 C110 108 110 108 110 108" to="M110 108 C124 100 138 98 150 92" dur="0.7s" begin="1.5s" fill="freeze" calcMode="spline" keySplines="0.22 1 0.36 1"/>
+          </path>
+
+          <!-- Top branch right -->
+          <path d="M110 90 C122 82 135 76 145 68" stroke="url(#stemGrad)" stroke-width="2" stroke-linecap="round" opacity="0">
+            <animate attributeName="opacity" from="0" to="1" dur="0.3s" begin="1.8s" fill="freeze"/>
+          </path>
+          <!-- Top branch left -->
+          <path d="M110 90 C98 82 85 76 75 68" stroke="url(#stemGrad)" stroke-width="2" stroke-linecap="round" opacity="0">
+            <animate attributeName="opacity" from="0" to="1" dur="0.3s" begin="1.9s" fill="freeze"/>
+          </path>
+
+          <!-- Leaves — left branch leaf -->
+          <ellipse cx="64" cy="104" rx="16" ry="9" fill="url(#leafGrad)" transform="rotate(-25 64 104)" opacity="0">
+            <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="1.9s" fill="freeze"/>
+          </ellipse>
+          <!-- Leaves — right branch leaf -->
+          <ellipse cx="152" cy="88" rx="16" ry="9" fill="url(#leafGrad2)" transform="rotate(20 152 88)" opacity="0">
+            <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="2.1s" fill="freeze"/>
+          </ellipse>
+          <!-- Leaves — top left leaf -->
+          <ellipse cx="70" cy="63" rx="14" ry="8" fill="url(#leafGrad)" transform="rotate(-30 70 63)" opacity="0">
+            <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="2.2s" fill="freeze"/>
+          </ellipse>
+          <!-- Leaves — top right leaf -->
+          <ellipse cx="148" cy="64" rx="14" ry="8" fill="url(#leafGrad2)" transform="rotate(28 148 64)" opacity="0">
+            <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="2.3s" fill="freeze"/>
+          </ellipse>
+
+          <!-- Top flower/glow -->
+          <circle cx="110" cy="82" r="12" fill="url(#flowerGrad)" opacity="0">
+            <animate attributeName="opacity" from="0" to="0.9" dur="0.6s" begin="2.5s" fill="freeze"/>
+            <animate attributeName="r" from="4" to="12" dur="0.6s" begin="2.5s" fill="freeze" calcMode="spline" keySplines="0.22 1 0.36 1"/>
+          </circle>
+          <circle cx="110" cy="82" r="6" fill="#00d97e" opacity="0">
+            <animate attributeName="opacity" from="0" to="1" dur="0.4s" begin="2.8s" fill="freeze"/>
+          </circle>
+
+          <!-- Dollar sign in flower -->
+          <text x="110" y="87" text-anchor="middle" font-family="Syne,sans-serif" font-size="9" font-weight="700" fill="#020b18" opacity="0">
+            $
+            <animate attributeName="opacity" from="0" to="1" dur="0.4s" begin="3s" fill="freeze"/>
+          </text>
+
+          <!-- Sparkle dots -->
+          <circle cx="94" cy="70" r="2" fill="#00d97e" opacity="0">
+            <animate attributeName="opacity" values="0;1;0" dur="2s" begin="3.2s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="128" cy="60" r="2" fill="#34d399" opacity="0">
+            <animate attributeName="opacity" values="0;1;0" dur="2.4s" begin="3.5s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="58" cy="96" r="2" fill="#10b981" opacity="0">
+            <animate attributeName="opacity" values="0;1;0" dur="1.8s" begin="3.8s" repeatCount="indefinite"/>
+          </circle>
+
+          <defs>
+            <linearGradient id="stemGrad" x1="110" y1="162" x2="110" y2="70" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#059c5a"/><stop offset="1" stop-color="#34d399"/>
+            </linearGradient>
+            <linearGradient id="leafGrad" x1="0" y1="0" x2="1" y2="1" gradientUnits="objectBoundingBox">
+              <stop stop-color="#00d97e"/><stop offset="1" stop-color="#059c5a"/>
+            </linearGradient>
+            <linearGradient id="leafGrad2" x1="0" y1="0" x2="1" y2="1" gradientUnits="objectBoundingBox">
+              <stop stop-color="#10b981"/><stop offset="1" stop-color="#34d399"/>
+            </linearGradient>
+            <radialGradient id="flowerGrad" cx="50%" cy="50%" r="50%">
+              <stop stop-color="#00d97e" stop-opacity="0.4"/><stop offset="1" stop-color="#00d97e" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+        </svg>
+      </div>
+
+      <div class="growth-stats">
+        <div class="gstat">
+          <div class="gstat-num">$150K</div>
+          <div class="gstat-label">Promotion budget target</div>
+        </div>
+        <div class="gstat">
+          <div class="gstat-num">60%</div>
+          <div class="gstat-label">First-month revenue to partner</div>
+        </div>
+        <div class="gstat">
+          <div class="gstat-num">50%</div>
+          <div class="gstat-label">Equity stake offered</div>
+        </div>
+        <div class="gstat">
+          <div class="gstat-num">1</div>
+          <div class="gstat-label">Partner position available</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DETAILS CARD -->
+    <div class="details-card reveal">
+      <div class="detail-row">
+        <div class="detail-icon green">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2L12.5 7.5L18 8.2L14 12L15.1 17.5L10 14.8L4.9 17.5L6 12L2 8.2L7.5 7.5L10 2Z" stroke="#00d97e" stroke-width="1.4" stroke-linejoin="round"/></svg>
+        </div>
+        <div>
+          <div class="detail-title">True 50% Equity Ownership</div>
+          <div class="detail-desc">Your investment doesn't buy advertising exposure — it buys genuine co-ownership of LegionFutures. You become a 50% stakeholder with direct entitlement to platform revenues, protected by a formal legal contract.</div>
+        </div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-icon blue">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="4" width="16" height="12" rx="2" stroke="#60a5fa" stroke-width="1.4"/><path d="M2 8h16M6 12h4" stroke="#60a5fa" stroke-width="1.4" stroke-linecap="round"/></svg>
+        </div>
+        <div>
+          <div class="detail-title">Legally Binding Contract</div>
+          <div class="detail-desc">Every term, percentage, and obligation is formalized in a co-ownership agreement. You're not taking a leap of faith — you're signing a legally enforceable document that protects your stake and returns.</div>
+        </div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-icon green">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2v16M2 10h16" stroke="#00d97e" stroke-width="1.4" stroke-linecap="round"/><circle cx="10" cy="10" r="8" stroke="#00d97e" stroke-width="1.4"/></svg>
+        </div>
+        <div>
+          <div class="detail-title">60% Revenue First Month</div>
+          <div class="detail-desc">To accelerate your return on investment, we allocate 60% of all platform revenue in month one directly to the partner. This above-standard split continues until initial investment recovery is confirmed.</div>
+        </div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-icon blue">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 16l4-4 3 3 4-5 3 3" stroke="#60a5fa" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="2" y="2" width="16" height="14" rx="2" stroke="#60a5fa" stroke-width="1.4"/></svg>
+        </div>
+        <div>
+          <div class="detail-title">Funds Go Directly to Growth</div>
+          <div class="detail-desc">100% of partnership capital is allocated to performance marketing, influencer campaigns, and community building. No operational overhead. Pure acquisition and brand visibility investment.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ─── TERMS ─── -->
+<section id="terms">
+  <div class="sec-header reveal">
+    <div class="sec-label">Partnership Terms</div>
+    <div class="sec-title">What You Get. What We Build.</div>
+    <div class="sec-sub">Transparent, structured, and designed to align incentives on both sides.</div>
+  </div>
+  <div class="terms-grid reveal">
+
+    <div class="term-card">
+      <div class="term-num">01 — Ownership</div>
+      <div class="term-title">50% Platform Stake</div>
+      <div class="term-desc">The eligible partner acquires exactly half of LegionFutures' profit rights and operational revenues. Currently, the only roles within the company are the founding CEO and this new strategic partner position — no dilution, no hidden stakeholders.</div>
+      <span class="term-highlight">Equity contract included</span>
+    </div>
+
+    <div class="term-card">
+      <div class="term-num">02 — Returns</div>
+      <div class="term-title">60% Split, Month One</div>
+      <div class="term-desc">During the initial recovery period, the partner receives 60% of gross platform revenues — 10 percentage points above the long-term agreement — until their initial capital contribution has been fully recovered and confirmed.</div>
+      <span class="term-highlight">Accelerated ROI structure</span>
+    </div>
+
+    <div class="term-card">
+      <div class="term-num">03 — Capital Use</div>
+      <div class="term-title">$150K Growth Fund</div>
+      <div class="term-desc">The partnership budget is earmarked exclusively for marketing and user acquisition. We are a new platform with a small but active user base — this capital will fund the large-scale promotional push needed to establish market presence and grow revenue.</div>
+      <span class="term-highlight blue">100% marketing allocated</span>
+    </div>
+
+    <div class="term-card">
+      <div class="term-num">04 — Structure</div>
+      <div class="term-title">Two Stakeholders Only</div>
+      <div class="term-desc">LegionFutures operates lean. There is a single founding CEO and this one external partner position. No boards, no committees, no further dilution. The partner's 50% is protected by contract and will not be reduced without mutual written agreement.</div>
+      <span class="term-highlight">Protected by contract</span>
+    </div>
+
+    <div class="term-card">
+      <div class="term-num">05 — Eligibility</div>
+      <div class="term-title">Vetted Partnership</div>
+      <div class="term-desc">Given the significance of this arrangement, prospective partners are subject to a brief eligibility review. We are looking for individuals or entities who align with our vision and have the capacity to commit to the required promotional budget.</div>
+      <span class="term-highlight blue">Application required</span>
+    </div>
+
+    <div class="term-card">
+      <div class="term-num">06 — Future</div>
+      <div class="term-title">Ground Floor Entry</div>
+      <div class="term-desc">LegionFutures is early-stage by design. Our current user base is intentionally small — the right partner enters at the lowest possible valuation, capturing the full upside of a platform that has product-market fit and is ready to scale aggressively.</div>
+      <span class="term-highlight">Early-stage valuation</span>
+    </div>
+
+  </div>
+</section>
+
+<!-- ─── BUDGET VISUALIZATION ─── -->
+<section id="budget">
+  <div class="budget-inner reveal">
+    <div class="sec-label">Fund Allocation</div>
+    <div class="sec-title">Where the Capital Goes</div>
+    <div class="sec-sub">Every dollar of the partnership fund is allocated with a single objective — bringing traders to the platform and converting them to paid accounts.</div>
+
+    <div class="budget-bar-wrap">
+      <div class="budget-label"><span>Performance Marketing & Paid Ads</span><span>45%</span></div>
+      <div class="budget-bar"><div class="budget-fill" id="bar1" style="width:0%"></div></div>
+      <div class="budget-sublabel">Google, YouTube, Meta, Twitter/X targeted campaigns</div>
+
+      <br>
+      <div class="budget-label"><span>Influencer & Trader Community Partnerships</span><span>30%</span></div>
+      <div class="budget-bar"><div class="budget-fill blue" id="bar2" style="width:0%"></div></div>
+      <div class="budget-sublabel">Finance & trading content creators, affiliate program launch</div>
+
+      <br>
+      <div class="budget-label"><span>Brand Identity & Platform Development</span><span>15%</span></div>
+      <div class="budget-bar"><div class="budget-fill" id="bar3" style="width:0%"></div></div>
+      <div class="budget-sublabel">UI improvements, onboarding flow, trust-building assets</div>
+
+      <br>
+      <div class="budget-label"><span>Reserve & Contingency</span><span>10%</span></div>
+      <div class="budget-bar"><div class="budget-fill blue" id="bar4" style="width:0%"></div></div>
+      <div class="budget-sublabel">Operational buffer and opportunistic channel testing</div>
+    </div>
+
+    <div class="budget-highlight">
+      <div class="bh-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 2v20M2 12h20" stroke="#00d97e" stroke-width="1.5" stroke-linecap="round"/><circle cx="12" cy="12" r="10" stroke="#00d97e" stroke-width="1.5"/></svg>
+      </div>
+      <div class="bh-text">The total promotional budget target is <strong>$150,000</strong>. This capital, deployed through precision marketing channels, is designed to grow our active trader base from a small founding cohort to a <strong>significant, revenue-generating user base</strong> within the first 90 days of the campaign.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── CONTACT ─── -->
+<section id="contact">
+  <div class="contact-card reveal">
+    <div class="contact-title">Ready to Own 50%<br>of LegionFutures?</div>
+    <div class="contact-sub">If you are an investor, trader, or business operator who sees the opportunity in the funded trading space, we want to hear from you. One position. One partner. Reach out directly to start the conversation.</div>
+    <a class="contact-email" href="mailto:legionfuture@tuta.io">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="1" y="3" width="16" height="12" rx="2" stroke="#60a5fa" stroke-width="1.4"/><path d="M1 6l8 5 8-5" stroke="#60a5fa" stroke-width="1.4" stroke-linecap="round"/></svg>
+      legionfuture@tuta.io
+    </a>
+    <div class="contact-note">Send us a brief introduction — who you are, your background, and your interest in the partnership. All conversations are held in strict confidence. Formal terms, NDA, and contract documentation are provided upon qualification.</div>
+  </div>
+</section>
+
+<!-- ─── FOOTER ─── -->
+<footer>
+  <span class="footer-copy">© 2025 LegionFutures. All rights reserved. Trading involves risk.</span>
+  <div class="footer-links">
+    <a href="index.html">Home</a>
+    <a href="#">Privacy</a>
+    <a href="#">Terms</a>
+    <a href="mailto:legionfuture@tuta.io">Contact</a>
+  </div>
+</footer>
+
+</div><!-- /site -->
+
+<script>
+// ─── CANDLE ANIMATION ──────────────────────────────────────
+const canvas = document.getElementById('candleCanvas');
+const ctx = canvas.getContext('2d');
+function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+resizeCanvas(); window.addEventListener('resize', resizeCanvas);
+
+class Candle {
+  constructor() { this.reset(true); }
+  reset(init) {
+    this.x = Math.random() * canvas.width;
+    this.y = init ? Math.random() * canvas.height : canvas.height + 80;
+    this.w = 5 + Math.random() * 9;
+    this.bodyH = 18 + Math.random() * 70;
+    this.wickTop = 8 + Math.random() * 22;
+    this.wickBot = 6 + Math.random() * 18;
+    this.bull = Math.random() > 0.42;
+    this.speed = 0.2 + Math.random() * 0.5;
+    this.opacity = 0; this.fadeIn = 0.003 + Math.random() * 0.004;
+    this.fadeOut = false; this.maxOpacity = 0.35 + Math.random() * 0.5;
+  }
+  update() {
+    this.y -= this.speed;
+    if (!this.fadeOut) { this.opacity = Math.min(this.opacity + this.fadeIn, this.maxOpacity); if (this.y < canvas.height * 0.3) this.fadeOut = true; }
+    else { this.opacity -= 0.003; }
+    if (this.opacity <= 0 || this.y < -120) this.reset(false);
+  }
+  draw() {
+    ctx.save(); ctx.globalAlpha = this.opacity;
+    const color = this.bull ? 'rgba(0,217,126,1)' : 'rgba(255,69,96,1)';
+    ctx.shadowColor = this.bull ? '#00d97e' : '#ff4560'; ctx.shadowBlur = 10;
+    ctx.strokeStyle = color; ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.moveTo(this.x + this.w/2, this.y - this.wickTop); ctx.lineTo(this.x + this.w/2, this.y + this.bodyH + this.wickBot); ctx.stroke();
+    const grad = ctx.createLinearGradient(0, this.y, 0, this.y + this.bodyH);
+    if (this.bull) { grad.addColorStop(0,'rgba(0,217,126,0.9)'); grad.addColorStop(1,'rgba(0,150,80,0.5)'); }
+    else { grad.addColorStop(0,'rgba(255,69,96,0.9)'); grad.addColorStop(1,'rgba(180,30,50,0.5)'); }
+    ctx.fillStyle = grad; ctx.shadowBlur = 16; ctx.fillRect(this.x, this.y, this.w, this.bodyH);
+    ctx.restore();
+  }
+}
+const candles = Array.from({length: 30}, () => new Candle());
+function animate() { ctx.clearRect(0,0,canvas.width,canvas.height); candles.forEach(c => { c.update(); c.draw(); }); requestAnimationFrame(animate); }
+animate();
+
+// ─── PARTICLE STREAM (green upward dots) ──────────────────
+const pc = document.getElementById('particleCanvas');
+const pctx = pc.getContext('2d');
+function resizePc() { pc.width = window.innerWidth; pc.height = window.innerHeight; }
+resizePc(); window.addEventListener('resize', resizePc);
+
+const particles = Array.from({length: 40}, () => ({
+  x: Math.random() * pc.width, y: Math.random() * pc.height,
+  r: 1 + Math.random() * 2, speed: 0.3 + Math.random() * 0.8,
+  opacity: Math.random(), green: Math.random() > 0.5
+}));
+function animateParticles() {
+  pctx.clearRect(0,0,pc.width,pc.height);
+  particles.forEach(p => {
+    p.y -= p.speed; p.opacity = Math.sin(Date.now() * 0.001 + p.x) * 0.5 + 0.5;
+    if (p.y < -10) { p.y = pc.height + 10; p.x = Math.random() * pc.width; }
+    pctx.save(); pctx.globalAlpha = p.opacity * 0.4;
+    pctx.fillStyle = p.green ? '#00d97e' : '#3b82f6';
+    pctx.shadowColor = pctx.fillStyle; pctx.shadowBlur = 8;
+    pctx.beginPath(); pctx.arc(p.x, p.y, p.r, 0, Math.PI*2); pctx.fill();
+    pctx.restore();
+  });
+  requestAnimationFrame(animateParticles);
+}
+animateParticles();
+
+// ─── DONUT CHART ──────────────────────────────────────────
+const donut = document.getElementById('donutChart');
+new Chart(donut, {
+  type: 'doughnut',
+  data: {
+    datasets: [{
+      data: [50, 50],
+      backgroundColor: [
+        'rgba(0, 217, 126, 0.85)',
+        'rgba(37, 99, 235, 0.85)'
+      ],
+      borderColor: [
+        'rgba(0, 217, 126, 0.3)',
+        'rgba(37, 99, 235, 0.3)'
+      ],
+      borderWidth: 2,
+      hoverBorderWidth: 3,
+      hoverBorderColor: ['#00d97e', '#3b82f6']
+    }]
+  },
+  options: {
+    cutout: '72%',
+    responsive: true,
+    animation: { animateRotate: true, duration: 1400, easing: 'easeInOutQuart' },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: (ctx) => {
+            const labels = ['Strategic Partner', 'LegionFutures'];
+            return ` ${labels[ctx.dataIndex]}: ${ctx.parsed}%`;
+          }
+        },
+        backgroundColor: '#071628',
+        borderColor: '#1a3a6a',
+        borderWidth: 1,
+        titleColor: '#e2ecff',
+        bodyColor: '#6b8cbc',
+        padding: 12,
+        titleFont: { family: 'Syne', size: 13, weight: '600' },
+        bodyFont: { family: 'DM Sans', size: 12 }
+      }
+    }
+  }
+});
+
+// ─── SCROLL REVEAL ───────────────────────────────────────
+const revealEls = document.querySelectorAll('.reveal');
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+}, { threshold: 0.1 });
+revealEls.forEach(el => obs.observe(el));
+
+// ─── BUDGET BARS ANIMATION ───────────────────────────────
+const barData = [
+  { id: 'bar1', pct: 45 },
+  { id: 'bar2', pct: 30 },
+  { id: 'bar3', pct: 15 },
+  { id: 'bar4', pct: 10 }
+];
+const barObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      barData.forEach((b, i) => {
+        setTimeout(() => {
+          const el = document.getElementById(b.id);
+          if (el) el.style.width = b.pct + '%';
+        }, i * 180);
+      });
+      barObs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.3 });
+const budgetSection = document.getElementById('budget');
+if (budgetSection) barObs.observe(budgetSection);
+
+// ─── MOBILE MENU ────────────────────────────────────────
+function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('open'); }
+</script>
+</body>
+</html>
