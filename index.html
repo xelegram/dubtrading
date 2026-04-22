@@ -3,2003 +3,1231 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FuturesCalc — Precision Trading Calculator</title>
+<title>LegionFutures — Elite Funded Trading</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --orange: #ff8c2b;
-    --orange-dim: #c96a1a;
-    --bg: #0b1117;
-    --surface: #111b25;
-    --surface2: #1a2737;
-    --border: #1f3247;
-    --text: #e8edf2;
-    --muted: #5a7a8a;
-    --green: #34c759;
-    --red: #ff3b30;
-    --blue: #1a6abf;
-  }
-
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  html { scroll-behavior: smooth; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Syne', sans-serif;
-    overflow-x: hidden;
-  }
-
-  /* ── NOISE OVERLAY ── */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 999;
-    opacity: 0.5;
-  }
-
-  /* ── NAV ── */
-  nav {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    z-index: 100;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 18px 48px;
-    background: rgba(11,17,23,0.85);
-    backdrop-filter: blur(20px);
-    border-bottom: 1px solid var(--border);
-  }
-
-  .nav-logo {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 28px;
-    letter-spacing: 2px;
-    color: var(--orange);
-  }
-  .nav-logo span { color: var(--text); }
-
-  nav ul { list-style: none; display: flex; gap: 36px; }
-  nav ul a {
-    text-decoration: none;
-    color: var(--muted);
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    transition: color .2s;
-  }
-  nav ul a:hover { color: var(--orange); }
-
-  .nav-cta {
-    background: var(--orange);
-    color: #000 !important;
-    padding: 8px 20px;
-    border-radius: 6px;
-    font-weight: 700 !important;
-  }
-  .nav-cta:hover { background: #ffaa55 !important; color: #000 !important; }
-
-  /* ── HERO ── */
-  .hero {
-    min-height: 100vh;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    align-items: center;
-    padding: 100px 48px 60px;
-    gap: 60px;
-    position: relative;
-    overflow: hidden;
-  }
-
-  /* Grid lines background */
-  .hero::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(255,140,43,0.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,140,43,0.04) 1px, transparent 1px);
-    background-size: 60px 60px;
-    pointer-events: none;
-  }
-
-  .hero-glow {
-    position: absolute;
-    width: 600px; height: 600px;
-    background: radial-gradient(circle, rgba(255,140,43,0.12) 0%, transparent 70%);
-    top: 50%; left: 30%;
-    transform: translate(-50%, -50%);
-    pointer-events: none;
-  }
-
-  .hero-label {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 2px;
-    color: var(--orange);
-    border: 1px solid rgba(255,140,43,0.3);
-    padding: 6px 14px;
-    border-radius: 100px;
-    margin-bottom: 24px;
-    text-transform: uppercase;
-  }
-  .hero-label::before {
-    content: '';
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: var(--green);
-    animation: pulse 2s infinite;
-  }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
-  }
-
-  .hero h1 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(56px, 6vw, 88px);
-    line-height: 0.95;
-    letter-spacing: 2px;
-    margin-bottom: 24px;
-  }
-
-  .hero h1 .accent { color: var(--orange); }
-
-  .hero p {
-    font-size: 17px;
-    color: var(--muted);
-    line-height: 1.7;
-    max-width: 480px;
-    margin-bottom: 40px;
-  }
-
-  .hero-actions { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
-
-  .btn-primary {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    background: var(--orange);
-    color: #000;
-    font-family: 'Syne', sans-serif;
-    font-weight: 700;
-    font-size: 15px;
-    padding: 14px 32px;
-    border-radius: 8px;
-    text-decoration: none;
-    border: none;
-    cursor: pointer;
-    transition: all .2s;
-    letter-spacing: 0.5px;
-  }
-  .btn-primary:hover {
-    background: #ffaa55;
-    transform: translateY(-2px);
-    box-shadow: 0 12px 40px rgba(255,140,43,0.35);
-  }
-
-  .btn-ghost {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: transparent;
-    color: var(--text);
-    font-family: 'Syne', sans-serif;
-    font-weight: 600;
-    font-size: 14px;
-    padding: 14px 24px;
-    border-radius: 8px;
-    text-decoration: none;
-    border: 1px solid var(--border);
-    cursor: pointer;
-    transition: all .2s;
-  }
-  .btn-ghost:hover { border-color: var(--orange); color: var(--orange); }
-
-  /* ── APP MOCKUP ── */
-  .app-mockup {
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    z-index: 1;
-  }
-
-  .phone-frame {
-    width: 280px;
-    background: var(--surface);
-    border-radius: 28px;
-    border: 2px solid var(--orange);
-    box-shadow:
-      0 0 0 6px rgba(255,140,43,0.08),
-      0 40px 80px rgba(0,0,0,0.6),
-      0 0 60px rgba(255,140,43,0.15);
-    overflow: hidden;
-    position: relative;
-    animation: float 6s ease-in-out infinite;
-  }
-
-  @keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-12px); }
-  }
-
-  .phone-titlebar {
-    background: #0f1720;
-    padding: 10px 14px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid var(--border);
-  }
-  .phone-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 18px;
-    letter-spacing: 1px;
-    color: var(--orange);
-  }
-  .phone-dots { display: flex; gap: 5px; }
-  .phone-dot { width: 9px; height: 9px; border-radius: 50%; }
-  .dot-r { background: var(--red); }
-  .dot-y { background: #f5a623; }
-  .dot-g { background: var(--green); }
-
-  .phone-body { padding: 16px; }
-
-  .phone-display {
-    background: #0f1720;
-    border-radius: 10px;
-    border: 1px solid var(--orange);
-    padding: 12px 14px;
-    margin-bottom: 12px;
-    text-align: right;
-  }
-  .phone-mode {
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    color: var(--green);
-    letter-spacing: 1px;
-    margin-bottom: 4px;
-  }
-  .phone-value {
-    font-family: 'DM Mono', monospace;
-    font-size: 28px;
-    color: var(--text);
-    counter-reset: anim;
-    animation: countup 3s ease-out forwards;
-  }
-
-  @keyframes countup {
-    0% { opacity: 0.3; }
-    100% { opacity: 1; }
-  }
-
-  .phone-asset-row {
-    display: flex;
-    gap: 6px;
-    margin-bottom: 12px;
-  }
-  .asset-chip {
-    flex: 1;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 6px;
-    text-align: center;
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    color: var(--muted);
-    transition: all .2s;
-  }
-  .asset-chip.active {
-    border-color: var(--orange);
-    color: var(--orange);
-    background: rgba(255,140,43,0.1);
-  }
-
-  .phone-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 5px;
-  }
-  .phone-btn {
-    background: #243748;
-    border-radius: 6px;
-    padding: 10px 0;
-    text-align: center;
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    color: var(--text);
-  }
-  .phone-btn.op { color: var(--orange); }
-  .phone-btn.eq {
-    background: var(--orange);
-    color: #000;
-    font-weight: 700;
-    grid-column: span 2;
-  }
-
-  /* ── STATS STRIP ── */
-  .stats-strip {
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-    padding: 28px 48px;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0;
-  }
-  .stat-item {
-    text-align: center;
-    padding: 0 20px;
-    border-right: 1px solid var(--border);
-  }
-  .stat-item:last-child { border-right: none; }
-  .stat-num {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 42px;
-    color: var(--orange);
-    letter-spacing: 1px;
-    line-height: 1;
-  }
-  .stat-label {
-    font-size: 11px;
-    color: var(--muted);
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    margin-top: 4px;
-    font-family: 'DM Mono', monospace;
-  }
-
-  /* ── SECTION COMMON ── */
-  section { padding: 100px 48px; }
-  .section-tag {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 2px;
-    color: var(--orange);
-    text-transform: uppercase;
-    margin-bottom: 12px;
-  }
-  .section-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(38px, 4vw, 58px);
-    letter-spacing: 1px;
-    line-height: 1;
-    margin-bottom: 20px;
-  }
-  .section-sub {
-    color: var(--muted);
-    font-size: 16px;
-    line-height: 1.7;
-    max-width: 560px;
-  }
-
-  /* ── CHARTS SECTION ── */
-  .charts-section { background: var(--surface); }
-
-  .charts-header {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 80px;
-    align-items: end;
-    margin-bottom: 60px;
-  }
-
-  .charts-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-  }
-
-  .chart-card {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 24px;
-    position: relative;
-    overflow: hidden;
-    transition: border-color .3s;
-  }
-  .chart-card:hover { border-color: rgba(255,140,43,0.4); }
-  .chart-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, var(--orange), transparent);
-  }
-
-  .chart-card-title {
-    font-size: 11px;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--muted);
-    font-family: 'DM Mono', monospace;
-    margin-bottom: 4px;
-  }
-  .chart-card-value {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 30px;
-    color: var(--text);
-    letter-spacing: 1px;
-    margin-bottom: 16px;
-  }
-  .chart-card-value span { color: var(--green); font-size: 16px; font-family: 'DM Mono', monospace; }
-
-  .chart-card canvas { max-height: 180px; }
-  .chart-card.wide { grid-column: span 2; }
-
-  /* ── FEATURES ── */
-  .features-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 2px;
-    margin-top: 60px;
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    overflow: hidden;
-  }
-
-  .feature-card {
-    padding: 40px 32px;
-    background: var(--surface);
-    border-right: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-    transition: background .3s;
-    position: relative;
-  }
-  .feature-card:hover { background: var(--surface2); }
-  .feature-card:nth-child(3n) { border-right: none; }
-  .feature-card:nth-last-child(-n+3) { border-bottom: none; }
-
-  .feature-icon {
-    width: 44px; height: 44px;
-    border-radius: 10px;
-    background: rgba(255,140,43,0.12);
-    border: 1px solid rgba(255,140,43,0.25);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    margin-bottom: 20px;
-  }
-
-  .feature-card h3 {
-    font-size: 17px;
-    font-weight: 700;
-    margin-bottom: 10px;
-    color: var(--text);
-  }
-  .feature-card p {
-    font-size: 14px;
-    color: var(--muted);
-    line-height: 1.65;
-  }
-
-  /* ── INSTRUMENTS ── */
-  .instruments-section {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 80px;
-    align-items: center;
-  }
-
-  .instruments-table {
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    overflow: hidden;
-  }
-  .instruments-table table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  .instruments-table th {
-    padding: 14px 20px;
-    text-align: left;
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 2px;
-    color: var(--muted);
-    text-transform: uppercase;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-  }
-  .instruments-table td {
-    padding: 16px 20px;
-    border-bottom: 1px solid var(--border);
-    font-size: 14px;
-    transition: background .2s;
-  }
-  .instruments-table tr:last-child td { border-bottom: none; }
-  .instruments-table tr:hover td { background: var(--surface2); }
-  .instruments-table .symbol {
-    font-family: 'DM Mono', monospace;
-    color: var(--orange);
-    font-weight: 500;
-  }
-  .instruments-table .tick-val {
-    font-family: 'DM Mono', monospace;
-    color: var(--green);
-  }
-  .badge {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 10px;
-    font-family: 'DM Mono', monospace;
-    letter-spacing: 0.5px;
-  }
-  .badge-micro { background: rgba(26,106,191,0.2); color: var(--blue); border: 1px solid rgba(26,106,191,0.3); }
-  .badge-std { background: rgba(255,140,43,0.15); color: var(--orange); border: 1px solid rgba(255,140,43,0.25); }
-
-  /* ── CONSISTENCY DEEP DIVE ── */
-  .consistency-section {
-    background: var(--surface);
-  }
-
-  .consistency-layout {
-    display: grid;
-    grid-template-columns: 1fr 1.4fr;
-    gap: 80px;
-    align-items: center;
-    margin-top: 60px;
-  }
-
-  .consistency-metrics {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  .metric-bar {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 18px 20px;
-  }
-  .metric-bar-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-  }
-  .metric-name {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text);
-  }
-  .metric-pct {
-    font-family: 'DM Mono', monospace;
-    font-size: 13px;
-    color: var(--green);
-  }
-  .metric-track {
-    height: 6px;
-    background: var(--border);
-    border-radius: 3px;
-    overflow: hidden;
-  }
-  .metric-fill {
-    height: 100%;
-    border-radius: 3px;
-    background: linear-gradient(90deg, var(--orange), #ffaa55);
-    transition: width 1s ease;
-  }
-  .metric-fill.green { background: linear-gradient(90deg, var(--green), #55e87a); }
-  .metric-fill.blue { background: linear-gradient(90deg, var(--blue), #4da6ff); }
-
-  /* ── PRICING ── */
-  .pricing-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
-    margin-top: 60px;
-  }
-
-  .pricing-card {
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 36px 28px;
-    background: var(--surface);
-    position: relative;
-    overflow: hidden;
-    transition: transform .3s, box-shadow .3s;
-  }
-  .pricing-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 24px 60px rgba(0,0,0,0.4);
-  }
-  .pricing-card.featured {
-    border-color: var(--orange);
-    background: rgba(255,140,43,0.05);
-  }
-  .pricing-card.featured::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-    background: var(--orange);
-  }
-  .pricing-badge {
-    position: absolute;
-    top: 20px; right: 20px;
-    background: var(--orange);
-    color: #000;
-    font-size: 10px;
-    font-weight: 700;
-    padding: 3px 10px;
-    border-radius: 100px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-  }
-  .pricing-plan {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 2px;
-    color: var(--muted);
-    text-transform: uppercase;
-    margin-bottom: 12px;
-  }
-  .pricing-price {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 56px;
-    color: var(--text);
-    line-height: 1;
-    margin-bottom: 4px;
-  }
-  .pricing-price sup { font-size: 24px; vertical-align: top; margin-top: 8px; color: var(--muted); }
-  .pricing-period {
-    font-size: 12px;
-    color: var(--muted);
-    margin-bottom: 28px;
-    font-family: 'DM Mono', monospace;
-  }
-  .pricing-features { list-style: none; margin-bottom: 32px; }
-  .pricing-features li {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 14px;
-    color: var(--muted);
-    padding: 8px 0;
-    border-bottom: 1px solid var(--border);
-  }
-  .pricing-features li:last-child { border-bottom: none; }
-  .pricing-features li::before {
-    content: '✓';
-    color: var(--green);
-    font-weight: 700;
-    flex-shrink: 0;
-  }
-  .pricing-features li.dim::before { content: '—'; color: var(--border); }
-  .pricing-features li.dim { opacity: 0.4; }
-
-  /* ── CTA BANNER ── */
-  .cta-banner {
-    margin: 0 48px 100px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 24px;
-    padding: 80px 60px;
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 40px;
-    align-items: center;
-    position: relative;
-    overflow: hidden;
-  }
-  .cta-banner::after {
-    content: '';
-    position: absolute;
-    bottom: -60px; right: -60px;
-    width: 300px; height: 300px;
-    background: radial-gradient(circle, rgba(255,140,43,0.12), transparent 70%);
-    pointer-events: none;
-  }
-  .cta-banner h2 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 48px;
-    letter-spacing: 1px;
-    margin-bottom: 12px;
-  }
-  .cta-banner p { color: var(--muted); font-size: 16px; }
-
-  /* ── FOOTER ── */
-  footer {
-    border-top: 1px solid var(--border);
-    padding: 40px 48px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  footer p { color: var(--muted); font-size: 13px; font-family: 'DM Mono', monospace; }
-
-  /* ── SCROLL ANIMATIONS ── */
-  .reveal {
-    opacity: 0;
-    transform: translateY(30px);
-    transition: opacity .7s ease, transform .7s ease;
-  }
-  .reveal.visible {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  /* ── TICKER TAPE ── */
-  .ticker {
-    background: #0a0f14;
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-    padding: 10px 0;
-    overflow: hidden;
-    white-space: nowrap;
-  }
-  .ticker-inner {
-    display: inline-flex;
-    gap: 0;
-    animation: ticker 25s linear infinite;
-  }
-  .ticker-item {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 0 32px;
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    border-right: 1px solid var(--border);
-  }
-  .ticker-sym { color: var(--orange); font-weight: 500; }
-  .ticker-val { color: var(--text); }
-  .ticker-up { color: var(--green); }
-  .ticker-down { color: var(--red); }
-
-  @keyframes ticker {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
-  }
-
-  /* Mobile */
-  /* ── INTERACTIVE CONSISTENCY CALC ── */
-  .try-section {
-    background: var(--bg);
-    border-top: 1px solid var(--border);
-  }
-  .try-layout {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 60px;
-    align-items: start;
-    margin-top: 60px;
-  }
-
-  /* The widget itself */
-  .cc-widget {
-    background: #0f1a24;
-    border: 1.5px solid #1f3a52;
-    border-radius: 20px;
-    padding: 24px 22px;
-    box-shadow: 0 0 60px rgba(0,0,0,0.5), 0 0 30px rgba(255,140,43,0.05);
-    font-family: 'DM Mono', monospace;
-    position: relative;
-  }
-  .cc-widget::before {
-    content: 'LIVE DEMO';
-    position: absolute;
-    top: -11px; right: 20px;
-    background: var(--orange);
-    color: #000;
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    padding: 2px 10px;
-    border-radius: 4px;
-  }
-
-  .cc-section-label {
-    font-size: 9px;
-    letter-spacing: 2px;
-    color: var(--muted);
-    text-transform: uppercase;
-    margin-bottom: 10px;
-    margin-top: 16px;
-  }
-  .cc-section-label:first-child { margin-top: 0; }
-
-  .cc-type-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    margin-bottom: 4px;
-  }
-  .cc-type-btn {
-    background: var(--surface2);
-    border: 1.5px solid var(--border);
-    border-radius: 10px;
-    padding: 9px 6px;
-    text-align: center;
-    cursor: pointer;
-    transition: all .2s;
-    user-select: none;
-  }
-  .cc-type-btn .t-name {
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    color: var(--muted);
-    display: block;
-  }
-  .cc-type-btn .t-sub {
-    font-size: 9px;
-    color: var(--muted);
-    opacity: 0.7;
-  }
-  .cc-type-btn.active {
-    border-color: var(--orange);
-    background: rgba(255,140,43,0.1);
-  }
-  .cc-type-btn.active .t-name { color: var(--orange); }
-  .cc-type-btn.active .t-sub { color: var(--orange); opacity: 0.8; }
-
-  .cc-size-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-  }
-  .cc-size-btn {
-    background: var(--surface2);
-    border: 1.5px solid var(--border);
-    border-radius: 10px;
-    padding: 10px;
-    text-align: center;
-    cursor: pointer;
-    font-size: 12px;
-    color: var(--muted);
-    font-weight: 700;
-    transition: all .2s;
-    user-select: none;
-  }
-  .cc-size-btn.active {
-    border-color: var(--orange);
-    background: rgba(255,140,43,0.12);
-    color: var(--orange);
-  }
-
-  .cc-days-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-top: 4px;
-  }
-  .cc-days-row .label { color: var(--muted); font-size: 12px; }
-  .cc-counter {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 4px 10px;
-  }
-  .cc-counter button {
-    background: none;
-    border: none;
-    color: var(--text);
-    font-size: 18px;
-    cursor: pointer;
-    padding: 0 4px;
-    line-height: 1;
-    transition: color .15s;
-  }
-  .cc-counter button:hover { color: var(--orange); }
-  .cc-counter .count-val { font-size: 16px; color: var(--text); font-weight: 700; min-width: 20px; text-align: center; }
-
-  .cc-gen-btn {
-    background: var(--blue);
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    padding: 9px 16px;
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    cursor: pointer;
-    margin-left: auto;
-    white-space: nowrap;
-    transition: background .2s, transform .15s;
-    letter-spacing: 0.5px;
-  }
-  .cc-gen-btn:hover { background: #2280e0; transform: translateY(-1px); }
-
-  .cc-inputs-grid {
-    display: grid;
-    gap: 8px;
-  }
-  .cc-input-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 8px 14px;
-  }
-  .cc-input-label {
-    font-size: 10px;
-    color: var(--muted);
-    min-width: 52px;
-  }
-  .cc-input-sep { color: var(--border); font-size: 16px; }
-  .cc-input-row input {
-    background: none;
-    border: none;
-    outline: none;
-    color: var(--orange);
-    font-family: 'DM Mono', monospace;
-    font-size: 16px;
-    font-weight: 700;
-    width: 100%;
-    text-align: right;
-  }
-  .cc-input-row input::placeholder { color: rgba(255,140,43,0.3); }
-
-  /* Result panel */
-  .cc-result {
-    margin-top: 16px;
-    background: #071210;
-    border: 1.5px solid rgba(52,199,89,0.25);
-    border-radius: 14px;
-    padding: 16px;
-    transition: border-color .3s;
-  }
-  .cc-result.failing {
-    background: #130a07;
-    border-color: rgba(255,59,48,0.3);
-  }
-
-  .cc-result-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-  }
-  .cc-score {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 48px;
-    color: var(--green);
-    line-height: 1;
-    transition: color .3s;
-  }
-  .cc-score.failing { color: var(--red); }
-  .cc-score sup { font-size: 22px; vertical-align: top; margin-top: 8px; }
-
-  .cc-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 10px;
-    letter-spacing: 1px;
-    padding: 5px 12px;
-    border-radius: 6px;
-    font-family: 'DM Mono', monospace;
-    font-weight: 700;
-    text-transform: uppercase;
-    border: 1px solid var(--green);
-    background: rgba(52,199,89,0.12);
-    color: var(--green);
-    transition: all .3s;
-  }
-  .cc-badge.failing {
-    border-color: var(--red);
-    background: rgba(255,59,48,0.12);
-    color: var(--red);
-  }
-
-  .cc-bar-wrap {
-    height: 8px;
-    background: var(--border);
-    border-radius: 4px;
-    margin-bottom: 4px;
-    position: relative;
-    overflow: hidden;
-  }
-  .cc-bar-fill {
-    height: 100%;
-    border-radius: 4px;
-    background: linear-gradient(90deg, var(--green), #55e87a);
-    transition: width .5s cubic-bezier(.4,0,.2,1), background .3s;
-  }
-  .cc-bar-fill.failing { background: linear-gradient(90deg, var(--red), #ff7070); }
-  .cc-bar-limits {
-    display: flex;
-    justify-content: space-between;
-    font-size: 9px;
-    color: var(--muted);
-    margin-bottom: 12px;
-  }
-  .cc-bar-limits .limit-line {
-    position: absolute;
-    top: 0; height: 100%;
-    width: 2px;
-    background: var(--orange);
-    opacity: 0.7;
-  }
-
-  .cc-stats-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
-    margin-bottom: 8px;
-  }
-  .cc-stat-box {
-    background: rgba(0,0,0,0.3);
-    border-radius: 8px;
-    padding: 8px 10px;
-  }
-  .cc-stat-lbl { font-size: 8px; color: var(--muted); margin-bottom: 3px; letter-spacing: 1px; }
-  .cc-stat-val { font-size: 13px; color: var(--green); font-weight: 700; }
-  .cc-stat-val.red { color: var(--red); }
-  .cc-stat-val.white { color: var(--text); }
-
-  .cc-bottom-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px; }
-
-  .cc-verdict {
-    text-align: center;
-    font-size: 11px;
-    color: var(--green);
-    letter-spacing: 0.5px;
-    padding-top: 4px;
-    transition: color .3s;
-  }
-  .cc-verdict.failing { color: var(--red); }
-
-  /* Right side explanation */
-  .try-explainer { display: flex; flex-direction: column; gap: 24px; }
-  .explainer-step {
-    display: flex;
-    gap: 16px;
-    align-items: flex-start;
-  }
-  .step-num {
-    width: 36px; height: 36px;
-    border-radius: 50%;
-    background: rgba(255,140,43,0.1);
-    border: 1px solid rgba(255,140,43,0.3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 18px;
-    color: var(--orange);
-    flex-shrink: 0;
-  }
-  .explainer-step h4 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
-  .explainer-step p { font-size: 13px; color: var(--muted); line-height: 1.6; }
-
-  @media (max-width: 768px) {
-    .try-layout { grid-template-columns: 1fr; gap: 40px; }
-    .cc-type-grid { grid-template-columns: 1fr 1fr 1fr; }
-  }
+:root {
+  --navy: #020b18;
+  --navy2: #040f20;
+  --blue-deep: #061529;
+  --blue-mid: #0b2147;
+  --accent: #1d5fff;
+  --accent2: #3b82f6;
+  --accent-light: #60a5fa;
+  --glow: #1d5fff33;
+  --text: #e2ecff;
+  --text-muted: #6b8cbc;
+  --text-dim: #2e4a74;
+  --border: #0e2a4a;
+  --border2: #1a3a6a;
+  --green: #00d97e;
+  --red: #ff4560;
+  --card: #050e1d;
+  --font-head: 'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--navy);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* ─── CANDLE CANVAS ─── */
+#canvasWrap {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+canvas#candleCanvas {
+  width: 100%;
+  height: 100%;
+  opacity: 0.18;
+}
+
+/* ─── SITE WRAPPER ─── */
+.site { position: relative; z-index: 1; }
+
+/* ─── NAV ─── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px;
+  height: 64px;
+  background: linear-gradient(180deg, #020b18ee 0%, #020b1800 100%);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid #ffffff08;
+}
+.nav-logo {
+  display: flex; align-items: center; gap: 10px;
+  text-decoration: none;
+}
+.nav-logo-icon {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 0 16px #1d5fff44;
+}
+.nav-logo-text {
+  font-family: var(--font-head);
+  font-size: 17px; font-weight: 700;
+  background: linear-gradient(90deg, #e2ecff 60%, #60a5fa);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  letter-spacing: -0.3px;
+}
+.nav-logo-text em { font-style: normal; font-weight: 400; opacity: 0.7; }
+.nav-links {
+  display: flex; align-items: center; gap: 6px;
+  list-style: none;
+}
+.nav-links a {
+  color: #94a9c9; font-size: 13px; font-weight: 400;
+  text-decoration: none; padding: 6px 12px; border-radius: 7px;
+  transition: color 0.2s, background 0.2s;
+  font-family: var(--font-body);
+  letter-spacing: 0.1px;
+}
+.nav-links a:hover { color: var(--text); background: #ffffff0a; }
+.nav-actions { display: flex; align-items: center; gap: 10px; }
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--accent-light); font-size: 13px; font-weight: 500;
+  padding: 7px 18px; border-radius: 8px; cursor: pointer;
+  font-family: var(--font-body);
+  transition: background 0.2s, border-color 0.2s;
+}
+.btn-ghost:hover { background: var(--blue-mid); border-color: var(--accent); }
+.btn-cta {
+  background: linear-gradient(135deg, #1a56db 0%, #2563eb 100%);
+  border: none; color: #fff; font-size: 13px; font-weight: 600;
+  padding: 8px 20px; border-radius: 8px; cursor: pointer;
+  font-family: var(--font-body);
+  letter-spacing: 0.2px;
+  box-shadow: 0 0 20px #1d5fff30;
+  transition: opacity 0.15s, transform 0.15s, box-shadow 0.15s;
+}
+.btn-cta:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 4px 24px #1d5fff40; }
+.hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; }
+.hamburger span { width: 22px; height: 2px; background: var(--text-muted); border-radius: 2px; transition: 0.3s; }
+
+/* ─── HERO ─── */
+.hero {
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  padding: 100px 40px 60px;
+  text-align: center;
+  position: relative;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 0%, #0a2050 0%, transparent 65%),
+    radial-gradient(ellipse 40% 40% at 20% 80%, #051a3a 0%, transparent 60%),
+    radial-gradient(ellipse 30% 35% at 80% 70%, #071e42 0%, transparent 60%);
+  pointer-events: none;
+}
+.hero-inner { position: relative; max-width: 780px; }
+.hero-pill {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: #0b1f42; border: 1px solid #1e3d7a;
+  padding: 5px 16px 5px 10px; border-radius: 50px;
+  font-size: 11.5px; font-weight: 500; color: var(--accent-light);
+  letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 28px;
+}
+.pill-dot {
+  width: 7px; height: 7px; background: var(--accent2);
+  border-radius: 50%; animation: blink 2s infinite;
+}
+@keyframes blink { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.8)} }
+
+.hero h1 {
+  font-family: var(--font-head);
+  font-size: clamp(44px, 7vw, 76px);
+  font-weight: 800; line-height: 1.03;
+  letter-spacing: -2.5px;
+  margin-bottom: 20px;
+}
+.hero h1 .line1 {
+  display: block;
+  background: linear-gradient(160deg, #ffffff 0%, #c4d9ff 50%, #93c5fd 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.hero h1 .line2 {
+  display: block;
+  background: linear-gradient(160deg, #3b82f6 0%, #60a5fa 50%, #93c5fd 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.hero-sub {
+  font-size: clamp(14px, 2vw, 17px);
+  color: #7a9bc4; max-width: 520px; margin: 0 auto 36px;
+  line-height: 1.75; font-weight: 300;
+}
+.hero-btns {
+  display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+  margin-bottom: 56px;
+}
+.btn-hero-primary {
+  background: linear-gradient(135deg, #1a51d0, #2563eb);
+  color: #fff; padding: 14px 34px; border-radius: 11px;
+  font-size: 14px; font-weight: 600; border: none; cursor: pointer;
+  font-family: var(--font-body);
+  box-shadow: 0 0 40px #1d5fff35;
+  transition: transform 0.15s, box-shadow 0.15s;
+  letter-spacing: 0.2px;
+}
+.btn-hero-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 40px #1d5fff50; }
+.btn-hero-outline {
+  background: transparent; border: 1px solid #1e3d7a;
+  color: #93c5fd; padding: 14px 30px; border-radius: 11px;
+  font-size: 14px; font-weight: 400; cursor: pointer;
+  font-family: var(--font-body);
+  transition: background 0.2s, border-color 0.2s;
+}
+.btn-hero-outline:hover { background: #0a1d3a; border-color: var(--accent); }
+
+/* Knight SVG */
+.hero-knight { margin: 0 auto 20px; width: 120px; height: 120px; }
+.hero-knight svg { width: 100%; height: 100%; filter: drop-shadow(0 0 22px #1d5fff55); }
+
+/* Stats row */
+.hero-stats {
+  display: flex; justify-content: center; gap: 40px; flex-wrap: wrap;
+}
+.hstat { text-align: center; }
+.hstat-num {
+  font-family: var(--font-head);
+  font-size: 28px; font-weight: 700;
+  background: linear-gradient(135deg, #93c5fd, #3b82f6);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.hstat-label { font-size: 11px; color: #475f80; text-transform: uppercase; letter-spacing: 0.8px; }
+
+/* ─── METRICS STRIP ─── */
+.metrics-strip {
+  background: #040e1c;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  display: flex; justify-content: center; flex-wrap: wrap;
+}
+.metric {
+  flex: 1; min-width: 140px;
+  padding: 26px 20px; text-align: center;
+  border-right: 1px solid var(--border);
+}
+.metric:last-child { border-right: none; }
+.metric-num {
+  font-family: var(--font-head);
+  font-size: 26px; font-weight: 700;
+  background: linear-gradient(135deg, #93c5fd, #2563eb);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.metric-label { font-size: 11px; color: var(--text-muted); margin-top: 3px; letter-spacing: 0.5px; }
+
+/* ─── SECTION COMMONS ─── */
+section { padding: 90px 40px; }
+.sec-label {
+  font-size: 10.5px; font-weight: 600; letter-spacing: 2.5px;
+  text-transform: uppercase; color: var(--accent2); margin-bottom: 10px;
+}
+.sec-title {
+  font-family: var(--font-head);
+  font-size: clamp(28px, 4vw, 44px); font-weight: 700;
+  letter-spacing: -1px; color: var(--text); line-height: 1.1; margin-bottom: 12px;
+}
+.sec-sub { font-size: 15px; color: var(--text-muted); max-width: 500px; line-height: 1.7; font-weight: 300; }
+.sec-header { margin-bottom: 52px; }
+
+/* ─── PRICING ─── */
+#pricing { background: linear-gradient(180deg, #020b18 0%, #030c1a 100%); }
+.pricing-toggle {
+  display: inline-flex; align-items: center;
+  background: #040e1c; border: 1px solid var(--border);
+  border-radius: 10px; padding: 4px; margin-bottom: 44px; gap: 4px;
+}
+.ptog-btn {
+  padding: 7px 20px; border-radius: 7px; font-size: 12px; font-weight: 500;
+  font-family: var(--font-body); cursor: pointer; border: none;
+  background: transparent; color: var(--text-muted);
+  transition: all 0.2s;
+}
+.ptog-btn.active {
+  background: linear-gradient(135deg, #1a56db, #2563eb);
+  color: #fff;
+  box-shadow: 0 0 16px #1d5fff30;
+}
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  max-width: 1060px;
+}
+.pricing-note { font-size: 12px; color: var(--text-dim); margin-top: 24px; }
+
+.plan {
+  background: #040e1c;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 32px 26px;
+  position: relative; overflow: hidden;
+  transition: border-color 0.25s, transform 0.25s;
+}
+.plan:hover { border-color: #2563eb55; transform: translateY(-4px); }
+.plan.featured {
+  border-color: var(--accent);
+  background: linear-gradient(160deg, #06122a, #0a1f45);
+}
+.plan.featured::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, #1a56db, #60a5fa, #1a56db);
+}
+.plan-tag {
+  display: inline-block;
+  font-size: 9.5px; font-weight: 700; letter-spacing: 1.5px;
+  text-transform: uppercase; padding: 4px 12px; border-radius: 20px;
+  margin-bottom: 18px;
+  background: #0c1e3e; color: #60a5fa; border: 1px solid #1e3d7a;
+}
+.plan.featured .plan-tag { background: #1a3a6a; color: #93c5fd; border-color: var(--accent); }
+.plan-name {
+  font-family: var(--font-head);
+  font-size: 24px; font-weight: 700; color: var(--text); margin-bottom: 6px;
+}
+.plan-type { font-size: 12px; color: var(--text-muted); margin-bottom: 20px; font-weight: 300; }
+
+.plan-accounts {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px;
+}
+.acct-chip {
+  font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 6px;
+  background: #071628; border: 1px solid var(--border);
+  color: var(--text-muted); cursor: pointer; transition: all 0.15s;
+  font-family: var(--font-body);
+}
+.acct-chip.active, .acct-chip:hover {
+  background: #0e2a5e; border-color: var(--accent2); color: var(--accent-light);
+}
+
+.plan-price-box { margin-bottom: 20px; }
+.plan-from { font-size: 11px; color: #3b5f8a; margin-bottom: 2px; }
+.plan-price {
+  font-family: var(--font-head);
+  font-size: 44px; font-weight: 800; color: var(--text); letter-spacing: -2px;
+  line-height: 1;
+}
+.plan-price sup { font-size: 20px; vertical-align: top; margin-top: 8px; letter-spacing: 0; }
+.plan-period { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
+
+.plan-divider { height: 1px; background: var(--border); margin: 22px 0; }
+
+.plan-feature {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: 13px; color: #8aa8cc; margin-bottom: 10px; line-height: 1.4;
+}
+.pfcheck {
+  width: 17px; height: 17px; flex-shrink: 0; margin-top: 1px;
+  background: #0c1e3e; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+.pfcheck svg { width: 9px; height: 9px; }
+
+.plan-btn {
+  width: 100%; margin-top: 22px; padding: 12px;
+  border-radius: 10px; font-size: 13px; font-weight: 600;
+  cursor: pointer; font-family: var(--font-body); letter-spacing: 0.2px;
+  transition: all 0.2s; border: none;
+}
+.plan-btn.primary {
+  background: linear-gradient(135deg, #1a56db, #2563eb);
+  color: #fff; box-shadow: 0 0 20px #1d5fff25;
+}
+.plan-btn.primary:hover { box-shadow: 0 4px 28px #1d5fff40; }
+.plan-btn.outline {
+  background: transparent; border: 1px solid var(--border2); color: #93c5fd;
+}
+.plan-btn.outline:hover { background: #0a1d3a; border-color: var(--accent); }
+
+/* ─── HOW IT WORKS ─── */
+#how { background: #030d1b; }
+.steps {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+  position: relative; margin-top: 56px;
+}
+.steps::after {
+  content: '';
+  position: absolute; top: 30px; left: 50px; right: 50px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border2), var(--border2), transparent);
+}
+.step {
+  text-align: center; padding: 0 16px; position: relative; z-index: 1;
+}
+.step-circle {
+  width: 60px; height: 60px; border-radius: 50%; margin: 0 auto 22px;
+  background: linear-gradient(135deg, #0b1f42, #132c5a);
+  border: 1px solid #1e3d7a;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-head); font-size: 20px; font-weight: 700;
+  color: var(--accent2);
+  box-shadow: 0 0 20px #1d5fff1a;
+}
+.step-title { font-family: var(--font-head); font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+.step-desc { font-size: 12.5px; color: var(--text-muted); line-height: 1.6; font-weight: 300; }
+
+/* ─── FEATURES ─── */
+#features { background: #020b18; }
+.feat-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px;
+}
+.feat-card {
+  background: #040e1c; border: 1px solid var(--border);
+  border-radius: 16px; padding: 28px 24px;
+  transition: border-color 0.2s, transform 0.2s;
+}
+.feat-card:hover { border-color: #2563eb44; transform: translateY(-3px); }
+.feat-icon-wrap {
+  width: 46px; height: 46px; border-radius: 13px;
+  background: linear-gradient(135deg, #0c1e3e, #122844);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 18px;
+}
+.feat-title { font-family: var(--font-head); font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 7px; }
+.feat-desc { font-size: 13px; color: var(--text-muted); line-height: 1.65; font-weight: 300; }
+
+/* ─── PARTNERS ─── */
+#partners { background: #030d1b; padding: 80px 0; overflow: hidden; }
+.partners-header { text-align: center; padding: 0 40px; margin-bottom: 50px; }
+.marquee-outer {
+  display: flex; gap: 40px; align-items: center;
+  overflow: hidden; position: relative;
+  mask-image: linear-gradient(90deg, transparent 0%, #000 12%, #000 88%, transparent 100%);
+}
+.marquee-track {
+  display: flex; gap: 40px; align-items: center;
+  animation: marquee 22s linear infinite;
+  flex-shrink: 0;
+}
+.marquee-track2 { animation-direction: reverse; animation-duration: 28s; }
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.partner-logo {
+  display: flex; align-items: center; justify-content: center;
+  background: #040e1c; border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px 24px; height: 60px; min-width: 140px;
+  font-family: var(--font-head); font-size: 13px; font-weight: 600;
+  color: #3b5f8a; white-space: nowrap; flex-shrink: 0;
+  transition: border-color 0.2s, color 0.2s;
+  gap: 8px;
+}
+.partner-logo:hover { border-color: var(--border2); color: var(--text-muted); }
+.partner-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent2); opacity: 0.5; }
+.marquee-row2 { margin-top: 18px; }
+
+/* ─── CERTIFICATES / PAYOUTS / SIGNUP ─── */
+#proof { background: #020b18; }
+.proof-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+}
+.proof-card {
+  background: #040e1c; border: 1px solid var(--border);
+  border-radius: 20px; padding: 36px 32px; position: relative; overflow: hidden;
+}
+.proof-card.wide { grid-column: 1 / -1; }
+.proof-card::after {
+  content: '';
+  position: absolute; top: -60px; right: -60px;
+  width: 200px; height: 200px; border-radius: 50%;
+  background: radial-gradient(circle, #1d5fff0f, transparent 70%);
+}
+
+/* Certificate card */
+.cert-icon {
+  width: 56px; height: 56px; border-radius: 16px;
+  background: linear-gradient(135deg, #0c2a6e, #1a3a8a);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 20px;
+}
+.cert-title { font-family: var(--font-head); font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+.cert-desc { font-size: 13px; color: var(--text-muted); line-height: 1.7; margin-bottom: 24px; font-weight: 300; }
+
+/* Payout card */
+.payout-steps { margin-top: 16px; }
+.payout-step {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 0; border-bottom: 1px solid var(--border);
+}
+.payout-step:last-child { border-bottom: none; }
+.pstep-num {
+  width: 28px; height: 28px; border-radius: 8px;
+  background: #0c1e3e; border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: var(--accent2); flex-shrink: 0;
+  font-family: var(--font-head);
+}
+.pstep-text { font-size: 13px; color: var(--text-muted); font-weight: 300; }
+.pstep-text strong { color: var(--text); font-weight: 500; }
+
+/* SIGNUP CARD */
+.signup-card {
+  background: linear-gradient(135deg, #050f22, #0a1f44);
+  border: 1px solid #1a3a7a;
+  border-radius: 20px; padding: 48px 40px; text-align: center;
+  position: relative; overflow: hidden;
+}
+.signup-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), #60a5fa, var(--accent), transparent);
+}
+.signup-title {
+  font-family: var(--font-head);
+  font-size: clamp(30px, 4vw, 48px); font-weight: 800;
+  letter-spacing: -1.5px; margin-bottom: 12px;
+  background: linear-gradient(160deg, #fff 30%, #93c5fd 70%, #3b82f6);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.signup-sub { font-size: 15px; color: var(--text-muted); margin-bottom: 36px; font-weight: 300; }
+.signup-form {
+  display: flex; gap: 12px; max-width: 460px; margin: 0 auto 16px; flex-wrap: wrap;
+}
+.signup-input {
+  flex: 1; min-width: 200px;
+  background: #07142e; border: 1px solid #1a3a7a;
+  color: var(--text); font-size: 13px; font-family: var(--font-body);
+  padding: 12px 16px; border-radius: 9px; outline: none;
+  transition: border-color 0.2s;
+}
+.signup-input::placeholder { color: #2e4a74; }
+.signup-input:focus { border-color: var(--accent); }
+.btn-signup {
+  background: linear-gradient(135deg, #1a56db, #2563eb);
+  color: #fff; border: none; padding: 12px 28px; border-radius: 9px;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  font-family: var(--font-body); letter-spacing: 0.2px;
+  box-shadow: 0 0 24px #1d5fff30; transition: all 0.15s;
+  white-space: nowrap;
+}
+.btn-signup:hover { box-shadow: 0 4px 28px #1d5fff45; transform: translateY(-1px); }
+.signup-legal { font-size: 11px; color: var(--text-dim); }
+.signup-legal a { color: var(--accent-light); text-decoration: none; }
+
+/* ─── TESTIMONIALS ─── */
+#testi { background: #030d1b; }
+.testi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.testi-card {
+  background: #040e1c; border: 1px solid var(--border);
+  border-radius: 16px; padding: 24px 22px;
+}
+.testi-stars { color: var(--accent2); font-size: 13px; margin-bottom: 12px; letter-spacing: 1px; }
+.testi-quote { font-size: 13px; color: #8aa8cc; line-height: 1.7; margin-bottom: 18px; font-style: italic; font-weight: 300; }
+.testi-person { display: flex; align-items: center; gap: 10px; }
+.testi-avatar {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: linear-gradient(135deg, #1a3a7a, #2563eb);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; color: #93c5fd;
+  font-family: var(--font-head);
+}
+.testi-name { font-size: 13px; font-weight: 600; color: var(--text); font-family: var(--font-head); }
+.testi-role { font-size: 11px; color: var(--text-dim); }
+
+/* ─── FOOTER ─── */
+footer {
+  background: #020913;
+  border-top: 1px solid var(--border);
+  padding: 40px 40px 28px;
+  display: flex; flex-direction: column; gap: 24px;
+}
+.footer-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 32px; flex-wrap: wrap; }
+.footer-brand p { font-size: 12px; color: var(--text-dim); margin-top: 8px; max-width: 260px; line-height: 1.6; }
+.footer-cols { display: flex; gap: 48px; flex-wrap: wrap; }
+.footer-col h4 {
+  font-family: var(--font-head); font-size: 12px; font-weight: 600;
+  letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted);
+  margin-bottom: 12px;
+}
+.footer-col a {
+  display: block; font-size: 13px; color: var(--text-dim);
+  text-decoration: none; margin-bottom: 8px; transition: color 0.2s;
+}
+.footer-col a:hover { color: var(--text-muted); }
+.footer-bottom {
+  border-top: 1px solid var(--border); padding-top: 20px;
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
+}
+.footer-copy { font-size: 11px; color: var(--text-dim); }
+.footer-disc { font-size: 10px; color: #1e3050; max-width: 600px; line-height: 1.5; }
+
+/* ─── MOBILE NAV MENU ─── */
+.mobile-menu {
+  display: none;
+  position: fixed; inset: 0; z-index: 99;
+  background: #020b18ee;
+  backdrop-filter: blur(16px);
+  flex-direction: column; align-items: center; justify-content: center; gap: 24px;
+}
+.mobile-menu.open { display: flex; }
+.mobile-menu a {
+  font-family: var(--font-head); font-size: 22px; font-weight: 600;
+  color: var(--text-muted); text-decoration: none;
+  transition: color 0.2s;
+}
+.mobile-menu a:hover { color: var(--text); }
+.mobile-close {
+  position: absolute; top: 22px; right: 28px;
+  font-size: 24px; color: var(--text-muted); cursor: pointer; background: none; border: none;
+}
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 900px) {
+  nav { padding: 0 20px; }
+  .nav-links { display: none; }
+  .nav-actions .btn-ghost { display: none; }
+  .hamburger { display: flex; }
+
+  .hero { padding: 90px 20px 50px; }
+  section { padding: 60px 20px; }
+
+  .pricing-grid { grid-template-columns: 1fr; max-width: 400px; }
+  .feat-grid { grid-template-columns: 1fr 1fr; }
+  .steps { grid-template-columns: 1fr 1fr; }
+  .steps::after { display: none; }
+  .testi-grid { grid-template-columns: 1fr; }
+  .proof-grid { grid-template-columns: 1fr; }
+  .proof-card.wide { grid-column: auto; }
+
+  .metrics-strip { display: grid; grid-template-columns: repeat(3, 1fr); }
+  .metric { border-right: none; border-bottom: 1px solid var(--border); }
+
+  .signup-form { flex-direction: column; }
+  .signup-card { padding: 32px 20px; }
+
+  .footer-top { flex-direction: column; }
+  .footer-cols { gap: 28px; }
+}
+@media (max-width: 560px) {
+  .feat-grid { grid-template-columns: 1fr; }
+  .steps { grid-template-columns: 1fr; }
+  .hero h1 { letter-spacing: -1.5px; }
+  .hero-stats { gap: 20px; }
+  .hstat-num { font-size: 22px; }
+}
+
+/* ─── SCROLL REVEAL ─── */
+.reveal {
+  opacity: 0; transform: translateY(24px);
+  transition: opacity 0.65s ease, transform 0.65s ease;
+}
+.reveal.visible { opacity: 1; transform: none; }
 </style>
 </head>
 <body>
 
-<!-- NAV -->
+<!-- CANDLE CANVAS -->
+<div id="canvasWrap">
+  <canvas id="candleCanvas"></canvas>
+</div>
+
+<div class="site">
+
+<!-- ─── NAV ─── -->
 <nav>
-  <div class="nav-logo">Futures<span>Calc</span></div>
-  <ul>
-    <li><a href="#features">Features</a></li>
-    <li><a href="#consistency">Consistency</a></li>
-    <li><a href="#calculator">Calculator</a></li>
-    <li><a href="#instruments">Instruments</a></li>
-    <li><a href="#started">Download</a></li>
-    <li><a href="#started" class="nav-cta">Get Started</a></li>
+  <a href="#" class="nav-logo">
+    <div class="nav-logo-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <path d="M7 20h10M9 20v-2c0-1 .5-2 1.5-2.5L13 14c.8-.4 1.5-1.2 1.5-2.5V9c0-1-.4-2-1-2.5C12.8 6 12 5.5 11 5.5H9.5C8.7 5.5 8 5 7.5 4.5L7 4c-.5-.5-1-.5-1.5-.5H5v3l1 1c.5.5 1 .5 1.5.5H8c.5 0 1 .3 1 .8V11c0 .5-.3.8-.8.8H7.5C7 11.8 7 12.5 7 13v5" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <span class="nav-logo-text">Legion<em>Futures</em></span>
+  </a>
+
+  <ul class="nav-links">
+    <li><a href="#pricing">Programs</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#proof">Payouts</a></li>
+    <li><a href="#how">How It Works</a></li>
+    <li><a href="./partners.html">Partners</a></li>
   </ul>
+
+  <div class="nav-actions">
+    <button class="btn-ghost">Sign In</button>
+    <button class="btn-cta">Get Funded</button>
+    <div class="hamburger" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
 </nav>
 
-<!-- TICKER TAPE -->
-<div class="ticker" style="margin-top: 70px;">
-  <div class="ticker-inner" id="ticker"></div>
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <button class="mobile-close" onclick="toggleMenu()">✕</button>
+  <a href="#pricing" onclick="toggleMenu()">Programs</a>
+  <a href="#pricing" onclick="toggleMenu()">Pricing</a>
+  <a href="#proof" onclick="toggleMenu()">Payouts</a>
+  <a href="#how" onclick="toggleMenu()">How It Works</a>
+  <a href="#partners" onclick="toggleMenu()">Partners</a>
+  <button class="btn-cta" style="font-size:16px;padding:14px 36px;">Get Funded</button>
 </div>
 
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-glow"></div>
+<!-- ─── HERO ─── -->
+<section class="hero" id="home">
+  <div class="hero-inner">
+    <div class="hero-pill"><span class="pill-dot"></span>Now funding traders worldwide</div>
 
-  <div class="hero-content reveal">
-    <div class="hero-label">The #1 Funded Account Toolkit</div>
-    <h1>PASS YOUR<br><span class="accent">FUNDED ACCOUNT.</span><br>MASTER THE<br>CONSISTENCY RULE.</h1>
-    <p>Built exclusively for funded account traders. Convert ticks to USD instantly, calculate your consistency score in real time, and never violate the best-day rule again — across ES, NQ, MNQ, MES, and CL.</p>
-    <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:28px;">
-      <div style="display:flex;align-items:center;gap:7px;font-size:13px;color:var(--muted);font-family:'DM Mono',monospace;">
-        <span style="color:var(--green);font-size:16px;">✓</span> Consistency Rule Calculator
-      </div>
-      <div style="display:flex;align-items:center;gap:7px;font-size:13px;color:var(--muted);font-family:'DM Mono',monospace;">
-        <span style="color:var(--green);font-size:16px;">✓</span> Tick ↔ USD Converter
-      </div>
-      <div style="display:flex;align-items:center;gap:7px;font-size:13px;color:var(--muted);font-family:'DM Mono',monospace;">
-        <span style="color:var(--green);font-size:16px;">✓</span> Best-Day Rule Tracker
-      </div>
-    </div>
-    <div class="hero-actions">
-      <a href="https://academias.clubreeco.com.mx/ckeditor4/plugins/center/FuturesCalc.zip" class="btn-primary">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Download Now
-      </a>
-      <a href="#features" class="btn-ghost">See How It Works →</a>
-    </div>
-  </div>
-
-  <!-- APP MOCKUP — TWO PHONES -->
-  <div class="app-mockup reveal" style="gap:18px; align-items:flex-start;">
-
-    <!-- Phone 1: Calculator -->
-    <div class="phone-frame" style="animation-delay:0s;">
-      <div class="phone-titlebar">
-        <div class="phone-dots">
-          <div class="phone-dot dot-r"></div>
-          <div class="phone-dot dot-y"></div>
-          <div class="phone-dot dot-g"></div>
-        </div>
-        <div class="phone-title">FuturesCalc</div>
-        <div style="font-size:9px;font-family:'DM Mono',monospace;color:var(--green);">●&nbsp;LIVE</div>
-      </div>
-      <div class="phone-body">
-        <div class="phone-display">
-          <div class="phone-mode">MODE: TICKS → USD</div>
-          <div class="phone-value">$1,250.00</div>
-        </div>
-        <div class="phone-asset-row">
-          <div class="asset-chip">MNQ</div>
-          <div class="asset-chip">NQ</div>
-          <div class="asset-chip active">ES</div>
-          <div class="asset-chip">MES</div>
-          <div class="asset-chip">CL</div>
-        </div>
-        <div class="phone-grid">
-          <div class="phone-btn op">AC</div><div class="phone-btn op">⌫</div><div class="phone-btn op">%</div><div class="phone-btn op">÷</div>
-          <div class="phone-btn">7</div><div class="phone-btn">8</div><div class="phone-btn">9</div><div class="phone-btn op">×</div>
-          <div class="phone-btn">4</div><div class="phone-btn">5</div><div class="phone-btn">6</div><div class="phone-btn op">−</div>
-          <div class="phone-btn">1</div><div class="phone-btn">2</div><div class="phone-btn">3</div><div class="phone-btn op">+</div>
-          <div class="phone-btn">0</div><div class="phone-btn">.</div><div class="phone-btn eq">=</div>
-        </div>
-      </div>
+    <!-- Knight Logo -->
+    <div class="hero-knight">
+      <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="60" cy="60" r="58" stroke="#1a3a7a" stroke-width="1"/>
+        <circle cx="60" cy="60" r="56" fill="#030c1d" fill-opacity="0.7"/>
+        <circle cx="60" cy="60" r="42" stroke="#1d5fff" stroke-width="0.5" stroke-dasharray="5 8" opacity="0.5"/>
+        <path d="M36 86h48M42 86v-8c0-3.5 1.8-6.5 4.8-8.2L56 66c3.5-1.8 6-5.2 6-10V46c0-3.5-1.5-6.5-4-8.5-2-1.8-4.5-3-7-3h-4.5C44.8 34.5 43 33.2 41.5 31.8L40 30c-1.2-1.2-2.8-1.5-4.2-1.5H33v8l3.5 3.5c1.2 1.2 2.8 1.5 4.2 1.5h3c1.8 0 3 1.2 3 3v8.5c0 1.8-1.2 3-3 3H42c-1.8 0-2.2 2.5-2.2 4.5v24" stroke="url(#kgrad)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <defs>
+          <linearGradient id="kgrad" x1="33" y1="28" x2="90" y2="90" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#93c5fd"/>
+            <stop offset="50%" stop-color="#3b82f6"/>
+            <stop offset="100%" stop-color="#1d5fff"/>
+          </linearGradient>
+        </defs>
+      </svg>
     </div>
 
-    <!-- Phone 2: Consistency Calculator -->
-    <div class="phone-frame" style="margin-top:36px; animation-delay:1.5s; width:260px;">
-      <div class="phone-titlebar">
-        <div class="phone-dots">
-          <div class="phone-dot dot-r"></div>
-          <div class="phone-dot dot-y"></div>
-          <div class="phone-dot dot-g"></div>
-        </div>
-        <div class="phone-title" style="font-size:14px;">Consistency</div>
-        <div style="font-size:9px;font-family:'DM Mono',monospace;color:var(--orange);">● CHECK</div>
-      </div>
-      <div class="phone-body" style="padding:12px;">
-        <!-- Account Type -->
-        <div style="font-size:8px;letter-spacing:1.5px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:7px;">ACCOUNT TYPE</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:10px;">
-          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:6px 4px;text-align:center;">
-            <div style="font-size:7px;color:var(--muted);font-family:'DM Mono',monospace;">GROWTH</div>
-            <div style="font-size:7px;color:var(--muted);">35% limit</div>
-          </div>
-          <div style="background:rgba(255,140,43,0.12);border:1px solid var(--orange);border-radius:7px;padding:6px 4px;text-align:center;">
-            <div style="font-size:7px;color:var(--orange);font-weight:700;font-family:'DM Mono',monospace;">SELECT</div>
-            <div style="font-size:7px;color:var(--orange);">40% limit</div>
-          </div>
-          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:6px 4px;text-align:center;">
-            <div style="font-size:7px;color:var(--muted);font-family:'DM Mono',monospace;">LIGHTNING</div>
-            <div style="font-size:7px;color:var(--muted);">20% limit</div>
-          </div>
-        </div>
-        <!-- Account Size -->
-        <div style="font-size:8px;letter-spacing:1.5px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:7px;">ACCOUNT SIZE</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:10px;">
-          <div style="background:rgba(255,140,43,0.12);border:1px solid var(--orange);border-radius:7px;padding:7px 4px;text-align:center;font-size:9px;color:var(--orange);font-family:'DM Mono',monospace;font-weight:700;">50K</div>
-          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:7px 4px;text-align:center;font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;">100K</div>
-          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:7px 4px;text-align:center;font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;">150K</div>
-        </div>
-        <!-- Days row -->
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-          <div style="font-size:8px;color:var(--muted);font-family:'DM Mono',monospace;flex:1;">DAYS: <b style="color:var(--text);">3</b></div>
-          <div style="background:var(--blue);color:#fff;font-size:8px;padding:5px 10px;border-radius:6px;font-family:'DM Mono',monospace;white-space:nowrap;">✦ Generate Days</div>
-        </div>
-        <!-- Profit inputs -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:5px;">
-          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:6px 8px;">
-            <div style="font-size:7px;color:var(--muted);font-family:'DM Mono',monospace;">Proy 1 $</div>
-            <div style="font-size:11px;color:var(--orange);font-family:'DM Mono',monospace;font-weight:700;">1000</div>
-          </div>
-          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:6px 8px;">
-            <div style="font-size:7px;color:var(--muted);font-family:'DM Mono',monospace;">Proy 2 $</div>
-            <div style="font-size:11px;color:var(--orange);font-family:'DM Mono',monospace;font-weight:700;">830</div>
-          </div>
-        </div>
-        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:6px 8px;margin-bottom:10px;display:inline-block;width:48%;">
-          <div style="font-size:7px;color:var(--muted);font-family:'DM Mono',monospace;">Proy 3 $</div>
-          <div style="font-size:11px;color:var(--orange);font-family:'DM Mono',monospace;font-weight:700;">688.9</div>
-        </div>
-        <!-- Score result -->
-        <div style="background:#0a1a0e;border:1px solid rgba(52,199,89,0.3);border-radius:10px;padding:10px 12px;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--green);">39.6<span style="font-size:14px;">%</span></div>
-            <div style="background:rgba(52,199,89,0.15);border:1px solid var(--green);color:var(--green);font-size:7px;padding:3px 7px;border-radius:4px;font-family:'DM Mono',monospace;">● Consistent</div>
-          </div>
-          <!-- Bar -->
-          <div style="height:5px;background:var(--border);border-radius:3px;margin-bottom:4px;position:relative;">
-            <div style="height:100%;width:99%;background:linear-gradient(90deg,var(--green),#55e87a);border-radius:3px;"></div>
-          </div>
-          <div style="display:flex;justify-content:space-between;font-size:7px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:7px;"><span>0%</span><span>limit: 40%</span></div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:4px;">
-            <div style="background:rgba(0,0,0,0.3);border-radius:5px;padding:4px 5px;">
-              <div style="font-size:6px;color:var(--muted);font-family:'DM Mono',monospace;">BEST DAY</div>
-              <div style="font-size:9px;color:var(--green);font-family:'DM Mono',monospace;">$1,000</div>
-            </div>
-            <div style="background:rgba(0,0,0,0.3);border-radius:5px;padding:4px 5px;">
-              <div style="font-size:6px;color:var(--muted);font-family:'DM Mono',monospace;">TOTAL EARN.</div>
-              <div style="font-size:9px;color:var(--green);font-family:'DM Mono',monospace;">$2,518</div>
-            </div>
-            <div style="background:rgba(0,0,0,0.3);border-radius:5px;padding:4px 5px;">
-              <div style="font-size:6px;color:var(--muted);font-family:'DM Mono',monospace;">LOSSES</div>
-              <div style="font-size:9px;color:var(--red);font-family:'DM Mono',monospace;">$0.00</div>
-            </div>
-          </div>
-          <div style="text-align:center;font-size:7px;color:var(--green);font-family:'DM Mono',monospace;">✓ You follow the rule correctly.</div>
-        </div>
-      </div>
+    <h1>
+      <span class="line1">Trade With Elite Capital.</span>
+      <span class="line2">Keep What You Earn.</span>
+    </h1>
+
+    <p class="hero-sub">The platform is in the process of being launched; it will be launched on June 30, 2026.</p>
+
+    <div class="hero-btns">
+      <button class="btn-hero-primary" onclick="document.getElementById('signup').scrollIntoView({behavior:'smooth'})">Get Funded Now</button>
+      <button class="btn-hero-outline" onclick="document.getElementById('pricing').scrollIntoView({behavior:'smooth'})">View Programs</button>
     </div>
 
+    <div class="hero-stats">
+      <div class="hstat"><div class="hstat-num">$150K</div><div class="hstat-label">Max Capital</div></div>
+      <div class="hstat"><div class="hstat-num">90%</div><div class="hstat-label">Profit Split</div></div>
+      <div class="hstat"><div class="hstat-num">48h</div><div class="hstat-label">Payouts</div></div>
+      <div class="hstat"><div class="hstat-num">12K+</div><div class="hstat-label">Funded Traders</div></div>
+    </div>
   </div>
 </section>
 
-<!-- STATS STRIP -->
-<div class="stats-strip reveal">
-  <div class="stat-item">
-    <div class="stat-num" data-target="5">0</div>
-    <div class="stat-label">Instruments</div>
-  </div>
-  <div class="stat-item">
-    <div class="stat-num" data-target="3">0</div>
-    <div class="stat-label">Themes</div>
-  </div>
-  <div class="stat-item">
-    <div class="stat-num" data-target="100">0</div>
-    <div class="stat-label">% Rule Coverage</div>
-  </div>
-  <div class="stat-item">
-    <div class="stat-num" data-target="0">∞</div>
-    <div class="stat-label">Calculation History</div>
-  </div>
+<!-- ─── METRICS ─── -->
+<div class="metrics-strip">
+  <div class="metric"><div class="metric-num">$4.2M+</div><div class="metric-label">Total Paid Out</div></div>
+  <div class="metric"><div class="metric-num">98.4%</div><div class="metric-label">Payout Success Rate</div></div>
+  <div class="metric"><div class="metric-num">3 Days</div><div class="metric-label">Avg Evaluation Time</div></div>
+  <div class="metric"><div class="metric-num">0%</div><div class="metric-label">Hidden Fees</div></div>
+  <div class="metric"><div class="metric-num">24/7</div><div class="metric-label">Trader Support</div></div>
 </div>
 
-<!-- CHARTS / CONSISTENCY OVERVIEW -->
-<section class="charts-section" id="consistency">
-  <div class="charts-header reveal">
-    <div>
-      <div class="section-tag">Performance Analytics</div>
-      <div class="section-title">VISUALIZE YOUR<br>CONSISTENCY SCORE</div>
-    </div>
-    <p class="section-sub">FuturesCalc doesn't just crunch numbers — it shows you exactly where you stand against your funded account's consistency rules at a glance.</p>
-  </div>
-
-  <div class="charts-grid">
-    <!-- Daily P&L Chart -->
-    <div class="chart-card reveal">
-      <div class="chart-card-title">Daily P&L (Ticks)</div>
-      <div class="chart-card-value">+100 ticks <span>▲ 8.3%</span></div>
-      <canvas id="pnlChart"></canvas>
-    </div>
-
-    <!-- Consistency Donut -->
-    <div class="chart-card reveal">
-      <div class="chart-card-title">Consistency Score</div>
-      <div class="chart-card-value">87.4% <span>▲ Passing</span></div>
-      <canvas id="consistencyDonut"></canvas>
-    </div>
-
-    <!-- Tick Distribution -->
-    <div class="chart-card wide reveal">
-      <div class="chart-card-title">Tick → USD Conversion by Instrument</div>
-      <div class="chart-card-value">All Instruments <span>/ 1 Contract</span></div>
-      <canvas id="tickChart"></canvas>
-    </div>
-  </div>
-</section>
-
-<!-- FEATURES -->
-<section id="features">
-  <div class="reveal">
-    <div class="section-tag">What's Inside</div>
-    <div class="section-title">EVERY TOOL<br>YOU NEED TO PASS</div>
-  </div>
-
-  <div class="features-grid">
-    <div class="feature-card reveal">
-      <div class="feature-icon">🔄</div>
-      <h3>Instant Tick ↔ USD Conversion</h3>
-      <p>Toggle between ticks and USD in one tap. Full expression support — type 100×12.50 and get the dollar value instantly.</p>
-    </div>
-    <div class="feature-card reveal">
-      <div class="feature-icon">📊</div>
-      <h3>Consistency Tracker</h3>
-      <p>Built-in panel pulls your tradeify_consistency data and visualizes your best-day rule compliance in real time.</p>
-    </div>
-    <div class="feature-card reveal">
-      <div class="feature-icon">🎯</div>
-      <h3>Multi-Contract Support</h3>
-      <p>Trading 3 ES? Enter the contract count and the calculator adjusts every conversion automatically. No mental math.</p>
-    </div>
-    <div class="feature-card reveal">
-      <div class="feature-icon">🌙</div>
-      <h3>3 Beautiful Themes</h3>
-      <p>Dark, orange, and light — switch themes on the fly with a single tap. Built for long trading sessions at any time of day.</p>
-    </div>
-    <div class="feature-card reveal">
-      <div class="feature-icon">📜</div>
-      <h3>Calculation History</h3>
-      <p>Every calculation is logged so you can review your session at a glance. Never lose track of a conversion again.</p>
-    </div>
-    <div class="feature-card reveal">
-      <div class="feature-icon">⚡</div>
-      <h3>Standard Mode</h3>
-      <p>Switch to pure calculator mode when you just need basic math. One tool for everything at your trading desk.</p>
-    </div>
-  </div>
-</section>
-
-<!-- INSTRUMENTS -->
-<section id="instruments" style="background: var(--surface);">
-  <div class="instruments-section">
-    <div class="reveal">
-      <div class="section-tag">Supported Instruments</div>
-      <div class="section-title">5 FUTURES<br>MARKETS. ZERO<br>GUESSWORK.</div>
-      <p class="section-sub" style="margin-top: 16px;">Every tick value is pre-loaded and always accurate. Focus on your trades, not on converting multipliers.</p>
-      <div style="margin-top: 32px;">
-        <a href="#pricing" class="btn-primary">Start Calculating →</a>
-      </div>
-    </div>
-
-    <div class="instruments-table reveal">
-      <table>
-        <thead>
-          <tr>
-            <th>Symbol</th>
-            <th>Name</th>
-            <th>Tick Value</th>
-            <th>Type</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td class="symbol">MNQ</td>
-            <td>Micro NASDAQ</td>
-            <td class="tick-val">$0.50</td>
-            <td><span class="badge badge-micro">Micro</span></td>
-          </tr>
-          <tr>
-            <td class="symbol">NQ</td>
-            <td>NASDAQ 100</td>
-            <td class="tick-val">$5.00</td>
-            <td><span class="badge badge-std">Standard</span></td>
-          </tr>
-          <tr>
-            <td class="symbol">ES</td>
-            <td>S&amp;P 500</td>
-            <td class="tick-val">$12.50</td>
-            <td><span class="badge badge-std">Standard</span></td>
-          </tr>
-          <tr>
-            <td class="symbol">MES</td>
-            <td>Micro S&amp;P 500</td>
-            <td class="tick-val">$1.25</td>
-            <td><span class="badge badge-micro">Micro</span></td>
-          </tr>
-          <tr>
-            <td class="symbol">CL</td>
-            <td>Crude Oil</td>
-            <td class="tick-val">$10.00</td>
-            <td><span class="badge badge-std">Standard</span></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</section>
-
-<!-- CONSISTENCY DEEP DIVE -->
-<section class="consistency-section">
-  <div class="reveal">
-    <div class="section-tag">Consistency Rules</div>
-    <div class="section-title">STAY COMPLIANT.<br>STAY FUNDED.</div>
-    <p class="section-sub" style="margin-top: 16px;">FuturesCalc tracks the metrics funded account firms care about most — so you can trade confidently without risking your payout.</p>
-  </div>
-
-  <div class="consistency-layout">
-    <div class="consistency-metrics reveal">
-      <div class="metric-bar">
-        <div class="metric-bar-header">
-          <span class="metric-name">Best Day Compliance</span>
-          <span class="metric-pct">92%</span>
-        </div>
-        <div class="metric-track"><div class="metric-fill green" style="width: 92%"></div></div>
-      </div>
-      <div class="metric-bar">
-        <div class="metric-bar-header">
-          <span class="metric-name">Daily Loss Limit Buffer</span>
-          <span class="metric-pct">78%</span>
-        </div>
-        <div class="metric-track"><div class="metric-fill" style="width: 78%"></div></div>
-      </div>
-      <div class="metric-bar">
-        <div class="metric-bar-header">
-          <span class="metric-name">Trailing Drawdown Safe Zone</span>
-          <span class="metric-pct">85%</span>
-        </div>
-        <div class="metric-track"><div class="metric-fill blue" style="width: 85%"></div></div>
-      </div>
-      <div class="metric-bar">
-        <div class="metric-bar-header">
-          <span class="metric-name">Profit Target Progress</span>
-          <span class="metric-pct">61%</span>
-        </div>
-        <div class="metric-track"><div class="metric-fill green" style="width: 61%"></div></div>
-      </div>
-      <div class="metric-bar">
-        <div class="metric-bar-header">
-          <span class="metric-name">Minimum Trading Days</span>
-          <span class="metric-pct">70%</span>
-        </div>
-        <div class="metric-track"><div class="metric-fill" style="width: 70%"></div></div>
-      </div>
-    </div>
-
-    <div class="chart-card reveal" style="background: var(--bg);">
-      <div class="chart-card-title">Weekly Consistency Trend</div>
-      <div class="chart-card-value">Avg 83.6% <span>/ Passing Threshold: 70%</span></div>
-      <canvas id="consistencyLine" style="max-height: 300px;"></canvas>
-    </div>
-  </div>
-</section>
-
-<!-- INTERACTIVE CONSISTENCY CALCULATOR -->
-<section class="try-section" id="calculator">
-  <div class="reveal" style="text-align:center; max-width:640px; margin:0 auto;">
-    <div class="section-tag">Try It Now — Free</div>
-    <div class="section-title">CONSISTENCY<br>CALCULATOR</div>
-    <p class="section-sub" style="margin:16px auto 0;">Enter your trading data below and instantly see if you're passing the funded account consistency rule. No signup needed.</p>
-  </div>
-
-  <div class="try-layout">
-
-    <!-- LEFT: The Widget -->
-    <div class="cc-widget reveal">
-
-      <div class="cc-section-label">Account Type</div>
-      <div class="cc-type-grid" id="typeGrid">
-        <div class="cc-type-btn" data-type="growth" data-limit="35">
-          <span class="t-name">GROWTH</span>
-          <span class="t-sub">Funding in 1 day · 35% limit</span>
-        </div>
-        <div class="cc-type-btn active" data-type="select" data-limit="40">
-          <span class="t-name">SELECT</span>
-          <span class="t-sub">Funding in 3 days · 40% limit</span>
-        </div>
-        <div class="cc-type-btn" data-type="lightning" data-limit="20">
-          <span class="t-name">LIGHTNING</span>
-          <span class="t-sub">Instant · 20% limit</span>
-        </div>
-      </div>
-
-      <div class="cc-section-label">Account Size</div>
-      <div class="cc-size-grid" id="sizeGrid">
-        <div class="cc-size-btn active" data-size="50000">50K</div>
-        <div class="cc-size-btn" data-size="100000">100K</div>
-        <div class="cc-size-btn" data-size="150000">150K</div>
-      </div>
-
-      <div class="cc-section-label">Days Operated</div>
-      <div class="cc-days-row">
-        <span class="label">Total:</span>
-        <div class="cc-counter">
-          <button id="dayMinus">−</button>
-          <span class="count-val" id="dayCount">3</span>
-          <button id="dayPlus">+</button>
-        </div>
-        <button class="cc-gen-btn" id="genDaysBtn">✦ Generate Days</button>
-      </div>
-
-      <div class="cc-section-label" id="inputsLabel">Day Profits ($)</div>
-      <div class="cc-inputs-grid" id="dayInputs"></div>
-
-      <!-- RESULT -->
-      <div class="cc-result" id="ccResult">
-        <div class="cc-result-top">
-          <div class="cc-score" id="ccScore">—<sup>%</sup></div>
-          <div class="cc-badge" id="ccBadge">● Consistent</div>
-        </div>
-        <div class="cc-bar-wrap">
-          <div class="cc-bar-fill" id="ccBar" style="width:0%"></div>
-          <div class="cc-bar-limits">
-            <span style="position:absolute;left:0;bottom:-14px;font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;">0%</span>
-            <span id="limitLabel" style="position:absolute;right:0;bottom:-14px;font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;">limit: 40%</span>
-          </div>
-        </div>
-        <div style="margin-top:18px;"></div>
-        <div class="cc-stats-grid">
-          <div class="cc-stat-box">
-            <div class="cc-stat-lbl">BEST DAY</div>
-            <div class="cc-stat-val" id="statBest">—</div>
-          </div>
-          <div class="cc-stat-box">
-            <div class="cc-stat-lbl">TOTAL EARNINGS</div>
-            <div class="cc-stat-val" id="statTotal">—</div>
-          </div>
-          <div class="cc-stat-box">
-            <div class="cc-stat-lbl">TOTAL LOSSES</div>
-            <div class="cc-stat-val red" id="statLoss">—</div>
-          </div>
-        </div>
-        <div class="cc-bottom-stats">
-          <div class="cc-stat-box">
-            <div class="cc-stat-lbl">NET P&L</div>
-            <div class="cc-stat-val" id="statNet">—</div>
-          </div>
-          <div class="cc-stat-box">
-            <div class="cc-stat-lbl" id="pctLabel">PROFIT FOR 40%</div>
-            <div class="cc-stat-val white" id="statPct">—</div>
-          </div>
-        </div>
-        <div class="cc-verdict" id="ccVerdict">Enter your day profits to calculate.</div>
-      </div>
-
-    </div>
-
-    <!-- RIGHT: Explainer -->
-    <div class="try-explainer reveal">
-      <div>
-        <div class="section-tag">How It Works</div>
-        <div class="section-title" style="font-size: clamp(30px,3vw,44px); margin-bottom:8px;">KNOW YOUR<br>NUMBER BEFORE<br>YOU TRADE.</div>
-        <p style="color:var(--muted);font-size:15px;line-height:1.7;margin-bottom:32px;">The consistency rule means your best single trading day cannot represent more than a set % of your total profits. This calculator does the math instantly.</p>
-      </div>
-
-      <div class="explainer-step">
-        <div class="step-num">1</div>
-        <div>
-          <h4>Select your account type & size</h4>
-          <p>Different funded account programs have different consistency limits — 20%, 35%, or 40%. Pick yours to get the right threshold.</p>
-        </div>
-      </div>
-      <div class="explainer-step">
-        <div class="step-num">2</div>
-        <div>
-          <h4>Enter each day's profit or loss</h4>
-          <p>Type in what you made (or lost) each trading day. Losses count against your total, tightening the rule.</p>
-        </div>
-      </div>
-      <div class="explainer-step">
-        <div class="step-num">3</div>
-        <div>
-          <h4>See your consistency score instantly</h4>
-          <p>The calculator shows you Best Day ÷ Total Earnings. Green means you're passing. Red means one of your days is too large — adjust before you request a payout.</p>
-        </div>
-      </div>
-      <div class="explainer-step">
-        <div class="step-num">4</div>
-        <div>
-          <h4>Use it inside the desktop app too</h4>
-          <p>The full FuturesCalc desktop app has this built in alongside the tick-to-USD converter — all in one compact, beautiful window.</p>
-        </div>
-      </div>
-    </div>
-
-  </div>
-</section>
-
-<!-- PRICING 
+<!-- ─── PRICING ─── -->
 <section id="pricing">
-  <div class="reveal" style="text-align: center; max-width: 600px; margin: 0 auto;">
-    <div class="section-tag">Pricing</div>
-    <div class="section-title">ONE TOOL.<br>ALL ACCOUNTS.</div>
-    <p class="section-sub" style="margin: 16px auto 0;">Choose the plan that fits your trading journey. Upgrade or cancel anytime.</p>
+  <div class="sec-header reveal">
+    <div class="sec-label">Choose Your Program</div>
+    <div class="sec-title">Plans for Every Trader</div>
+    <div class="sec-sub">From intraday scalpers to end-of-day swing traders — three distinct programs with transparent pricing.</div>
   </div>
 
-  <div class="pricing-grid">
-    <div class="pricing-card reveal">
-      <div class="pricing-plan">Starter</div>
-      <div class="pricing-price"><sup>$</sup>0</div>
-      <div class="pricing-period">/ forever free</div>
-      <ul class="pricing-features">
-        <li>Tick ↔ USD Converter</li>
-        <li>ES & MES only</li>
-        <li>Basic calculator mode</li>
-        <li class="dim">All 5 instruments</li>
-        <li class="dim">Consistency tracker</li>
-        <li class="dim">Multi-contract support</li>
-      </ul>
-      <a href="#" class="btn-ghost" style="width: 100%; text-align: center; justify-content: center;">Download Free</a>
+  <div class="pricing-toggle reveal">
+    <button class="ptog-btn active" onclick="setSize('50k',this)">$50K</button>
+    <button class="ptog-btn" onclick="setSize('100k',this)">$100K</button>
+    <button class="ptog-btn" onclick="setSize('150k',this)">$150K</button>
+  </div>
+
+  <div class="pricing-grid reveal">
+
+    <!-- STANDARD -->
+    <div class="plan">
+      <div class="plan-tag">Standard</div>
+      <div class="plan-name">Standard</div>
+      <div class="plan-type">Intraday · Positions closed before market end</div>
+      <div class="plan-price-box">
+        <div class="plan-from">One-time fee</div>
+        <div class="plan-price" id="std-price"><sup>$</sup><span>250</span></div>
+        <div class="plan-period">$50K account · no recurring charges</div>
+      </div>
+      <div class="plan-divider"></div>
+      <div class="plan-feature"><div class="pfcheck"><svg viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5l2 2L7.5 2" stroke="#3b82f6" stroke-width="1.4" stroke-linecap="round"/></svg></div>Intraday only — no overnight positions</div>
+      <div class="plan-feature"><div class="pfcheck"><svg viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5l2 2L7.5 2" stroke="#3b82f6" stroke-width="1.4" stroke-linecap="round"/></svg></div>Up to 80% profit split</div>
+      <div class="plan-feature"><div class="pfcheck"><svg viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5l2 2L7.5 2" stroke="#3b82f6" stroke-width="1.4" stroke-linecap="round"/></svg></div>Evaluation + verification phase</div>
+      <div class="plan-feature"><div class="pfcheck"><svg viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5l2 2L7.5 2" stroke="#3b82f6" stroke-width="1.4" stroke-linecap="round"/></svg></div>ES, NQ, CL, GC, EUR/USD futures</div>
+      <div class="plan-feature"><div class="pfcheck"><svg viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5l2 2L7.5 2" stroke="#3b82f6" stroke-width="1.4" stroke-linecap="round"/></svg></div>Digital funding certificate</div>
+      <button class="plan-btn outline">Start Challenge</button>
     </div>
 
-    <div class="pricing-card featured reveal">
-      <div class="pricing-badge">Most Popular</div>
-      <div class="pricing-plan">Pro</div>
-      <div class="pricing-price"><sup>$</sup>19</div>
-      <div class="pricing-period">/ per month</div>
-      <ul class="pricing-features">
-        <li>All 5 instruments</li>
-        <li>Tick ↔ USD + USD ↔ Tick</li>
-        <li>Consistency panel</li>
-        <li>Multi-contract support</li>
-        <li>Calculation history</li>
-        <li>All 3 themes</li>
-      </ul>
-      <a href="#" class="btn-primary" style="width: 100%; justify-content: center;">Get Pro</a>
+    <!-- PRO (FEATURED) -->
+    <div class="plan featured">
+      <div class="plan-tag">Most Popular</div>
+      <div class="plan-name">Pro</div>
+      <div class="plan-type">End-of-Day · Hold positions overnight</div>
+      <div class="plan-price-box">
+        <div class="plan-from">One-time fee</div>
+        <div class="plan-price" id="pro-price"><sup>$</sup><span>399</span></div>
+        <div class="plan-period">$50K account · no recurring charges</div>
+      </div>
+      <div class="plan-divider"></div>
+      <div class="plan-feature"><div class="pfcheck"><svg viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5l2 2L7.5 2" stroke="#60a5fa" stroke-width="1.4" stroke-linecap="round"/></svg></div>EOD — overnight positions allowed</div>
+      <div class="plan-feature"><div class="pfcheck"><svg viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5l2 2L7.5 2" stroke="#60a5fa" stroke-width="1.4" stroke-linecap="round"/></svg></div>Up to 85% profit split</div>
+      <div class="plan-feature"><div class="pfcheck"><svg viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5l2 2L7.5 2" stroke="#60a5fa" stroke-width="1.4" stroke-linecap="round"/></svg></div>Swing, position, and scalp styles</div>
+      <div class="plan-feature"><div class="pfcheck"><svg viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5l2 2L7.5 2" stroke="#60a5fa" stroke-width="1.4" stroke-linecap="round"/></svg></div>Priority support + advanced analytics</div>
+      <div class="plan-feature"><div class="pfcheck"><svg viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5l2 2L7.5 2" stroke="#60a5fa" stroke-width="1.4" stroke-linecap="round"/></svg></div>Scale to $500K track record path</div>
+      <button class="plan-btn primary">Start Challenge</button>
     </div>
 
-    <div class="pricing-card reveal">
-      <div class="pricing-plan">Lifetime</div>
-      <div class="pricing-price"><sup>$</sup>79</div>
-      <div class="pricing-period">/ one-time</div>
-      <ul class="pricing-features">
-        <li>Everything in Pro</li>
-        <li>All future instruments</li>
-        <li>Priority support</li>
-        <li>Beta feature access</li>
-        <li>Free lifetime updates</li>
-        <li>Discord community</li>
-      </ul>
-      <a href="#" class="btn-ghost" style="width: 100%; text-align: center; justify-content: center;">Buy Lifetime</a>
+    <!-- INSTANT -->
+    <div class="plan">
+      <div class="plan-tag">Instant Funded</div>
+      <div class="plan-name">Instant</div>
+      <div class="plan-type">No evaluation · Go live today</div>
+      <div class="plan-price-box">
+        <div class="plan-from">One-time fee</div>
+        <div class="plan-price" id="ins-price"><sup>$</sup><span>599</span></div>
+        <div class="plan-period">$50K account · no recurring charges</div>
+      </div>
+      <div class="plan-divider"></div>
+      <div class="plan-feature"><div class="pfcheck"><svg viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5l2 2L7.5 2" stroke="#3b82f6" stroke-width="1.4" stroke-linecap="round"/></svg></div>No evaluation — instant live account</div>
+      <div class="plan-feature"><div class="pfcheck"><svg viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5l2 2L7.5 2" stroke="#3b82f6" stroke-width="1.4" stroke-linecap="round"/></svg></div>Intraday or EOD — your choice</div>
+      <div class="plan-feature"><div class="pfcheck"><svg viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5l2 2L7.5 2" stroke="#3b82f6" stroke-width="1.4" stroke-linecap="round"/></svg></div>Up to 90% profit split</div>
+      <div class="plan-feature"><div class="pfcheck"><svg viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5l2 2L7.5 2" stroke="#3b82f6" stroke-width="1.4" stroke-linecap="round"/></svg></div>Funded up to $150K same day</div>
+      <div class="plan-feature"><div class="pfcheck"><svg viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5l2 2L7.5 2" stroke="#3b82f6" stroke-width="1.4" stroke-linecap="round"/></svg></div>Payout in 48 hours guaranteed</div>
+      <button class="plan-btn outline">Get Funded Instantly</button>
+    </div>
+
+  </div>
+  <p class="pricing-note reveal">All prices shown for $50K accounts. Select $100K or $150K above to see adjusted pricing. No monthly subscriptions. One-time fee only.</p>
+</section>
+
+<!-- ─── HOW IT WORKS ─── -->
+<section id="how">
+  <div class="sec-header reveal" style="text-align:center;">
+    <div class="sec-label">Process</div>
+    <div class="sec-title">How It Works</div>
+  </div>
+  <div class="steps reveal">
+    <div class="step">
+      <div class="step-circle">1</div>
+      <div class="step-title">Choose a Plan</div>
+      <div class="step-desc">Select Standard, Pro, or Instant. Pick your account size from $50K up to $150K.</div>
+    </div>
+    <div class="step">
+      <div class="step-circle">2</div>
+      <div class="step-title">Pass the Challenge</div>
+      <div class="step-desc">Hit your profit target while respecting drawdown rules. Instant accounts skip this step entirely.</div>
+    </div>
+    <div class="step">
+      <div class="step-circle">3</div>
+      <div class="step-title">Get Funded</div>
+      <div class="step-desc">Receive your live funded account credentials and start trading real capital the same day.</div>
+    </div>
+    <div class="step">
+      <div class="step-circle">4</div>
+      <div class="step-title">Request Payout</div>
+      <div class="step-desc">Withdraw your profits within 48 hours. Scale your account as your track record grows.</div>
     </div>
   </div>
 </section>
-  -->
 
-<!-- CTA BANNER -->
-<div id="started" class="cta-banner reveal">
-  <div>
-    <h2>READY TO TRADE<br>SMARTER?</h2>
-    <p>Join traders who've stopped guessing and started calculating with precision.</p>
+<!-- ─── FEATURES ─── -->
+<section id="features">
+  <div class="sec-header reveal">
+    <div class="sec-label">Why LegionFutures</div>
+    <div class="sec-title">Built for Serious Traders</div>
+    <div class="sec-sub">Every feature is designed so you can focus entirely on your edge — not the platform.</div>
   </div>
-  <div style="display: flex; flex-direction: column; gap: 12px; align-items: flex-end;">
-    <a href="https://academias.clubreeco.com.mx/ckeditor4/plugins/center/FuturesCalc.zip" class="btn-primary">Download FuturesCalc →</a>
-    <span style="font-size: 12px; color: var(--muted); font-family: 'DM Mono', monospace;">Available for Windows & macOS</span>
+  <div class="feat-grid reveal">
+    <div class="feat-card">
+      <div class="feat-icon-wrap">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="9" stroke="#3b82f6" stroke-width="1.5"/><path d="M11 7v4l3 3" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <div class="feat-title">48-Hour Payouts</div>
+      <div class="feat-desc">Request your profits and receive payment within 48 hours via crypto or bank wire. No delays, no gatekeeping.</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon-wrap">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="3" y="5" width="16" height="13" rx="2" stroke="#3b82f6" stroke-width="1.5"/><path d="M3 9h16M7 13h3M7 16h5" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <div class="feat-title">Funded Certificates</div>
+      <div class="feat-desc">Earn a digital certificate upon passing. Shareable, verifiable proof of your funded trader status worldwide.</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon-wrap">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M11 3L13.5 8.5L20 9.3L15.5 13.5L16.7 20L11 17L5.3 20L6.5 13.5L2 9.3L8.5 8.5L11 3Z" stroke="#3b82f6" stroke-width="1.5" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="feat-title">90% Profit Split</div>
+      <div class="feat-desc">Keep up to 90% of every dollar you generate. Our Instant plan leads the industry in trader-first compensation.</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon-wrap">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M4 16l4-4 3 3 5-6 3 3" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="feat-title">Scale to $500K</div>
+      <div class="feat-desc">Consistent profitability unlocks automatic account scaling milestones every 90 days, up to $500,000.</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon-wrap">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="2" y="3" width="18" height="16" rx="2" stroke="#3b82f6" stroke-width="1.5"/><path d="M6 8h10M6 12h7" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <div class="feat-title">Advanced Dashboard</div>
+      <div class="feat-desc">Full P&L analytics, drawdown tracking, win rate analysis, and session-level performance breakdowns in real time.</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon-wrap">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M17 21v-2a4 4 0 00-4-4H9a4 4 0 00-4 4v2M13 7a4 4 0 11-8 0 4 4 0 018 0M22 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <div class="feat-title">24/7 Community</div>
+      <div class="feat-desc">Private Discord with daily market analysis, live trade rooms, prop firm coaching, and peer accountability groups.</div>
+    </div>
   </div>
-</div>
+</section>
 
-<!-- FOOTER -->
+<!-- ─── PARTNERS ─── -->
+<section id="partners" style="padding:80px 0; overflow:hidden;">
+  <div class="partners-header reveal">
+    <div class="sec-label" style="text-align:center;">Ecosystem</div>
+    <div class="sec-title" style="text-align:center;">Our Partners & Allies</div>
+    <div class="sec-sub" style="margin: 0 auto; text-align:center;">We work with the best platforms, brokers, and tools in the futures trading industry.</div>
+  </div>
+
+  <!-- ROW 1 -->
+  <div class="marquee-outer">
+    <div class="marquee-track" id="row1"></div>
+    <div class="marquee-track" id="row1b" aria-hidden="true"></div>
+  </div>
+
+  <!-- ROW 2 -->
+  <div class="marquee-outer marquee-row2">
+    <div class="marquee-track marquee-track2" id="row2"></div>
+    <div class="marquee-track marquee-track2" id="row2b" aria-hidden="true"></div>
+  </div>
+</section>
+
+<!-- ─── PROOF: CERTS + PAYOUTS ─── -->
+<section id="proof">
+  <div class="sec-header reveal">
+    <div class="sec-label">Proof</div>
+    <div class="sec-title">Transparent. Fast. Reliable.</div>
+  </div>
+  <div class="proof-grid">
+
+    <div class="proof-card reveal">
+      <div class="cert-icon">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect x="3" y="4" width="22" height="17" rx="2" stroke="#60a5fa" stroke-width="1.5"/><path d="M3 9h22M8 14h6M8 17h4" stroke="#60a5fa" stroke-width="1.5" stroke-linecap="round"/><circle cx="14" cy="24" r="3" stroke="#60a5fa" stroke-width="1.5"/><path d="M11 24l-2 2M17 24l2 2" stroke="#60a5fa" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <div class="cert-title">Funding Certificates</div>
+      <div class="cert-desc">Every funded trader receives a digital certificate verifying their program, account size, and evaluation results. Share it on LinkedIn, your website, or trading communities as verified proof of your skill.</div>
+      <button class="plan-btn outline" style="max-width:200px;">See Example</button>
+    </div>
+
+    <div class="proof-card reveal">
+      <div class="cert-title" style="margin-bottom:16px;">Payout Process</div>
+      <div class="payout-steps">
+        <div class="payout-step">
+          <div class="pstep-num">1</div>
+          <div class="pstep-text"><strong>Request withdrawal</strong> from your trader dashboard at any time</div>
+        </div>
+        <div class="payout-step">
+          <div class="pstep-num">2</div>
+          <div class="pstep-text"><strong>Verification check</strong> — compliance confirms your trade history</div>
+        </div>
+        <div class="payout-step">
+          <div class="pstep-num">3</div>
+          <div class="pstep-text"><strong>Payment sent</strong> via USDT, BTC, or wire transfer within 48h</div>
+        </div>
+        <div class="payout-step">
+          <div class="pstep-num">4</div>
+          <div class="pstep-text"><strong>Account reset</strong> and continue trading immediately</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ─── TESTIMONIALS ─── -->
+<section id="testi" style="padding-top:0;">
+  <div class="sec-header reveal">
+    <div class="sec-label">Traders</div>
+    <div class="sec-title">Real Results</div>
+  </div>
+  <div class="testi-grid reveal">
+    <div class="testi-card">
+      <div class="testi-stars">★★★★★</div>
+      <div class="testi-quote">"Got funded on my first attempt with the Pro plan. Received my first payout in under 48 hours. LegionFutures is the most transparent prop firm I've worked with."</div>
+      <div class="testi-person">
+        <div class="testi-avatar">JR</div>
+        <div><div class="testi-name">James R.</div><div class="testi-role">ES Futures · Pro $100K</div></div>
+      </div>
+    </div>
+    <div class="testi-card">
+      <div class="testi-stars">★★★★★</div>
+      <div class="testi-quote">"The Instant plan was worth every cent. Skipped the evaluation, traded live from day one. Already scaled to $150K. Platform and support are genuinely top tier."</div>
+      <div class="testi-person">
+        <div class="testi-avatar">MC</div>
+        <div><div class="testi-name">Maria C.</div><div class="testi-role">NQ Scalper · Instant $150K</div></div>
+      </div>
+    </div>
+    <div class="testi-card">
+      <div class="testi-stars">★★★★★</div>
+      <div class="testi-quote">"Standard plan fits my intraday strategy perfectly. Fair evaluation, clear rules, and the analytics dashboard makes tracking performance incredibly intuitive."</div>
+      <div class="testi-person">
+        <div class="testi-avatar">DK</div>
+        <div><div class="testi-name">David K.</div><div class="testi-role">CL Day Trader · Standard $50K</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── SIGNUP ─── -->
+<section id="signup" style="padding: 60px 40px 90px;">
+  <div class="signup-card reveal">
+    <div class="signup-title">Your Legion Awaits.<br>Join Today.</div>
+    <div class="signup-sub">Start your funded trading journey with as little as $250. Zero capital at risk.</div>
+    <div class="signup-form">
+      <input class="signup-input" type="email" placeholder="Enter your email address">
+      <button class="btn-signup">Sign Up Free</button>
+    </div>
+    <div class="signup-legal">By signing up you agree to our <a href="#">Terms of Service</a> and <a href="#">Risk Disclosure</a>.</div>
+  </div>
+</section>
+
+<!-- ─── FOOTER ─── -->
 <footer>
-  <div class="nav-logo" style="font-size: 22px;">Futures<span>Calc</span></div>
-  <p>© 2025 FuturesCalc. Built for funded traders.</p>
-  <p>ES · NQ · MNQ · MES · CL</p>
+  <div class="footer-top">
+    <div class="footer-brand">
+      <a href="#" class="nav-logo" style="text-decoration:none;">
+        <div class="nav-logo-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M7 20h10M9 20v-2c0-1 .5-2 1.5-2.5L13 14c.8-.4 1.5-1.2 1.5-2.5V9c0-1-.4-2-1-2.5C12.8 6 12 5.5 11 5.5H9.5C8.7 5.5 8 5 7.5 4.5L7 4c-.5-.5-1-.5-1.5-.5H5v3l1 1c.5.5 1 .5 1.5.5H8c.5 0 1 .3 1 .8V11c0 .5-.3.8-.8.8H7.5C7 11.8 7 12.5 7 13v5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <span class="nav-logo-text">Legion<em>Futures</em></span>
+      </a>
+      <p>Elite funded futures trading. Trade with institutional capital, keep the majority of your profits.</p>
+    </div>
+    <div class="footer-cols">
+      <div class="footer-col">
+        <h4>Programs</h4>
+        <a href="#">Standard Plan</a>
+        <a href="#">Pro Plan</a>
+        <a href="#">Instant Funded</a>
+        <a href="#">Pricing</a>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="#">About Us</a>
+        <a href="#">Blog</a>
+        <a href="#">Leaderboard</a>
+        <a href="#">Affiliates</a>
+      </div>
+      <div class="footer-col">
+        <h4>Support</h4>
+        <a href="#">Help Center</a>
+        <a href="#">Contact</a>
+        <a href="#">Discord</a>
+        <a href="#">Status</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+        <a href="#">Risk Disclosure</a>
+        <a href="#">Refund Policy</a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span class="footer-copy">© 2025 LegionFutures. All rights reserved.</span>
+    <span class="footer-disc">Trading futures involves substantial risk of loss. LegionFutures provides simulated funded accounts and does not provide investment advice. Past performance is not indicative of future results.</span>
+  </div>
 </footer>
 
+</div><!-- /site -->
+
 <script>
-// ── TICKER DATA ──
-const tickers = [
-  { sym: 'ES', val: '5842.25', chg: '+8.50', up: true },
-  { sym: 'NQ', val: '20341.75', chg: '+42.25', up: true },
-  { sym: 'MNQ', val: '20341.75', chg: '+42.25', up: true },
-  { sym: 'MES', val: '5842.25', chg: '+8.50', up: true },
-  { sym: 'CL', val: '83.47', chg: '-0.31', up: false },
-  { sym: '1 ES tick', val: '$12.50', chg: '→ USD', up: true },
-  { sym: '1 NQ tick', val: '$5.00', chg: '→ USD', up: true },
-  { sym: '1 MNQ tick', val: '$0.50', chg: '→ USD', up: true },
-  { sym: '1 MES tick', val: '$1.25', chg: '→ USD', up: true },
-  { sym: '1 CL tick', val: '$10.00', chg: '→ USD', up: true },
+// ─── PARTNERS JSON ───────────────────────────────────────────
+// To add partners: add entries to PARTNERS array
+// Format: { name: "PartnerName", logo: "./partnerlogo.png" }
+// If logo is null or missing, a styled text pill is shown instead
+const PARTNERS = [
+  { name: "Tradovate",   logo: null },
+  { name: "NinjaTrader", logo: null },
+  { name: "Rithmic",     logo: null },
+  { name: "CQG",         logo: null },
+  { name: "Dorman Trading", logo: null },
+  { name: "TradingView", logo: null },
+  { name: "Sierra Chart",logo: null },
+  { name: "Optimus Futures", logo: null },
+  { name: "Amp Futures", logo: null },
+  { name: "Ironbeam",    logo: null },
+  { name: "Wedbush",     logo: null },
+  { name: "Phillip Capital", logo: null }
 ];
 
-function buildTicker() {
-  const doubled = [...tickers, ...tickers];
-  return doubled.map(t => `
-    <div class="ticker-item">
-      <span class="ticker-sym">${t.sym}</span>
-      <span class="ticker-val">${t.val}</span>
-      <span class="${t.up ? 'ticker-up' : 'ticker-down'}">${t.chg}</span>
-    </div>
-  `).join('');
+// Split into two rows
+const row1Partners = PARTNERS.slice(0, Math.ceil(PARTNERS.length / 2));
+const row2Partners = PARTNERS.slice(Math.ceil(PARTNERS.length / 2));
+
+function buildPartnerEl(p) {
+  const el = document.createElement('div');
+  el.className = 'partner-logo';
+  if (p.logo) {
+    const img = document.createElement('img');
+    img.src = p.logo; img.alt = p.name;
+    img.style.cssText = 'height:22px;width:auto;opacity:0.55;filter:grayscale(1) brightness(2)';
+    el.appendChild(img);
+  } else {
+    const dot = document.createElement('span');
+    dot.className = 'partner-dot';
+    el.appendChild(dot);
+    el.appendChild(document.createTextNode(p.name));
+  }
+  return el;
 }
-document.getElementById('ticker').innerHTML = buildTicker();
 
-// ── CHART.JS DEFAULTS ──
-Chart.defaults.color = '#5a7a8a';
-Chart.defaults.borderColor = '#1f3247';
-Chart.defaults.font.family = "'DM Mono', monospace";
+function populateRow(id, partners) {
+  const track = document.getElementById(id);
+  if (!track) return;
+  partners.forEach(p => track.appendChild(buildPartnerEl(p)));
+}
 
-// ── P&L CHART ──
-new Chart(document.getElementById('pnlChart'), {
-  type: 'bar',
-  data: {
-    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
-    datasets: [{
-      data: [32, -15, 55, 40, -8, 65, 28, 72, 45, 100],
-      backgroundColor: ctx => ctx.raw >= 0 ? 'rgba(52,199,89,0.7)' : 'rgba(255,59,48,0.7)',
-      borderRadius: 4,
-      borderSkipped: false,
-    }]
-  },
-  options: {
-    responsive: true,
-    plugins: { legend: { display: false } },
-    scales: {
-      x: { grid: { display: false } },
-      y: { grid: { color: '#1a2737' }, ticks: { callback: v => v + ' tk' } }
-    }
+populateRow('row1', row1Partners);
+populateRow('row1b', row1Partners);
+populateRow('row2', row2Partners);
+populateRow('row2b', row2Partners);
+
+// ─── PRICING TOGGLE ──────────────────────────────────────────
+const PRICES = {
+  '50k':  { std: 250, pro: 399, ins: 599 },
+  '100k': { std: 420, pro: 620, ins: 780 },
+  '150k': { std: 580, pro: 750, ins: 1080 }
+};
+const DESCS = {
+  '50k':  '$50K account · no recurring charges',
+  '100k': '$100K account · no recurring charges',
+  '150k': '$150K account · no recurring charges'
+};
+
+function setSize(size, btn) {
+  document.querySelectorAll('.ptog-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const p = PRICES[size];
+  document.querySelector('#std-price span').textContent = p.std;
+  document.querySelector('#pro-price span').textContent = p.pro;
+  document.querySelector('#ins-price span').textContent = p.ins;
+  document.querySelectorAll('.plan-period').forEach(el => el.textContent = DESCS[size]);
+}
+
+// ─── CANDLE ANIMATION ────────────────────────────────────────
+const canvas = document.getElementById('candleCanvas');
+const ctx = canvas.getContext('2d');
+let candles = [];
+
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+class Candle {
+  constructor() { this.reset(true); }
+  reset(init) {
+    this.x = Math.random() * canvas.width;
+    this.y = init ? Math.random() * canvas.height : canvas.height + 80;
+    this.w = 6 + Math.random() * 10;
+    this.bodyH = 20 + Math.random() * 80;
+    this.wickTop = 8 + Math.random() * 24;
+    this.wickBot = 8 + Math.random() * 20;
+    this.bull = Math.random() > 0.42;
+    this.speed = 0.25 + Math.random() * 0.55;
+    this.opacity = 0;
+    this.fadeIn = 0.003 + Math.random() * 0.004;
+    this.fadeOut = false;
+    this.maxOpacity = 0.4 + Math.random() * 0.55;
   }
-});
-
-// ── CONSISTENCY DONUT ──
-new Chart(document.getElementById('consistencyDonut'), {
-  type: 'doughnut',
-  data: {
-    labels: ['Compliant', 'At Risk'],
-    datasets: [{
-      data: [87.4, 12.6],
-      backgroundColor: ['rgba(52,199,89,0.85)', 'rgba(31,50,71,0.8)'],
-      borderColor: ['#34c759', '#1f3247'],
-      borderWidth: 2,
-      hoverOffset: 6,
-    }]
-  },
-  options: {
-    responsive: true,
-    cutout: '72%',
-    plugins: {
-      legend: { position: 'bottom', labels: { padding: 16, boxWidth: 12 } },
-    }
-  }
-});
-
-// ── TICK CHART ──
-new Chart(document.getElementById('tickChart'), {
-  type: 'bar',
-  data: {
-    labels: ['MNQ ($0.50)', 'MES ($1.25)', 'NQ ($5.00)', 'CL ($10.00)', 'ES ($12.50)'],
-    datasets: [{
-      label: 'Tick Value (USD)',
-      data: [0.5, 1.25, 5.0, 10.0, 12.5],
-      backgroundColor: [
-        'rgba(26,106,191,0.75)',
-        'rgba(26,106,191,0.75)',
-        'rgba(255,140,43,0.75)',
-        'rgba(255,140,43,0.75)',
-        'rgba(255,140,43,0.75)',
-      ],
-      borderColor: ['#1a6abf','#1a6abf','#ff8c2b','#ff8c2b','#ff8c2b'],
-      borderWidth: 1,
-      borderRadius: 6,
-    }]
-  },
-  options: {
-    indexAxis: 'y',
-    responsive: true,
-    plugins: { legend: { display: false } },
-    scales: {
-      x: {
-        grid: { color: '#1a2737' },
-        ticks: { callback: v => '$' + v }
-      },
-      y: { grid: { display: false } }
-    }
-  }
-});
-
-// ── CONSISTENCY LINE ──
-new Chart(document.getElementById('consistencyLine'), {
-  type: 'line',
-  data: {
-    labels: ['Wk 1', 'Wk 2', 'Wk 3', 'Wk 4', 'Wk 5', 'Wk 6', 'Wk 7', 'Wk 8'],
-    datasets: [
-      {
-        label: 'Consistency %',
-        data: [71, 78, 74, 83, 79, 88, 85, 92],
-        borderColor: '#ff8c2b',
-        backgroundColor: 'rgba(255,140,43,0.08)',
-        fill: true,
-        tension: 0.4,
-        pointBackgroundColor: '#ff8c2b',
-        pointRadius: 5,
-      },
-      {
-        label: 'Threshold',
-        data: [70, 70, 70, 70, 70, 70, 70, 70],
-        borderColor: '#5a7a8a',
-        borderDash: [6, 4],
-        pointRadius: 0,
-        fill: false,
-      }
-    ]
-  },
-  options: {
-    responsive: true,
-    plugins: {
-      legend: { position: 'bottom', labels: { padding: 16, boxWidth: 12 } }
-    },
-    scales: {
-      x: { grid: { display: false } },
-      y: {
-        grid: { color: '#1a2737' },
-        min: 60, max: 100,
-        ticks: { callback: v => v + '%' }
-      }
-    }
-  }
-});
-
-// ── CONSISTENCY CALCULATOR LOGIC ──
-(function() {
-  let limit = 40;
-  let days = 3;
-
-  const typeGrid = document.getElementById('typeGrid');
-  const sizeGrid = document.getElementById('sizeGrid');
-  const dayCountEl = document.getElementById('dayCount');
-  const dayInputsEl = document.getElementById('dayInputs');
-  const limitLabelEl = document.getElementById('limitLabel');
-  const pctLabelEl = document.getElementById('pctLabel');
-
-  // Type buttons
-  typeGrid.querySelectorAll('.cc-type-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      typeGrid.querySelectorAll('.cc-type-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      limit = +btn.dataset.limit;
-      limitLabelEl.textContent = `limit: ${limit}%`;
-      pctLabelEl.textContent = `PROFIT FOR ${limit}%`;
-      recalc();
-    });
-  });
-
-  // Size buttons
-  sizeGrid.querySelectorAll('.cc-size-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      sizeGrid.querySelectorAll('.cc-size-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-    });
-  });
-
-  // Day counter
-  document.getElementById('dayMinus').addEventListener('click', () => {
-    if (days > 1) { days--; dayCountEl.textContent = days; renderInputs(); }
-  });
-  document.getElementById('dayPlus').addEventListener('click', () => {
-    if (days < 20) { days++; dayCountEl.textContent = days; renderInputs(); }
-  });
-
-  // Generate days with random sample data
-  document.getElementById('genDaysBtn').addEventListener('click', () => {
-    const inputs = dayInputsEl.querySelectorAll('input');
-    const samples = [1000, 830, 688.9, 450, 1200, 320, 750, 900, 280, 1100, 560, 400];
-    inputs.forEach((inp, i) => {
-      inp.value = samples[i % samples.length];
-    });
-    recalc();
-  });
-
-  function renderInputs() {
-    dayInputsEl.innerHTML = '';
-    for (let i = 1; i <= days; i++) {
-      const row = document.createElement('div');
-      row.className = 'cc-input-row';
-      row.innerHTML = `
-        <span class="cc-input-label">Day ${i} &nbsp;<span style="color:var(--muted);font-size:10px;">$</span></span>
-        <span class="cc-input-sep">|</span>
-        <input type="number" placeholder="0.00" step="0.01" data-day="${i}" />
-      `;
-      dayInputsEl.appendChild(row);
-    }
-    dayInputsEl.querySelectorAll('input').forEach(inp => {
-      inp.addEventListener('input', recalc);
-    });
-    recalc();
-  }
-
-  function fmt(n) {
-    return '$' + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
-  }
-
-  function recalc() {
-    const vals = [...dayInputsEl.querySelectorAll('input')].map(i => parseFloat(i.value) || 0);
-    if (vals.every(v => v === 0)) {
-      document.getElementById('ccScore').textContent = '—';
-      document.getElementById('ccVerdict').textContent = 'Enter your day profits to calculate.';
-      document.getElementById('ccBar').style.width = '0%';
-      return;
-    }
-
-    const positives = vals.filter(v => v > 0);
-    const negatives = vals.filter(v => v < 0);
-    const totalEarnings = positives.reduce((a, b) => a + b, 0);
-    const totalLosses = negatives.reduce((a, b) => a + b, 0);
-    const netPL = totalEarnings + totalLosses;
-    const bestDay = positives.length ? Math.max(...positives) : 0;
-
-    const scoreEl = document.getElementById('ccScore');
-    const badgeEl = document.getElementById('ccBadge');
-    const barEl = document.getElementById('ccBar');
-    const resultEl = document.getElementById('ccResult');
-    const verdictEl = document.getElementById('ccVerdict');
-
-    let pct = 0;
-    let passing = true;
-
-    if (totalEarnings > 0) {
-      pct = (bestDay / totalEarnings) * 100;
-      passing = pct <= limit;
-    }
-
-    scoreEl.innerHTML = `${pct.toFixed(1)}<sup>%</sup>`;
-    scoreEl.className = 'cc-score' + (passing ? '' : ' failing');
-    badgeEl.className = 'cc-badge' + (passing ? '' : ' failing');
-    badgeEl.innerHTML = passing ? '● Consistent' : '● Failing';
-    resultEl.className = 'cc-result' + (passing ? '' : ' failing');
-    barEl.style.width = Math.min(pct, 100) + '%';
-    barEl.className = 'cc-bar-fill' + (passing ? '' : ' failing');
-
-    document.getElementById('statBest').textContent = fmt(bestDay);
-    document.getElementById('statTotal').textContent = fmt(totalEarnings);
-    document.getElementById('statLoss').textContent = totalLosses < 0 ? fmt(totalLosses) : '$0.000';
-    document.getElementById('statNet').textContent = fmt(netPL);
-
-    // What % of payout goal covered
-    const forLimit = totalEarnings > 0 ? (bestDay / (limit / 100)) : 0;
-    document.getElementById('statPct').textContent = passing ? 'OK ✓' : `Max: ${fmt(totalEarnings * limit / 100)}`;
-
-    verdictEl.className = 'cc-verdict' + (passing ? '' : ' failing');
-    if (passing) {
-      verdictEl.textContent = '✓ You follow the rule correctly.';
+  update() {
+    this.y -= this.speed;
+    if (!this.fadeOut) {
+      this.opacity = Math.min(this.opacity + this.fadeIn, this.maxOpacity);
+      if (this.y < canvas.height * 0.3) this.fadeOut = true;
     } else {
-      const excess = bestDay - totalEarnings * (limit / 100);
-      verdictEl.textContent = `✗ Best day exceeds limit by ${fmt(excess)}. Reduce or add more trading days.`;
+      this.opacity -= 0.003;
     }
+    if (this.opacity <= 0 || this.y < -120) this.reset(false);
   }
+  draw() {
+    ctx.save();
+    ctx.globalAlpha = this.opacity;
+    const color = this.bull
+      ? `rgba(0,217,126,1)`
+      : `rgba(255,69,96,1)`;
+    const glowColor = this.bull ? '#00d97e' : '#ff4560';
 
-  renderInputs();
-})();
+    // Glow
+    ctx.shadowColor = glowColor;
+    ctx.shadowBlur = 8;
 
-// ── SCROLL REVEAL ──
-const observer = new IntersectionObserver(entries => {
-  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
-}, { threshold: 0.1 });
-document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    // Wick
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(this.x + this.w / 2, this.y - this.wickTop);
+    ctx.lineTo(this.x + this.w / 2, this.y + this.bodyH + this.wickBot);
+    ctx.stroke();
 
-// ── COUNTER ANIMATION ──
-function animateCount(el, target) {
-  let start = 0;
-  const duration = 1500;
-  const step = timestamp => {
-    if (!start) start = timestamp;
-    const progress = Math.min((timestamp - start) / duration, 1);
-    const ease = 1 - Math.pow(1 - progress, 3);
-    el.textContent = Math.round(ease * target) + (el.dataset.suffix || '');
-    if (progress < 1) requestAnimationFrame(step);
-  };
-  requestAnimationFrame(step);
+    // Body with gradient
+    const grad = ctx.createLinearGradient(0, this.y, 0, this.y + this.bodyH);
+    if (this.bull) {
+      grad.addColorStop(0, 'rgba(0,217,126,0.9)');
+      grad.addColorStop(1, 'rgba(0,150,80,0.5)');
+    } else {
+      grad.addColorStop(0, 'rgba(255,69,96,0.9)');
+      grad.addColorStop(1, 'rgba(180,30,50,0.5)');
+    }
+    ctx.fillStyle = grad;
+    ctx.shadowBlur = 14;
+    ctx.fillRect(this.x, this.y, this.w, this.bodyH);
+    ctx.restore();
+  }
 }
 
-const statsObserver = new IntersectionObserver(entries => {
+for (let i = 0; i < 36; i++) candles.push(new Candle());
+
+function animate() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  candles.forEach(c => { c.update(); c.draw(); });
+  requestAnimationFrame(animate);
+}
+animate();
+
+// ─── SCROLL REVEAL ───────────────────────────────────────────
+const revealEls = document.querySelectorAll('.reveal');
+const obs = new IntersectionObserver((entries) => {
   entries.forEach(e => {
-    if (e.isIntersecting) {
-      const el = e.target.querySelector('[data-target]');
-      if (el && el.dataset.target !== '0') {
-        animateCount(el, +el.dataset.target);
-        statsObserver.unobserve(e.target);
-      }
-    }
+    if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }
   });
-}, { threshold: 0.5 });
-document.querySelectorAll('.stat-item').forEach(el => statsObserver.observe(el));
+}, { threshold: 0.12 });
+revealEls.forEach(el => obs.observe(el));
+
+// ─── MOBILE MENU ─────────────────────────────────────────────
+function toggleMenu() {
+  document.getElementById('mobileMenu').classList.toggle('open');
+}
 </script>
 </body>
 </html>
