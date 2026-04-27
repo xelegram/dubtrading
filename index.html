@@ -3,2003 +3,810 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FuturesCalc — Precision Trading Calculator</title>
+<title>DubTrading — Pass Funded Evaluations on Autopilot</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --orange: #ff8c2b;
-    --orange-dim: #c96a1a;
-    --bg: #0b1117;
-    --surface: #111b25;
-    --surface2: #1a2737;
-    --border: #1f3247;
-    --text: #e8edf2;
-    --muted: #5a7a8a;
-    --green: #34c759;
-    --red: #ff3b30;
-    --blue: #1a6abf;
-  }
-
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  html { scroll-behavior: smooth; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Syne', sans-serif;
-    overflow-x: hidden;
-  }
-
-  /* ── NOISE OVERLAY ── */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 999;
-    opacity: 0.5;
-  }
-
-  /* ── NAV ── */
-  nav {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    z-index: 100;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 18px 48px;
-    background: rgba(11,17,23,0.85);
-    backdrop-filter: blur(20px);
-    border-bottom: 1px solid var(--border);
-  }
-
-  .nav-logo {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 28px;
-    letter-spacing: 2px;
-    color: var(--orange);
-  }
-  .nav-logo span { color: var(--text); }
-
-  nav ul { list-style: none; display: flex; gap: 36px; }
-  nav ul a {
-    text-decoration: none;
-    color: var(--muted);
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    transition: color .2s;
-  }
-  nav ul a:hover { color: var(--orange); }
-
-  .nav-cta {
-    background: var(--orange);
-    color: #000 !important;
-    padding: 8px 20px;
-    border-radius: 6px;
-    font-weight: 700 !important;
-  }
-  .nav-cta:hover { background: #ffaa55 !important; color: #000 !important; }
-
-  /* ── HERO ── */
-  .hero {
-    min-height: 100vh;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    align-items: center;
-    padding: 100px 48px 60px;
-    gap: 60px;
-    position: relative;
-    overflow: hidden;
-  }
-
-  /* Grid lines background */
-  .hero::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(255,140,43,0.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,140,43,0.04) 1px, transparent 1px);
-    background-size: 60px 60px;
-    pointer-events: none;
-  }
-
-  .hero-glow {
-    position: absolute;
-    width: 600px; height: 600px;
-    background: radial-gradient(circle, rgba(255,140,43,0.12) 0%, transparent 70%);
-    top: 50%; left: 30%;
-    transform: translate(-50%, -50%);
-    pointer-events: none;
-  }
-
-  .hero-label {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 2px;
-    color: var(--orange);
-    border: 1px solid rgba(255,140,43,0.3);
-    padding: 6px 14px;
-    border-radius: 100px;
-    margin-bottom: 24px;
-    text-transform: uppercase;
-  }
-  .hero-label::before {
-    content: '';
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: var(--green);
-    animation: pulse 2s infinite;
-  }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
-  }
-
-  .hero h1 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(56px, 6vw, 88px);
-    line-height: 0.95;
-    letter-spacing: 2px;
-    margin-bottom: 24px;
-  }
-
-  .hero h1 .accent { color: var(--orange); }
-
-  .hero p {
-    font-size: 17px;
-    color: var(--muted);
-    line-height: 1.7;
-    max-width: 480px;
-    margin-bottom: 40px;
-  }
-
-  .hero-actions { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
-
-  .btn-primary {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    background: var(--orange);
-    color: #000;
-    font-family: 'Syne', sans-serif;
-    font-weight: 700;
-    font-size: 15px;
-    padding: 14px 32px;
-    border-radius: 8px;
-    text-decoration: none;
-    border: none;
-    cursor: pointer;
-    transition: all .2s;
-    letter-spacing: 0.5px;
-  }
-  .btn-primary:hover {
-    background: #ffaa55;
-    transform: translateY(-2px);
-    box-shadow: 0 12px 40px rgba(255,140,43,0.35);
-  }
-
-  .btn-ghost {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: transparent;
-    color: var(--text);
-    font-family: 'Syne', sans-serif;
-    font-weight: 600;
-    font-size: 14px;
-    padding: 14px 24px;
-    border-radius: 8px;
-    text-decoration: none;
-    border: 1px solid var(--border);
-    cursor: pointer;
-    transition: all .2s;
-  }
-  .btn-ghost:hover { border-color: var(--orange); color: var(--orange); }
-
-  /* ── APP MOCKUP ── */
-  .app-mockup {
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    z-index: 1;
-  }
-
-  .phone-frame {
-    width: 280px;
-    background: var(--surface);
-    border-radius: 28px;
-    border: 2px solid var(--orange);
-    box-shadow:
-      0 0 0 6px rgba(255,140,43,0.08),
-      0 40px 80px rgba(0,0,0,0.6),
-      0 0 60px rgba(255,140,43,0.15);
-    overflow: hidden;
-    position: relative;
-    animation: float 6s ease-in-out infinite;
-  }
-
-  @keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-12px); }
-  }
-
-  .phone-titlebar {
-    background: #0f1720;
-    padding: 10px 14px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid var(--border);
-  }
-  .phone-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 18px;
-    letter-spacing: 1px;
-    color: var(--orange);
-  }
-  .phone-dots { display: flex; gap: 5px; }
-  .phone-dot { width: 9px; height: 9px; border-radius: 50%; }
-  .dot-r { background: var(--red); }
-  .dot-y { background: #f5a623; }
-  .dot-g { background: var(--green); }
-
-  .phone-body { padding: 16px; }
-
-  .phone-display {
-    background: #0f1720;
-    border-radius: 10px;
-    border: 1px solid var(--orange);
-    padding: 12px 14px;
-    margin-bottom: 12px;
-    text-align: right;
-  }
-  .phone-mode {
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    color: var(--green);
-    letter-spacing: 1px;
-    margin-bottom: 4px;
-  }
-  .phone-value {
-    font-family: 'DM Mono', monospace;
-    font-size: 28px;
-    color: var(--text);
-    counter-reset: anim;
-    animation: countup 3s ease-out forwards;
-  }
-
-  @keyframes countup {
-    0% { opacity: 0.3; }
-    100% { opacity: 1; }
-  }
-
-  .phone-asset-row {
-    display: flex;
-    gap: 6px;
-    margin-bottom: 12px;
-  }
-  .asset-chip {
-    flex: 1;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 6px;
-    text-align: center;
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    color: var(--muted);
-    transition: all .2s;
-  }
-  .asset-chip.active {
-    border-color: var(--orange);
-    color: var(--orange);
-    background: rgba(255,140,43,0.1);
-  }
-
-  .phone-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 5px;
-  }
-  .phone-btn {
-    background: #243748;
-    border-radius: 6px;
-    padding: 10px 0;
-    text-align: center;
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    color: var(--text);
-  }
-  .phone-btn.op { color: var(--orange); }
-  .phone-btn.eq {
-    background: var(--orange);
-    color: #000;
-    font-weight: 700;
-    grid-column: span 2;
-  }
-
-  /* ── STATS STRIP ── */
-  .stats-strip {
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-    padding: 28px 48px;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0;
-  }
-  .stat-item {
-    text-align: center;
-    padding: 0 20px;
-    border-right: 1px solid var(--border);
-  }
-  .stat-item:last-child { border-right: none; }
-  .stat-num {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 42px;
-    color: var(--orange);
-    letter-spacing: 1px;
-    line-height: 1;
-  }
-  .stat-label {
-    font-size: 11px;
-    color: var(--muted);
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    margin-top: 4px;
-    font-family: 'DM Mono', monospace;
-  }
-
-  /* ── SECTION COMMON ── */
-  section { padding: 100px 48px; }
-  .section-tag {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 2px;
-    color: var(--orange);
-    text-transform: uppercase;
-    margin-bottom: 12px;
-  }
-  .section-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(38px, 4vw, 58px);
-    letter-spacing: 1px;
-    line-height: 1;
-    margin-bottom: 20px;
-  }
-  .section-sub {
-    color: var(--muted);
-    font-size: 16px;
-    line-height: 1.7;
-    max-width: 560px;
-  }
-
-  /* ── CHARTS SECTION ── */
-  .charts-section { background: var(--surface); }
-
-  .charts-header {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 80px;
-    align-items: end;
-    margin-bottom: 60px;
-  }
-
-  .charts-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-  }
-
-  .chart-card {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 24px;
-    position: relative;
-    overflow: hidden;
-    transition: border-color .3s;
-  }
-  .chart-card:hover { border-color: rgba(255,140,43,0.4); }
-  .chart-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, var(--orange), transparent);
-  }
-
-  .chart-card-title {
-    font-size: 11px;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--muted);
-    font-family: 'DM Mono', monospace;
-    margin-bottom: 4px;
-  }
-  .chart-card-value {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 30px;
-    color: var(--text);
-    letter-spacing: 1px;
-    margin-bottom: 16px;
-  }
-  .chart-card-value span { color: var(--green); font-size: 16px; font-family: 'DM Mono', monospace; }
-
-  .chart-card canvas { max-height: 180px; }
-  .chart-card.wide { grid-column: span 2; }
-
-  /* ── FEATURES ── */
-  .features-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 2px;
-    margin-top: 60px;
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    overflow: hidden;
-  }
-
-  .feature-card {
-    padding: 40px 32px;
-    background: var(--surface);
-    border-right: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-    transition: background .3s;
-    position: relative;
-  }
-  .feature-card:hover { background: var(--surface2); }
-  .feature-card:nth-child(3n) { border-right: none; }
-  .feature-card:nth-last-child(-n+3) { border-bottom: none; }
-
-  .feature-icon {
-    width: 44px; height: 44px;
-    border-radius: 10px;
-    background: rgba(255,140,43,0.12);
-    border: 1px solid rgba(255,140,43,0.25);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    margin-bottom: 20px;
-  }
-
-  .feature-card h3 {
-    font-size: 17px;
-    font-weight: 700;
-    margin-bottom: 10px;
-    color: var(--text);
-  }
-  .feature-card p {
-    font-size: 14px;
-    color: var(--muted);
-    line-height: 1.65;
-  }
-
-  /* ── INSTRUMENTS ── */
-  .instruments-section {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 80px;
-    align-items: center;
-  }
-
-  .instruments-table {
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    overflow: hidden;
-  }
-  .instruments-table table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  .instruments-table th {
-    padding: 14px 20px;
-    text-align: left;
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 2px;
-    color: var(--muted);
-    text-transform: uppercase;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-  }
-  .instruments-table td {
-    padding: 16px 20px;
-    border-bottom: 1px solid var(--border);
-    font-size: 14px;
-    transition: background .2s;
-  }
-  .instruments-table tr:last-child td { border-bottom: none; }
-  .instruments-table tr:hover td { background: var(--surface2); }
-  .instruments-table .symbol {
-    font-family: 'DM Mono', monospace;
-    color: var(--orange);
-    font-weight: 500;
-  }
-  .instruments-table .tick-val {
-    font-family: 'DM Mono', monospace;
-    color: var(--green);
-  }
-  .badge {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 10px;
-    font-family: 'DM Mono', monospace;
-    letter-spacing: 0.5px;
-  }
-  .badge-micro { background: rgba(26,106,191,0.2); color: var(--blue); border: 1px solid rgba(26,106,191,0.3); }
-  .badge-std { background: rgba(255,140,43,0.15); color: var(--orange); border: 1px solid rgba(255,140,43,0.25); }
-
-  /* ── CONSISTENCY DEEP DIVE ── */
-  .consistency-section {
-    background: var(--surface);
-  }
-
-  .consistency-layout {
-    display: grid;
-    grid-template-columns: 1fr 1.4fr;
-    gap: 80px;
-    align-items: center;
-    margin-top: 60px;
-  }
-
-  .consistency-metrics {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  .metric-bar {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 18px 20px;
-  }
-  .metric-bar-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-  }
-  .metric-name {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text);
-  }
-  .metric-pct {
-    font-family: 'DM Mono', monospace;
-    font-size: 13px;
-    color: var(--green);
-  }
-  .metric-track {
-    height: 6px;
-    background: var(--border);
-    border-radius: 3px;
-    overflow: hidden;
-  }
-  .metric-fill {
-    height: 100%;
-    border-radius: 3px;
-    background: linear-gradient(90deg, var(--orange), #ffaa55);
-    transition: width 1s ease;
-  }
-  .metric-fill.green { background: linear-gradient(90deg, var(--green), #55e87a); }
-  .metric-fill.blue { background: linear-gradient(90deg, var(--blue), #4da6ff); }
-
-  /* ── PRICING ── */
-  .pricing-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
-    margin-top: 60px;
-  }
-
-  .pricing-card {
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 36px 28px;
-    background: var(--surface);
-    position: relative;
-    overflow: hidden;
-    transition: transform .3s, box-shadow .3s;
-  }
-  .pricing-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 24px 60px rgba(0,0,0,0.4);
-  }
-  .pricing-card.featured {
-    border-color: var(--orange);
-    background: rgba(255,140,43,0.05);
-  }
-  .pricing-card.featured::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-    background: var(--orange);
-  }
-  .pricing-badge {
-    position: absolute;
-    top: 20px; right: 20px;
-    background: var(--orange);
-    color: #000;
-    font-size: 10px;
-    font-weight: 700;
-    padding: 3px 10px;
-    border-radius: 100px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-  }
-  .pricing-plan {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 2px;
-    color: var(--muted);
-    text-transform: uppercase;
-    margin-bottom: 12px;
-  }
-  .pricing-price {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 56px;
-    color: var(--text);
-    line-height: 1;
-    margin-bottom: 4px;
-  }
-  .pricing-price sup { font-size: 24px; vertical-align: top; margin-top: 8px; color: var(--muted); }
-  .pricing-period {
-    font-size: 12px;
-    color: var(--muted);
-    margin-bottom: 28px;
-    font-family: 'DM Mono', monospace;
-  }
-  .pricing-features { list-style: none; margin-bottom: 32px; }
-  .pricing-features li {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 14px;
-    color: var(--muted);
-    padding: 8px 0;
-    border-bottom: 1px solid var(--border);
-  }
-  .pricing-features li:last-child { border-bottom: none; }
-  .pricing-features li::before {
-    content: '✓';
-    color: var(--green);
-    font-weight: 700;
-    flex-shrink: 0;
-  }
-  .pricing-features li.dim::before { content: '—'; color: var(--border); }
-  .pricing-features li.dim { opacity: 0.4; }
-
-  /* ── CTA BANNER ── */
-  .cta-banner {
-    margin: 0 48px 100px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 24px;
-    padding: 80px 60px;
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 40px;
-    align-items: center;
-    position: relative;
-    overflow: hidden;
-  }
-  .cta-banner::after {
-    content: '';
-    position: absolute;
-    bottom: -60px; right: -60px;
-    width: 300px; height: 300px;
-    background: radial-gradient(circle, rgba(255,140,43,0.12), transparent 70%);
-    pointer-events: none;
-  }
-  .cta-banner h2 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 48px;
-    letter-spacing: 1px;
-    margin-bottom: 12px;
-  }
-  .cta-banner p { color: var(--muted); font-size: 16px; }
-
-  /* ── FOOTER ── */
-  footer {
-    border-top: 1px solid var(--border);
-    padding: 40px 48px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  footer p { color: var(--muted); font-size: 13px; font-family: 'DM Mono', monospace; }
-
-  /* ── SCROLL ANIMATIONS ── */
-  .reveal {
-    opacity: 0;
-    transform: translateY(30px);
-    transition: opacity .7s ease, transform .7s ease;
-  }
-  .reveal.visible {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  /* ── TICKER TAPE ── */
-  .ticker {
-    background: #0a0f14;
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-    padding: 10px 0;
-    overflow: hidden;
-    white-space: nowrap;
-  }
-  .ticker-inner {
-    display: inline-flex;
-    gap: 0;
-    animation: ticker 25s linear infinite;
-  }
-  .ticker-item {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 0 32px;
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    border-right: 1px solid var(--border);
-  }
-  .ticker-sym { color: var(--orange); font-weight: 500; }
-  .ticker-val { color: var(--text); }
-  .ticker-up { color: var(--green); }
-  .ticker-down { color: var(--red); }
-
-  @keyframes ticker {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
-  }
-
-  /* Mobile */
-  /* ── INTERACTIVE CONSISTENCY CALC ── */
-  .try-section {
-    background: var(--bg);
-    border-top: 1px solid var(--border);
-  }
-  .try-layout {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 60px;
-    align-items: start;
-    margin-top: 60px;
-  }
-
-  /* The widget itself */
-  .cc-widget {
-    background: #0f1a24;
-    border: 1.5px solid #1f3a52;
-    border-radius: 20px;
-    padding: 24px 22px;
-    box-shadow: 0 0 60px rgba(0,0,0,0.5), 0 0 30px rgba(255,140,43,0.05);
-    font-family: 'DM Mono', monospace;
-    position: relative;
-  }
-  .cc-widget::before {
-    content: 'LIVE DEMO';
-    position: absolute;
-    top: -11px; right: 20px;
-    background: var(--orange);
-    color: #000;
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    padding: 2px 10px;
-    border-radius: 4px;
-  }
-
-  .cc-section-label {
-    font-size: 9px;
-    letter-spacing: 2px;
-    color: var(--muted);
-    text-transform: uppercase;
-    margin-bottom: 10px;
-    margin-top: 16px;
-  }
-  .cc-section-label:first-child { margin-top: 0; }
-
-  .cc-type-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    margin-bottom: 4px;
-  }
-  .cc-type-btn {
-    background: var(--surface2);
-    border: 1.5px solid var(--border);
-    border-radius: 10px;
-    padding: 9px 6px;
-    text-align: center;
-    cursor: pointer;
-    transition: all .2s;
-    user-select: none;
-  }
-  .cc-type-btn .t-name {
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    color: var(--muted);
-    display: block;
-  }
-  .cc-type-btn .t-sub {
-    font-size: 9px;
-    color: var(--muted);
-    opacity: 0.7;
-  }
-  .cc-type-btn.active {
-    border-color: var(--orange);
-    background: rgba(255,140,43,0.1);
-  }
-  .cc-type-btn.active .t-name { color: var(--orange); }
-  .cc-type-btn.active .t-sub { color: var(--orange); opacity: 0.8; }
-
-  .cc-size-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-  }
-  .cc-size-btn {
-    background: var(--surface2);
-    border: 1.5px solid var(--border);
-    border-radius: 10px;
-    padding: 10px;
-    text-align: center;
-    cursor: pointer;
-    font-size: 12px;
-    color: var(--muted);
-    font-weight: 700;
-    transition: all .2s;
-    user-select: none;
-  }
-  .cc-size-btn.active {
-    border-color: var(--orange);
-    background: rgba(255,140,43,0.12);
-    color: var(--orange);
-  }
-
-  .cc-days-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-top: 4px;
-  }
-  .cc-days-row .label { color: var(--muted); font-size: 12px; }
-  .cc-counter {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 4px 10px;
-  }
-  .cc-counter button {
-    background: none;
-    border: none;
-    color: var(--text);
-    font-size: 18px;
-    cursor: pointer;
-    padding: 0 4px;
-    line-height: 1;
-    transition: color .15s;
-  }
-  .cc-counter button:hover { color: var(--orange); }
-  .cc-counter .count-val { font-size: 16px; color: var(--text); font-weight: 700; min-width: 20px; text-align: center; }
-
-  .cc-gen-btn {
-    background: var(--blue);
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    padding: 9px 16px;
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    cursor: pointer;
-    margin-left: auto;
-    white-space: nowrap;
-    transition: background .2s, transform .15s;
-    letter-spacing: 0.5px;
-  }
-  .cc-gen-btn:hover { background: #2280e0; transform: translateY(-1px); }
-
-  .cc-inputs-grid {
-    display: grid;
-    gap: 8px;
-  }
-  .cc-input-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 8px 14px;
-  }
-  .cc-input-label {
-    font-size: 10px;
-    color: var(--muted);
-    min-width: 52px;
-  }
-  .cc-input-sep { color: var(--border); font-size: 16px; }
-  .cc-input-row input {
-    background: none;
-    border: none;
-    outline: none;
-    color: var(--orange);
-    font-family: 'DM Mono', monospace;
-    font-size: 16px;
-    font-weight: 700;
-    width: 100%;
-    text-align: right;
-  }
-  .cc-input-row input::placeholder { color: rgba(255,140,43,0.3); }
-
-  /* Result panel */
-  .cc-result {
-    margin-top: 16px;
-    background: #071210;
-    border: 1.5px solid rgba(52,199,89,0.25);
-    border-radius: 14px;
-    padding: 16px;
-    transition: border-color .3s;
-  }
-  .cc-result.failing {
-    background: #130a07;
-    border-color: rgba(255,59,48,0.3);
-  }
-
-  .cc-result-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-  }
-  .cc-score {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 48px;
-    color: var(--green);
-    line-height: 1;
-    transition: color .3s;
-  }
-  .cc-score.failing { color: var(--red); }
-  .cc-score sup { font-size: 22px; vertical-align: top; margin-top: 8px; }
-
-  .cc-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 10px;
-    letter-spacing: 1px;
-    padding: 5px 12px;
-    border-radius: 6px;
-    font-family: 'DM Mono', monospace;
-    font-weight: 700;
-    text-transform: uppercase;
-    border: 1px solid var(--green);
-    background: rgba(52,199,89,0.12);
-    color: var(--green);
-    transition: all .3s;
-  }
-  .cc-badge.failing {
-    border-color: var(--red);
-    background: rgba(255,59,48,0.12);
-    color: var(--red);
-  }
-
-  .cc-bar-wrap {
-    height: 8px;
-    background: var(--border);
-    border-radius: 4px;
-    margin-bottom: 4px;
-    position: relative;
-    overflow: hidden;
-  }
-  .cc-bar-fill {
-    height: 100%;
-    border-radius: 4px;
-    background: linear-gradient(90deg, var(--green), #55e87a);
-    transition: width .5s cubic-bezier(.4,0,.2,1), background .3s;
-  }
-  .cc-bar-fill.failing { background: linear-gradient(90deg, var(--red), #ff7070); }
-  .cc-bar-limits {
-    display: flex;
-    justify-content: space-between;
-    font-size: 9px;
-    color: var(--muted);
-    margin-bottom: 12px;
-  }
-  .cc-bar-limits .limit-line {
-    position: absolute;
-    top: 0; height: 100%;
-    width: 2px;
-    background: var(--orange);
-    opacity: 0.7;
-  }
-
-  .cc-stats-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
-    margin-bottom: 8px;
-  }
-  .cc-stat-box {
-    background: rgba(0,0,0,0.3);
-    border-radius: 8px;
-    padding: 8px 10px;
-  }
-  .cc-stat-lbl { font-size: 8px; color: var(--muted); margin-bottom: 3px; letter-spacing: 1px; }
-  .cc-stat-val { font-size: 13px; color: var(--green); font-weight: 700; }
-  .cc-stat-val.red { color: var(--red); }
-  .cc-stat-val.white { color: var(--text); }
-
-  .cc-bottom-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px; }
-
-  .cc-verdict {
-    text-align: center;
-    font-size: 11px;
-    color: var(--green);
-    letter-spacing: 0.5px;
-    padding-top: 4px;
-    transition: color .3s;
-  }
-  .cc-verdict.failing { color: var(--red); }
-
-  /* Right side explanation */
-  .try-explainer { display: flex; flex-direction: column; gap: 24px; }
-  .explainer-step {
-    display: flex;
-    gap: 16px;
-    align-items: flex-start;
-  }
-  .step-num {
-    width: 36px; height: 36px;
-    border-radius: 50%;
-    background: rgba(255,140,43,0.1);
-    border: 1px solid rgba(255,140,43,0.3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 18px;
-    color: var(--orange);
-    flex-shrink: 0;
-  }
-  .explainer-step h4 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
-  .explainer-step p { font-size: 13px; color: var(--muted); line-height: 1.6; }
-
-  @media (max-width: 768px) {
-    .try-layout { grid-template-columns: 1fr; gap: 40px; }
-    .cc-type-grid { grid-template-columns: 1fr 1fr 1fr; }
-  }
+:root{
+  --bg-deep:#020508;
+  --bg-1:#050c12;
+  --bg-2:#081018;
+  --bg-card:rgba(255,255,255,0.032);
+  --border:rgba(255,255,255,0.07);
+  --border-hi:rgba(255,255,255,0.13);
+  --accent:#00e5a0;
+  --accent-dim:rgba(0,229,160,0.12);
+  --accent2:#0af;
+  --gold:#f5a623;
+  --green-c:#00e676;
+  --red-c:#ff3d5a;
+  --text:#eef2f7;
+  --muted:#7a8fa8;
+  --muted2:#4a5c70;
+  --ff:'Outfit',sans-serif;
+  --mono:'JetBrains Mono',monospace;
+  --r-sm:8px;--r-md:12px;--r-lg:18px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--ff);background:var(--bg-deep);color:var(--text);overflow-x:hidden;line-height:1.6;}
+
+body::before{
+  content:'';position:fixed;inset:0;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 0%,rgba(0,229,160,0.055) 0%,transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 100%,rgba(0,170,255,0.045) 0%,transparent 60%),
+    linear-gradient(180deg,#020508 0%,#040d16 40%,#030b14 100%);
+  pointer-events:none;z-index:0;
+}
+
+#cv{position:fixed;inset:0;pointer-events:none;z-index:1;opacity:.55;}
+
+/* ─── NAV ─── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:200;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 5%;height:66px;
+  background:rgba(2,5,8,0.78);
+  backdrop-filter:blur(22px);
+  border-bottom:1px solid var(--border);
+}
+.nav-logo{
+  font-family:var(--ff);font-size:1.35rem;font-weight:900;
+  letter-spacing:-.04em;color:var(--text);
+  display:flex;align-items:center;gap:.45rem;
+  text-decoration:none;flex-shrink:0;
+}
+.nav-logo .dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--accent);box-shadow:0 0 10px var(--accent);
+  animation:blink 2.2s infinite;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+.nav-center{
+  display:flex;gap:2.25rem;list-style:none;
+  position:absolute;left:50%;transform:translateX(-50%);
+}
+.nav-center a{
+  color:var(--muted);text-decoration:none;
+  font-size:.875rem;font-weight:500;
+  transition:color .2s;white-space:nowrap;
+}
+.nav-center a:hover{color:var(--text);}
+
+.nav-right{display:flex;align-items:center;gap:.85rem;flex-shrink:0;}
+.nav-login{color:var(--muted);text-decoration:none;font-size:.875rem;font-weight:500;transition:color .2s;}
+.nav-login:hover{color:var(--text);}
+.nav-cta{
+  background:var(--accent);color:#000;
+  padding:.5rem 1.25rem;border-radius:6px;
+  font-weight:700;font-size:.85rem;
+  text-decoration:none;white-space:nowrap;
+  transition:box-shadow .2s,transform .15s;
+}
+.nav-cta:hover{box-shadow:0 0 22px rgba(0,229,160,.4);transform:translateY(-1px);}
+
+.ham{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:4px;}
+.ham span{display:block;width:22px;height:2px;background:var(--muted);border-radius:2px;transition:.3s;}
+
+.mmenu{
+  display:none;position:fixed;top:66px;left:0;right:0;
+  background:rgba(3,8,14,.97);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  padding:1.5rem 5%;z-index:199;
+  flex-direction:column;gap:1.25rem;
+}
+.mmenu.open{display:flex;}
+.mmenu a{color:var(--muted);text-decoration:none;font-size:1rem;font-weight:500;transition:color .2s;}
+.mmenu a:hover{color:var(--text);}
+
+/* ─── HERO ─── */
+.hero{
+  min-height:100vh;
+  display:flex;align-items:center;justify-content:center;
+  text-align:center;padding:8rem 5% 5rem;
+  position:relative;z-index:10;
+}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:.5rem;
+  background:rgba(0,229,160,.08);
+  border:1px solid rgba(0,229,160,.22);
+  border-radius:100px;padding:.35rem 1rem;
+  font-size:.75rem;font-weight:600;color:var(--accent);
+  margin-bottom:1.75rem;letter-spacing:.08em;text-transform:uppercase;
+}
+.hero-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--accent);animation:blink 2s infinite;}
+.hero h1{
+  font-size:clamp(2.6rem,6.5vw,5.8rem);font-weight:900;
+  line-height:1.02;letter-spacing:-.05em;
+  max-width:920px;margin:0 auto 1.5rem;
+}
+.hero h1 em{
+  font-style:normal;
+  background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.hero-sub{
+  font-size:1.05rem;color:var(--muted);
+  max-width:580px;margin:0 auto 2.5rem;
+  font-weight:300;line-height:1.75;
+}
+.hero-actions{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-bottom:3.5rem;}
+.btn-p{
+  background:var(--accent);color:#000;
+  padding:.85rem 2.1rem;border-radius:8px;
+  font-weight:800;font-size:.95rem;text-decoration:none;
+  transition:all .2s;letter-spacing:-.01em;
+}
+.btn-p:hover{transform:translateY(-2px);box-shadow:0 0 32px rgba(0,229,160,.35);}
+.btn-s{
+  background:transparent;color:var(--text);
+  padding:.85rem 2.1rem;border-radius:8px;
+  border:1px solid var(--border-hi);
+  font-weight:500;font-size:.95rem;
+  text-decoration:none;transition:all .2s;
+}
+.btn-s:hover{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.22);}
+
+.hero-stats{
+  display:flex;justify-content:center;gap:3.5rem;flex-wrap:wrap;
+  padding-top:2.5rem;border-top:1px solid var(--border);
+}
+.hs{text-align:center;}
+.hs-val{
+  display:block;font-family:var(--mono);
+  font-size:1.8rem;font-weight:700;color:var(--accent);letter-spacing:-.03em;
+}
+.hs-lbl{font-size:.72rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.1em;}
+
+/* ─── SECTION ─── */
+.sec{padding:6rem 5%;position:relative;z-index:10;}
+.sec.alt{background:rgba(5,14,22,.6);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+.s-lbl{font-size:.7rem;text-transform:uppercase;letter-spacing:.18em;color:var(--accent);font-weight:700;margin-bottom:.85rem;display:block;}
+.s-ttl{font-size:clamp(1.9rem,4vw,3.1rem);font-weight:900;letter-spacing:-.04em;line-height:1.08;margin-bottom:1rem;}
+.s-sub{color:var(--muted);font-size:.975rem;line-height:1.75;max-width:540px;margin-bottom:3.5rem;font-weight:300;}
+
+/* ─── FEATURES ─── */
+.feat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:1rem;max-width:1200px;margin:0 auto;}
+.fc{
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:var(--r-lg);padding:1.65rem;
+  transition:border-color .3s,transform .2s;
+  position:relative;overflow:hidden;
+}
+.fc::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 0% 0%,rgba(0,229,160,.04) 0%,transparent 60%);pointer-events:none;}
+.fc:hover{border-color:rgba(0,229,160,.22);transform:translateY(-3px);}
+.fi{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;margin-bottom:1rem;background:rgba(0,229,160,.07);border:1px solid rgba(0,229,160,.12);}
+.fc h3{font-size:1rem;font-weight:700;margin-bottom:.55rem;letter-spacing:-.025em;}
+.fc p{color:var(--muted);font-size:.855rem;line-height:1.65;}
+
+/* ─── HOW ─── */
+.how-wrap{max-width:1150px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center;}
+.steps{display:flex;flex-direction:column;gap:1.65rem;}
+.step{display:flex;gap:1.2rem;align-items:flex-start;}
+.sn{font-family:var(--mono);font-size:.72rem;font-weight:700;color:var(--accent);background:rgba(0,229,160,.08);border:1px solid rgba(0,229,160,.2);border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+.step h4{font-size:.975rem;font-weight:700;margin-bottom:.35rem;letter-spacing:-.025em;}
+.step p{color:var(--muted);font-size:.855rem;line-height:1.65;}
+
+.mock{background:var(--bg-2);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;}
+.mock-top{background:rgba(0,229,160,.04);border-bottom:1px solid var(--border);padding:.75rem 1rem;display:flex;align-items:center;gap:.45rem;}
+.mdot{width:10px;height:10px;border-radius:50%;}
+.mdot:nth-child(1){background:#ff5f57;}.mdot:nth-child(2){background:#febc2e;}.mdot:nth-child(3){background:#28c840;}
+.mock-ttl{margin-left:.5rem;font-size:.72rem;color:var(--muted);font-family:var(--mono);}
+.mock-body{padding:1.1rem;}
+.mrow{display:flex;justify-content:space-between;align-items:center;padding:.6rem 0;border-bottom:1px solid var(--border);font-size:.8rem;}
+.mrow:last-child{border-bottom:none;}
+.mrow .ml{color:var(--muted);}
+.mrow .mv{font-weight:600;font-family:var(--mono);}
+.mv.g{color:var(--green-c);}.mv.a{color:var(--accent);}.mv.am{color:var(--gold);}
+.pbar{height:4px;background:rgba(255,255,255,.07);border-radius:3px;margin-top:.35rem;overflow:hidden;}
+.pfill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));}
+
+/* ─── PARTNERS SCROLL ─── */
+.partners-sec{
+  overflow:hidden;padding:4rem 0;
+  border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  background:rgba(4,10,18,.55);position:relative;z-index:10;
+}
+.partners-lbl{text-align:center;font-size:.7rem;text-transform:uppercase;letter-spacing:.18em;color:var(--muted2);font-weight:600;margin-bottom:2rem;}
+.stw{position:relative;width:100%;}
+.stw::before,.stw::after{content:'';position:absolute;top:0;bottom:0;width:120px;z-index:2;pointer-events:none;}
+.stw::before{left:0;background:linear-gradient(90deg,var(--bg-deep),transparent);}
+.stw::after{right:0;background:linear-gradient(270deg,var(--bg-deep),transparent);}
+.st{display:flex;gap:1.5rem;width:max-content;animation:sLeft 28s linear infinite;}
+.st:hover{animation-play-state:paused;}
+@keyframes sLeft{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+.pc{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.45rem;
+  background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-md);
+  width:148px;height:80px;flex-shrink:0;transition:border-color .3s,transform .2s;padding:.75rem;
+}
+.pc:hover{border-color:rgba(0,229,160,.25);transform:translateY(-2px);}
+.pc img{width:80px;height:32px;object-fit:contain;filter:brightness(0) invert(1);opacity:.55;transition:opacity .2s;}
+.pc:hover img{opacity:.95;}
+.pc .pn{font-size:.7rem;color:var(--muted2);font-weight:600;text-align:center;}
+.pfb{font-family:var(--ff);font-size:.82rem;font-weight:800;color:var(--muted);letter-spacing:-.02em;display:none;}
+
+/* ─── PRICING ─── */
+.pricing-wrap{max-width:1080px;margin:0 auto;text-align:center;}
+.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;margin-top:1rem;align-items:start;}
+.pcard{
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:var(--r-lg);padding:2rem 1.75rem;
+  text-align:left;transition:transform .2s;position:relative;
+}
+.pcard:hover{transform:translateY(-4px);}
+.pcard.feat{border-color:var(--accent);background:rgba(0,229,160,.035);transform:scale(1.03);}
+.pcard.feat:hover{transform:scale(1.03) translateY(-4px);}
+.pbadge{
+  position:absolute;top:-13px;left:50%;transform:translateX(-50%);
+  background:var(--accent);color:#000;
+  font-size:.68rem;font-weight:800;padding:.25rem .9rem;
+  border-radius:100px;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;
+}
+.ptier{font-size:.72rem;text-transform:uppercase;letter-spacing:.15em;color:var(--muted);font-weight:700;margin-bottom:.75rem;}
+.pprice{font-family:var(--mono);font-size:2.9rem;font-weight:700;letter-spacing:-.04em;margin-bottom:.3rem;line-height:1;}
+.pprice sup{font-size:1.2rem;vertical-align:top;margin-top:.5rem;display:inline-block;}
+.pper{font-size:.78rem;color:var(--muted);margin-bottom:1.5rem;}
+.pfeats{list-style:none;display:flex;flex-direction:column;gap:.65rem;margin-bottom:1.75rem;}
+.pfeats li{font-size:.855rem;color:var(--muted);display:flex;align-items:flex-start;gap:.55rem;line-height:1.4;}
+.pfeats li .ic{flex-shrink:0;margin-top:.1rem;}
+.ic.ok{color:var(--green-c);}.ic.no{color:var(--muted2);}
+.pfeats li .fv{color:var(--text);font-weight:600;font-family:var(--mono);font-size:.82rem;}
+.pbtn{display:block;text-align:center;padding:.8rem;border-radius:8px;font-weight:700;font-size:.9rem;text-decoration:none;transition:all .2s;letter-spacing:-.01em;}
+.pbtn.primary{background:var(--accent);color:#000;}.pbtn.primary:hover{opacity:.85;}
+.pbtn.ghost{border:1px solid var(--border-hi);color:var(--text);}.pbtn.ghost:hover{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.22);}
+
+/* ─── TESTIMONIALS ─── */
+.tgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:1.1rem;max-width:1100px;margin:0 auto;}
+.tc{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:1.65rem;}
+.tstars{color:var(--gold);font-size:.82rem;letter-spacing:2px;margin-bottom:.9rem;}
+.ttxt{color:var(--muted);font-size:.875rem;line-height:1.75;margin-bottom:1.2rem;}
+.tauth{display:flex;align-items:center;gap:.7rem;}
+.tav{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800;color:#000;flex-shrink:0;}
+.tname{font-weight:700;font-size:.855rem;display:block;}
+.trole{font-size:.75rem;color:var(--muted);}
+
+/* ─── FAQ ─── */
+.faq-inner{max-width:700px;margin:0 auto;}
+.fi2{border-bottom:1px solid var(--border);padding:1.2rem 0;}
+.fq{font-size:.95rem;font-weight:700;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:1rem;letter-spacing:-.02em;}
+.fq:hover{color:var(--accent);}
+.ficon{color:var(--muted);font-size:1.1rem;flex-shrink:0;transition:transform .3s;}
+.fa{max-height:0;overflow:hidden;transition:max-height .35s ease,padding .2s;color:var(--muted);font-size:.865rem;line-height:1.75;}
+.fi2.open .fa{max-height:300px;padding-top:.75rem;}
+.fi2.open .ficon{transform:rotate(45deg);}
+
+/* ─── CTA ─── */
+.cta-sec{text-align:center;padding:7rem 5%;background:rgba(4,10,18,.55);border-top:1px solid var(--border);position:relative;z-index:10;overflow:hidden;}
+.cta-glow{position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 50% 110%,rgba(0,229,160,.07),transparent 65%);pointer-events:none;}
+.cta-sec h2{font-size:clamp(2rem,5vw,4rem);font-weight:900;letter-spacing:-.05em;max-width:720px;margin:0 auto 1.25rem;line-height:1.05;}
+.cta-sec p{color:var(--muted);max-width:480px;margin:0 auto 2.25rem;font-size:1rem;font-weight:300;}
+
+/* ─── FOOTER ─── */
+footer{padding:2.5rem 5%;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1.5rem;position:relative;z-index:10;}
+.flogo{font-family:var(--ff);font-size:1.1rem;font-weight:900;letter-spacing:-.04em;display:flex;align-items:center;gap:.4rem;}
+.flogo .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);}
+.flinks{display:flex;gap:1.75rem;list-style:none;flex-wrap:wrap;}
+.flinks a{color:var(--muted2);text-decoration:none;font-size:.82rem;transition:color .2s;}
+.flinks a:hover{color:var(--text);}
+.fcopy{color:var(--muted2);font-size:.78rem;}
+
+/* ─── CERTIFICATES SCROLL ─── */
+.certs-sec{
+  padding:5.5rem 0;
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  background:rgba(3,9,16,.65);
+  position:relative;z-index:10;
+  overflow:hidden;
+}
+.certs-header{text-align:center;margin-bottom:2.5rem;padding:0 5%;}
+.certs-header .s-lbl{display:block;margin-bottom:.6rem;}
+.certs-header h2{
+  font-size:clamp(1.7rem,3.5vw,2.6rem);font-weight:900;
+  letter-spacing:-.04em;line-height:1.1;margin-bottom:.75rem;
+}
+.certs-header p{color:var(--muted);font-size:.95rem;font-weight:300;max-width:480px;margin:0 auto;}
+
+.cert-rows{display:flex;flex-direction:column;gap:1.1rem;}
+
+/* shared track wrapper */
+.cert-track-wrap{position:relative;width:100%;}
+.cert-track-wrap::before,
+.cert-track-wrap::after{
+  content:'';position:absolute;top:0;bottom:0;width:120px;z-index:2;pointer-events:none;
+}
+.cert-track-wrap::before{left:0;background:linear-gradient(90deg,rgba(3,9,16,.9),transparent);}
+.cert-track-wrap::after{right:0;background:linear-gradient(270deg,rgba(3,9,16,.9),transparent);}
+
+.cert-track{
+  display:flex;gap:1.25rem;
+  width:max-content;
+}
+.cert-track.row-a{animation:certLeft  32s linear infinite;}
+.cert-track.row-b{animation:certRight 36s linear infinite;}
+.cert-track:hover{animation-play-state:paused;}
+
+@keyframes certLeft { 0%{transform:translateX(0);}  100%{transform:translateX(-50%);} }
+@keyframes certRight{ 0%{transform:translateX(-50%);}100%{transform:translateX(0);}   }
+
+/* certificate card */
+.cert-card{
+  flex-shrink:0;
+  width:200px;height:140px;
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:var(--r-lg);
+  overflow:hidden;
+  position:relative;
+  cursor:pointer;
+  transition:border-color .3s,transform .2s,box-shadow .3s;
+}
+.cert-card:hover{
+  border-color:rgba(0,229,160,.3);
+  transform:translateY(-4px) scale(1.03);
+  box-shadow:0 8px 32px rgba(0,0,0,.5), 0 0 20px rgba(0,229,160,.08);
+}
+.cert-card img{
+  width:100%;height:100%;
+  object-fit:cover;
+  display:block;
+  transition:opacity .2s;
+}
+/* glow overlay on hover */
+.cert-card::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(0,229,160,.06),transparent 60%);
+  opacity:0;transition:opacity .3s;
+  pointer-events:none;
+}
+.cert-card:hover::after{opacity:1;}
+
+/* placeholder if img missing */
+.cert-ph{
+  width:100%;height:100%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:.5rem;
+  background:linear-gradient(135deg,rgba(0,229,160,.05),rgba(0,170,255,.04));
+}
+.cert-ph .cert-icon{font-size:1.75rem;}
+.cert-ph .cert-label{
+  font-family:var(--mono);font-size:.68rem;font-weight:500;
+  color:var(--muted);letter-spacing:.05em;text-transform:uppercase;
+}
+
+/* ─── ANIM ─── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+.hero>*{animation:fadeUp .65s ease both;}
+.hero .hero-badge{animation-delay:.1s;}.hero h1{animation-delay:.22s;}.hero .hero-sub{animation-delay:.36s;}.hero .hero-actions{animation-delay:.48s;}.hero .hero-stats{animation-delay:.6s;}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:900px){
+  .pgrid{grid-template-columns:1fr;max-width:420px;margin-left:auto;margin-right:auto;}
+  .pcard.feat{transform:none;}.pcard.feat:hover{transform:translateY(-4px);}
+  .how-wrap{grid-template-columns:1fr;gap:3rem;}
+  .nav-center,.nav-login{display:none;}
+  .ham{display:flex;}
+}
+@media(max-width:600px){
+  .hero h1{font-size:2.4rem;}
+  nav{padding:0 4%;}
+  .sec{padding:4.5rem 4%;}
+  .hero-stats{gap:2rem;}
+  footer{flex-direction:column;text-align:center;}
+  .flinks{justify-content:center;}
+}
 </style>
 </head>
 <body>
 
+<canvas id="cv"></canvas>
+
 <!-- NAV -->
 <nav>
-  <div class="nav-logo">Futures<span>Calc</span></div>
-  <ul>
+  <a href="#" class="nav-logo"><div class="dot"></div>DubTrading</a>
+  <ul class="nav-center">
     <li><a href="#features">Features</a></li>
-    <li><a href="#consistency">Consistency</a></li>
-    <li><a href="#calculator">Calculator</a></li>
-    <li><a href="#instruments">Instruments</a></li>
-    <li><a href="#started">Download</a></li>
-    <li><a href="#started" class="nav-cta">Get Started</a></li>
+    <li><a href="#how">How it works</a></li>
+    <li><a href="#partners">Partners</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#certificates">Payouts</a></li>
+    <li><a href="#faq">FAQ</a></li>
   </ul>
+  <div class="nav-right">
+    <a href="#" class="nav-login">Log in</a>
+    <a href="#pricing" class="nav-cta">Get Started →</a>
+    <div class="ham" onclick="toggleMenu()" id="ham"><span></span><span></span><span></span></div>
+  </div>
 </nav>
-
-<!-- TICKER TAPE -->
-<div class="ticker" style="margin-top: 70px;">
-  <div class="ticker-inner" id="ticker"></div>
+<div class="mmenu" id="mmenu">
+  <a href="#features" onclick="closeMenu()">Features</a>
+  <a href="#how" onclick="closeMenu()">How it works</a>
+  <a href="#partners" onclick="closeMenu()">Partners</a>
+  <a href="#pricing" onclick="closeMenu()">Pricing</a>
+  <a href="#certificates" onclick="closeMenu()">Payouts</a>
+  <a href="#faq" onclick="closeMenu()">FAQ</a>
+  <a href="#pricing" class="nav-cta" style="text-align:center;" onclick="closeMenu()">Get Started →</a>
 </div>
 
 <!-- HERO -->
 <section class="hero">
-  <div class="hero-glow"></div>
-
-  <div class="hero-content reveal">
-    <div class="hero-label">The #1 Funded Account Toolkit</div>
-    <h1>PASS YOUR<br><span class="accent">FUNDED ACCOUNT.</span><br>MASTER THE<br>CONSISTENCY RULE.</h1>
-    <p>Built exclusively for funded account traders. Convert ticks to USD instantly, calculate your consistency score in real time, and never violate the best-day rule again — across ES, NQ, MNQ, MES, and CL.</p>
-    <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:28px;">
-      <div style="display:flex;align-items:center;gap:7px;font-size:13px;color:var(--muted);font-family:'DM Mono',monospace;">
-        <span style="color:var(--green);font-size:16px;">✓</span> Consistency Rule Calculator
-      </div>
-      <div style="display:flex;align-items:center;gap:7px;font-size:13px;color:var(--muted);font-family:'DM Mono',monospace;">
-        <span style="color:var(--green);font-size:16px;">✓</span> Tick ↔ USD Converter
-      </div>
-      <div style="display:flex;align-items:center;gap:7px;font-size:13px;color:var(--muted);font-family:'DM Mono',monospace;">
-        <span style="color:var(--green);font-size:16px;">✓</span> Best-Day Rule Tracker
-      </div>
-    </div>
+  <div>
+    <div class="hero-badge">Funded Account Automation Bot</div>
+    <h1>Trade smarter.<br><em>Pass every evaluation.</em><br>Get funded.</h1>
+    <p class="hero-sub">DubTrading runs your funded accounts on Tradovate, NinjaTrader and more. Built to pass strict prop firm evaluations with automated risk management and proven consistency rules.</p>
     <div class="hero-actions">
-      <a href="https://academias.clubreeco.com.mx/ckeditor4/plugins/center/FuturesCalc.zip" class="btn-primary">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Download Now
-      </a>
-      <a href="#features" class="btn-ghost">See How It Works →</a>
+      <a href="#pricing" class="btn-p">Start Free Trial</a>
+      <a href="#how" class="btn-s">See how it works</a>
     </div>
-  </div>
-
-  <!-- APP MOCKUP — TWO PHONES -->
-  <div class="app-mockup reveal" style="gap:18px; align-items:flex-start;">
-
-    <!-- Phone 1: Calculator -->
-    <div class="phone-frame" style="animation-delay:0s;">
-      <div class="phone-titlebar">
-        <div class="phone-dots">
-          <div class="phone-dot dot-r"></div>
-          <div class="phone-dot dot-y"></div>
-          <div class="phone-dot dot-g"></div>
-        </div>
-        <div class="phone-title">FuturesCalc</div>
-        <div style="font-size:9px;font-family:'DM Mono',monospace;color:var(--green);">●&nbsp;LIVE</div>
-      </div>
-      <div class="phone-body">
-        <div class="phone-display">
-          <div class="phone-mode">MODE: TICKS → USD</div>
-          <div class="phone-value">$1,250.00</div>
-        </div>
-        <div class="phone-asset-row">
-          <div class="asset-chip">MNQ</div>
-          <div class="asset-chip">NQ</div>
-          <div class="asset-chip active">ES</div>
-          <div class="asset-chip">MES</div>
-          <div class="asset-chip">CL</div>
-        </div>
-        <div class="phone-grid">
-          <div class="phone-btn op">AC</div><div class="phone-btn op">⌫</div><div class="phone-btn op">%</div><div class="phone-btn op">÷</div>
-          <div class="phone-btn">7</div><div class="phone-btn">8</div><div class="phone-btn">9</div><div class="phone-btn op">×</div>
-          <div class="phone-btn">4</div><div class="phone-btn">5</div><div class="phone-btn">6</div><div class="phone-btn op">−</div>
-          <div class="phone-btn">1</div><div class="phone-btn">2</div><div class="phone-btn">3</div><div class="phone-btn op">+</div>
-          <div class="phone-btn">0</div><div class="phone-btn">.</div><div class="phone-btn eq">=</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Phone 2: Consistency Calculator -->
-    <div class="phone-frame" style="margin-top:36px; animation-delay:1.5s; width:260px;">
-      <div class="phone-titlebar">
-        <div class="phone-dots">
-          <div class="phone-dot dot-r"></div>
-          <div class="phone-dot dot-y"></div>
-          <div class="phone-dot dot-g"></div>
-        </div>
-        <div class="phone-title" style="font-size:14px;">Consistency</div>
-        <div style="font-size:9px;font-family:'DM Mono',monospace;color:var(--orange);">● CHECK</div>
-      </div>
-      <div class="phone-body" style="padding:12px;">
-        <!-- Account Type -->
-        <div style="font-size:8px;letter-spacing:1.5px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:7px;">ACCOUNT TYPE</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:10px;">
-          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:6px 4px;text-align:center;">
-            <div style="font-size:7px;color:var(--muted);font-family:'DM Mono',monospace;">GROWTH</div>
-            <div style="font-size:7px;color:var(--muted);">35% limit</div>
-          </div>
-          <div style="background:rgba(255,140,43,0.12);border:1px solid var(--orange);border-radius:7px;padding:6px 4px;text-align:center;">
-            <div style="font-size:7px;color:var(--orange);font-weight:700;font-family:'DM Mono',monospace;">SELECT</div>
-            <div style="font-size:7px;color:var(--orange);">40% limit</div>
-          </div>
-          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:6px 4px;text-align:center;">
-            <div style="font-size:7px;color:var(--muted);font-family:'DM Mono',monospace;">LIGHTNING</div>
-            <div style="font-size:7px;color:var(--muted);">20% limit</div>
-          </div>
-        </div>
-        <!-- Account Size -->
-        <div style="font-size:8px;letter-spacing:1.5px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:7px;">ACCOUNT SIZE</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:10px;">
-          <div style="background:rgba(255,140,43,0.12);border:1px solid var(--orange);border-radius:7px;padding:7px 4px;text-align:center;font-size:9px;color:var(--orange);font-family:'DM Mono',monospace;font-weight:700;">50K</div>
-          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:7px 4px;text-align:center;font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;">100K</div>
-          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:7px 4px;text-align:center;font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;">150K</div>
-        </div>
-        <!-- Days row -->
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-          <div style="font-size:8px;color:var(--muted);font-family:'DM Mono',monospace;flex:1;">DAYS: <b style="color:var(--text);">3</b></div>
-          <div style="background:var(--blue);color:#fff;font-size:8px;padding:5px 10px;border-radius:6px;font-family:'DM Mono',monospace;white-space:nowrap;">✦ Generate Days</div>
-        </div>
-        <!-- Profit inputs -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:5px;">
-          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:6px 8px;">
-            <div style="font-size:7px;color:var(--muted);font-family:'DM Mono',monospace;">Proy 1 $</div>
-            <div style="font-size:11px;color:var(--orange);font-family:'DM Mono',monospace;font-weight:700;">1000</div>
-          </div>
-          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:6px 8px;">
-            <div style="font-size:7px;color:var(--muted);font-family:'DM Mono',monospace;">Proy 2 $</div>
-            <div style="font-size:11px;color:var(--orange);font-family:'DM Mono',monospace;font-weight:700;">830</div>
-          </div>
-        </div>
-        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:6px 8px;margin-bottom:10px;display:inline-block;width:48%;">
-          <div style="font-size:7px;color:var(--muted);font-family:'DM Mono',monospace;">Proy 3 $</div>
-          <div style="font-size:11px;color:var(--orange);font-family:'DM Mono',monospace;font-weight:700;">688.9</div>
-        </div>
-        <!-- Score result -->
-        <div style="background:#0a1a0e;border:1px solid rgba(52,199,89,0.3);border-radius:10px;padding:10px 12px;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--green);">39.6<span style="font-size:14px;">%</span></div>
-            <div style="background:rgba(52,199,89,0.15);border:1px solid var(--green);color:var(--green);font-size:7px;padding:3px 7px;border-radius:4px;font-family:'DM Mono',monospace;">● Consistent</div>
-          </div>
-          <!-- Bar -->
-          <div style="height:5px;background:var(--border);border-radius:3px;margin-bottom:4px;position:relative;">
-            <div style="height:100%;width:99%;background:linear-gradient(90deg,var(--green),#55e87a);border-radius:3px;"></div>
-          </div>
-          <div style="display:flex;justify-content:space-between;font-size:7px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:7px;"><span>0%</span><span>limit: 40%</span></div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:4px;">
-            <div style="background:rgba(0,0,0,0.3);border-radius:5px;padding:4px 5px;">
-              <div style="font-size:6px;color:var(--muted);font-family:'DM Mono',monospace;">BEST DAY</div>
-              <div style="font-size:9px;color:var(--green);font-family:'DM Mono',monospace;">$1,000</div>
-            </div>
-            <div style="background:rgba(0,0,0,0.3);border-radius:5px;padding:4px 5px;">
-              <div style="font-size:6px;color:var(--muted);font-family:'DM Mono',monospace;">TOTAL EARN.</div>
-              <div style="font-size:9px;color:var(--green);font-family:'DM Mono',monospace;">$2,518</div>
-            </div>
-            <div style="background:rgba(0,0,0,0.3);border-radius:5px;padding:4px 5px;">
-              <div style="font-size:6px;color:var(--muted);font-family:'DM Mono',monospace;">LOSSES</div>
-              <div style="font-size:9px;color:var(--red);font-family:'DM Mono',monospace;">$0.00</div>
-            </div>
-          </div>
-          <div style="text-align:center;font-size:7px;color:var(--green);font-family:'DM Mono',monospace;">✓ You follow the rule correctly.</div>
-        </div>
-      </div>
-    </div>
-
-  </div>
-</section>
-
-<!-- STATS STRIP -->
-<div class="stats-strip reveal">
-  <div class="stat-item">
-    <div class="stat-num" data-target="5">0</div>
-    <div class="stat-label">Instruments</div>
-  </div>
-  <div class="stat-item">
-    <div class="stat-num" data-target="3">0</div>
-    <div class="stat-label">Themes</div>
-  </div>
-  <div class="stat-item">
-    <div class="stat-num" data-target="100">0</div>
-    <div class="stat-label">% Rule Coverage</div>
-  </div>
-  <div class="stat-item">
-    <div class="stat-num" data-target="0">∞</div>
-    <div class="stat-label">Calculation History</div>
-  </div>
-</div>
-
-<!-- CHARTS / CONSISTENCY OVERVIEW -->
-<section class="charts-section" id="consistency">
-  <div class="charts-header reveal">
-    <div>
-      <div class="section-tag">Performance Analytics</div>
-      <div class="section-title">VISUALIZE YOUR<br>CONSISTENCY SCORE</div>
-    </div>
-    <p class="section-sub">FuturesCalc doesn't just crunch numbers — it shows you exactly where you stand against your funded account's consistency rules at a glance.</p>
-  </div>
-
-  <div class="charts-grid">
-    <!-- Daily P&L Chart -->
-    <div class="chart-card reveal">
-      <div class="chart-card-title">Daily P&L (Ticks)</div>
-      <div class="chart-card-value">+100 ticks <span>▲ 8.3%</span></div>
-      <canvas id="pnlChart"></canvas>
-    </div>
-
-    <!-- Consistency Donut -->
-    <div class="chart-card reveal">
-      <div class="chart-card-title">Consistency Score</div>
-      <div class="chart-card-value">87.4% <span>▲ Passing</span></div>
-      <canvas id="consistencyDonut"></canvas>
-    </div>
-
-    <!-- Tick Distribution -->
-    <div class="chart-card wide reveal">
-      <div class="chart-card-title">Tick → USD Conversion by Instrument</div>
-      <div class="chart-card-value">All Instruments <span>/ 1 Contract</span></div>
-      <canvas id="tickChart"></canvas>
+    <div class="hero-stats">
+      <div class="hs"><span class="hs-val">94%</span><span class="hs-lbl">Pass Rate</span></div>
+      <div class="hs"><span class="hs-val">$2M+</span><span class="hs-lbl">Capital Funded</span></div>
+      <div class="hs"><span class="hs-val">500+</span><span class="hs-lbl">Active Traders</span></div>
+      <div class="hs"><span class="hs-val">6+</span><span class="hs-lbl">Platforms</span></div>
     </div>
   </div>
 </section>
 
 <!-- FEATURES -->
-<section id="features">
-  <div class="reveal">
-    <div class="section-tag">What's Inside</div>
-    <div class="section-title">EVERY TOOL<br>YOU NEED TO PASS</div>
-  </div>
-
-  <div class="features-grid">
-    <div class="feature-card reveal">
-      <div class="feature-icon">🔄</div>
-      <h3>Instant Tick ↔ USD Conversion</h3>
-      <p>Toggle between ticks and USD in one tap. Full expression support — type 100×12.50 and get the dollar value instantly.</p>
-    </div>
-    <div class="feature-card reveal">
-      <div class="feature-icon">📊</div>
-      <h3>Consistency Tracker</h3>
-      <p>Built-in panel pulls your tradeify_consistency data and visualizes your best-day rule compliance in real time.</p>
-    </div>
-    <div class="feature-card reveal">
-      <div class="feature-icon">🎯</div>
-      <h3>Multi-Contract Support</h3>
-      <p>Trading 3 ES? Enter the contract count and the calculator adjusts every conversion automatically. No mental math.</p>
-    </div>
-    <div class="feature-card reveal">
-      <div class="feature-icon">🌙</div>
-      <h3>3 Beautiful Themes</h3>
-      <p>Dark, orange, and light — switch themes on the fly with a single tap. Built for long trading sessions at any time of day.</p>
-    </div>
-    <div class="feature-card reveal">
-      <div class="feature-icon">📜</div>
-      <h3>Calculation History</h3>
-      <p>Every calculation is logged so you can review your session at a glance. Never lose track of a conversion again.</p>
-    </div>
-    <div class="feature-card reveal">
-      <div class="feature-icon">⚡</div>
-      <h3>Standard Mode</h3>
-      <p>Switch to pure calculator mode when you just need basic math. One tool for everything at your trading desk.</p>
+<section class="sec" id="features">
+  <div style="max-width:1200px;margin:0 auto;">
+    <span class="s-lbl">Features</span>
+    <h2 class="s-ttl">Everything you need to pass<br>and keep your funded account</h2>
+    <p class="s-sub">Built for the strictest prop firm rules in the market.</p>
+    <div class="feat-grid">
+      <div class="fc"><div class="fi">📈</div><h3>Consistency Management</h3><p>Automatically meets best-day consistency rules. Never exceed daily limits or generate excessive drawdown.</p></div>
+      <div class="fc"><div class="fi">🛡️</div><h3>Drawdown Protection</h3><p>Precision daily and total loss limits. The bot stops automatically before violating any firm rule.</p></div>
+      <div class="fc"><div class="fi">⚡</div><h3>Ultra-Fast Execution</h3><p>Orders placed in milliseconds. No human latency slippage. Entry and exit at exactly your strategy's price.</p></div>
+      <div class="fc"><div class="fi">🎯</div><h3>Funded Evaluations</h3><p>Strategies optimized for Tradeify, Apex, TopStep, FTMO and more. Adjustable parameters per firm.</p></div>
+      <div class="fc"><div class="fi">🔄</div><h3>Multi-Account</h3><p>Run multiple evaluation accounts in parallel. Maximize your chances of passing at least one every month.</p></div>
+      <div class="fc"><div class="fi">📊</div><h3>Live Dashboard</h3><p>Monitor P&L, active trades, consistency stats and evaluation status from a single panel.</p></div>
+      <div class="fc"><div class="fi">🔔</div><h3>Smart Alerts</h3><p>Telegram and email notifications when the bot trades, when limits approach, or when you pass an evaluation.</p></div>
+      <div class="fc"><div class="fi">⚙️</div><h3>Customizable Strategies</h3><p>Adjust trading hours, instruments, position sizing and more — or use our proven presets.</p></div>
+      <div class="fc"><div class="fi">📅</div><h3>News Event Filter</h3><p>Bot automatically avoids trading during high-impact events (NFP, CPI, FOMC) to protect your account.</p></div>
     </div>
   </div>
 </section>
 
-<!-- INSTRUMENTS -->
-<section id="instruments" style="background: var(--surface);">
-  <div class="instruments-section">
-    <div class="reveal">
-      <div class="section-tag">Supported Instruments</div>
-      <div class="section-title">5 FUTURES<br>MARKETS. ZERO<br>GUESSWORK.</div>
-      <p class="section-sub" style="margin-top: 16px;">Every tick value is pre-loaded and always accurate. Focus on your trades, not on converting multipliers.</p>
-      <div style="margin-top: 32px;">
-        <a href="#pricing" class="btn-primary">Start Calculating →</a>
+<!-- HOW IT WORKS -->
+<section class="sec alt" id="how">
+  <div class="how-wrap">
+    <div>
+      <span class="s-lbl">How it works</span>
+      <h2 class="s-ttl">From setup to<br>funded capital</h2>
+      <p class="s-sub">Configure once and let DubTrading work for you 24/5.</p>
+      <div class="steps">
+        <div class="step"><div class="sn">01</div><div><h4>Connect your platform</h4><p>Install the add-on on Tradovate or NinjaTrader. Connection takes under 5 minutes.</p></div></div>
+        <div class="step"><div class="sn">02</div><div><h4>Select your evaluation</h4><p>Choose the prop firm and account size. DubTrading loads the correct parameters automatically.</p></div></div>
+        <div class="step"><div class="sn">03</div><div><h4>Bot trades for you</h4><p>DubTrading analyzes the market, executes trades and manages risk around the clock.</p></div></div>
+        <div class="step"><div class="sn">04</div><div><h4>Withdraw your profits</h4><p>After passing the evaluation, activate live mode and start withdrawing as a funded trader.</p></div></div>
       </div>
     </div>
-
-    <div class="instruments-table reveal">
-      <table>
-        <thead>
-          <tr>
-            <th>Symbol</th>
-            <th>Name</th>
-            <th>Tick Value</th>
-            <th>Type</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td class="symbol">MNQ</td>
-            <td>Micro NASDAQ</td>
-            <td class="tick-val">$0.50</td>
-            <td><span class="badge badge-micro">Micro</span></td>
-          </tr>
-          <tr>
-            <td class="symbol">NQ</td>
-            <td>NASDAQ 100</td>
-            <td class="tick-val">$5.00</td>
-            <td><span class="badge badge-std">Standard</span></td>
-          </tr>
-          <tr>
-            <td class="symbol">ES</td>
-            <td>S&amp;P 500</td>
-            <td class="tick-val">$12.50</td>
-            <td><span class="badge badge-std">Standard</span></td>
-          </tr>
-          <tr>
-            <td class="symbol">MES</td>
-            <td>Micro S&amp;P 500</td>
-            <td class="tick-val">$1.25</td>
-            <td><span class="badge badge-micro">Micro</span></td>
-          </tr>
-          <tr>
-            <td class="symbol">CL</td>
-            <td>Crude Oil</td>
-            <td class="tick-val">$10.00</td>
-            <td><span class="badge badge-std">Standard</span></td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="mock">
+      <div class="mock-top"><div class="mdot"></div><div class="mdot"></div><div class="mdot"></div><span class="mock-ttl">DubTrading — Live Monitor</span></div>
+      <div class="mock-body">
+        <div class="mrow"><span class="ml">Evaluation status</span><span class="mv g">✓ In progress</span></div>
+        <div class="mrow"><span class="ml">Profit target</span><span class="mv a">68% complete</span></div>
+        <div style="padding:.3rem 0 .8rem;"><div class="pbar"><div class="pfill" style="width:68%"></div></div></div>
+        <div class="mrow"><span class="ml">Today's P&L</span><span class="mv g">+$847.50</span></div>
+        <div class="mrow"><span class="ml">Drawdown used</span><span class="mv am">12% / 100%</span></div>
+        <div style="padding:.3rem 0 .8rem;"><div class="pbar"><div class="pfill" style="width:12%;background:var(--gold)"></div></div></div>
+        <div class="mrow"><span class="ml">Today's trades</span><span class="mv">14 &nbsp;(11W / 3L)</span></div>
+        <div class="mrow"><span class="ml">Win rate (30d)</span><span class="mv g">73.2%</span></div>
+        <div class="mrow"><span class="ml">Consistency</span><span class="mv g">✓ Met</span></div>
+        <div class="mrow"><span class="ml">Next trade</span><span class="mv a">Scanning…</span></div>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- CONSISTENCY DEEP DIVE -->
-<section class="consistency-section">
-  <div class="reveal">
-    <div class="section-tag">Consistency Rules</div>
-    <div class="section-title">STAY COMPLIANT.<br>STAY FUNDED.</div>
-    <p class="section-sub" style="margin-top: 16px;">FuturesCalc tracks the metrics funded account firms care about most — so you can trade confidently without risking your payout.</p>
-  </div>
+<!-- PARTNERS -->
+<div class="partners-sec" id="partners">
+  <p class="partners-lbl">Compatible platforms &amp; prop firms</p>
+  <div class="stw"><div class="st" id="st"></div></div>
+</div>
 
-  <div class="consistency-layout">
-    <div class="consistency-metrics reveal">
-      <div class="metric-bar">
-        <div class="metric-bar-header">
-          <span class="metric-name">Best Day Compliance</span>
-          <span class="metric-pct">92%</span>
-        </div>
-        <div class="metric-track"><div class="metric-fill green" style="width: 92%"></div></div>
+<!-- PRICING -->
+<section class="sec" id="pricing">
+  <div class="pricing-wrap">
+    <span class="s-lbl">Pricing</span>
+    <h2 class="s-ttl" style="margin:0 auto 1rem;">Choose your plan</h2>
+    <p class="s-sub" style="margin:0 auto 3rem;">No contracts. No commitments. Cancel anytime.</p>
+    <div class="pgrid">
+      <div class="pcard">
+        <div class="ptier">Standard</div>
+        <div class="pprice"><sup>$</sup>120</div>
+        <div class="pper">per month</div>
+        <ul class="pfeats">
+          <li><span class="ic ok">✓</span><span>Connected accounts <span class="fv">up to 20</span></span></li>
+          <li><span class="ic ok">✓</span><span>Smart alerts <span class="fv">10 / month</span></span></li>
+          <li><span class="ic ok">✓</span><span>News event filter</span></li>
+          <li><span class="ic no">✕</span><span style="opacity:.45;">Custom strategies</span></li>
+          <li><span class="ic ok">✓</span><span>Drawdown protection</span></li>
+          <li><span class="ic ok">✓</span><span>Live dashboard</span></li>
+          <li><span class="ic ok">✓</span><span>Telegram alerts</span></li>
+        </ul>
+        <a href="#" class="pbtn ghost">Start free 7 days</a>
       </div>
-      <div class="metric-bar">
-        <div class="metric-bar-header">
-          <span class="metric-name">Daily Loss Limit Buffer</span>
-          <span class="metric-pct">78%</span>
-        </div>
-        <div class="metric-track"><div class="metric-fill" style="width: 78%"></div></div>
+      <div class="pcard feat">
+        <div class="pbadge">Most popular</div>
+        <div class="ptier">Premium</div>
+        <div class="pprice"><sup>$</sup>240</div>
+        <div class="pper">per month</div>
+        <ul class="pfeats">
+          <li><span class="ic ok">✓</span><span>Connected accounts <span class="fv">up to 50</span></span></li>
+          <li><span class="ic ok">✓</span><span>Smart alerts <span class="fv">20 / month</span></span></li>
+          <li><span class="ic ok">✓</span><span>News event filter</span></li>
+          <li><span class="ic ok">✓</span><span>Custom strategies</span></li>
+          <li><span class="ic ok">✓</span><span>Drawdown protection</span></li>
+          <li><span class="ic ok">✓</span><span>Advanced dashboard</span></li>
+          <li><span class="ic ok">✓</span><span>Telegram + Email alerts</span></li>
+        </ul>
+        <a href="#" class="pbtn primary">Start free 7 days</a>
       </div>
-      <div class="metric-bar">
-        <div class="metric-bar-header">
-          <span class="metric-name">Trailing Drawdown Safe Zone</span>
-          <span class="metric-pct">85%</span>
-        </div>
-        <div class="metric-track"><div class="metric-fill blue" style="width: 85%"></div></div>
-      </div>
-      <div class="metric-bar">
-        <div class="metric-bar-header">
-          <span class="metric-name">Profit Target Progress</span>
-          <span class="metric-pct">61%</span>
-        </div>
-        <div class="metric-track"><div class="metric-fill green" style="width: 61%"></div></div>
-      </div>
-      <div class="metric-bar">
-        <div class="metric-bar-header">
-          <span class="metric-name">Minimum Trading Days</span>
-          <span class="metric-pct">70%</span>
-        </div>
-        <div class="metric-track"><div class="metric-fill" style="width: 70%"></div></div>
+      <div class="pcard">
+        <div class="ptier">Elite</div>
+        <div class="pprice"><sup>$</sup>550</div>
+        <div class="pper">per month</div>
+        <ul class="pfeats">
+          <li><span class="ic ok">✓</span><span>Connected accounts <span class="fv">Unlimited</span></span></li>
+          <li><span class="ic ok">✓</span><span>Smart alerts <span class="fv">Unlimited</span></span></li>
+          <li><span class="ic ok">✓</span><span>News event filter</span></li>
+          <li><span class="ic ok">✓</span><span>Custom strategies</span></li>
+          <li><span class="ic ok">✓</span><span>Drawdown protection</span></li>
+          <li><span class="ic ok">✓</span><span>Analytics + reporting</span></li>
+          <li><span class="ic ok">✓</span><span>Priority 1-on-1 support</span></li>
+        </ul>
+        <a href="#" class="pbtn ghost">Contact sales</a>
       </div>
     </div>
+  </div>
+</section>
 
-    <div class="chart-card reveal" style="background: var(--bg);">
-      <div class="chart-card-title">Weekly Consistency Trend</div>
-      <div class="chart-card-value">Avg 83.6% <span>/ Passing Threshold: 70%</span></div>
-      <canvas id="consistencyLine" style="max-height: 300px;"></canvas>
+<!-- TESTIMONIALS -->
+<section class="sec alt">
+  <div style="max-width:1100px;margin:0 auto;text-align:center;">
+    <span class="s-lbl">Testimonials</span>
+    <h2 class="s-ttl" style="margin:0 auto 1rem;">What our traders say</h2>
+    <p class="s-sub" style="margin:0 auto 3rem;"></p>
+    <div class="tgrid">
+      <div class="tc"><div class="tstars">★★★★★</div><p class="ttxt">"I passed my $50K Apex evaluation in under 2 weeks. The bot maintained perfect consistency every single day — something I could never do manually."</p><div class="tauth"><div class="tav">CR</div><div><span class="tname">Carlos R.</span><span class="trole">Funded trader — Apex $50K</span></div></div></div>
+      <div class="tc"><div class="tstars">★★★★★</div><p class="ttxt">"Running 4 accounts in parallel. Passed 2 in the first month. Drawdown never exceeds 8% and profits are consistent. Incredible tool."</p><div class="tauth"><div class="tav">MA</div><div><span class="tname">Maria A.</span><span class="trole">Premium plan — Multi-account</span></div></div></div>
+      <div class="tc"><div class="tstars">★★★★★</div><p class="ttxt">"I failed TopStep 3 times manually. DubTrading respects consistency rules automatically — I passed on the very first attempt."</p><div class="tauth"><div class="tav">JL</div><div><span class="tname">Juan L.</span><span class="trole">Funded trader — TopStep $100K</span></div></div></div>
     </div>
   </div>
 </section>
 
-<!-- INTERACTIVE CONSISTENCY CALCULATOR -->
-<section class="try-section" id="calculator">
-  <div class="reveal" style="text-align:center; max-width:640px; margin:0 auto;">
-    <div class="section-tag">Try It Now — Free</div>
-    <div class="section-title">CONSISTENCY<br>CALCULATOR</div>
-    <p class="section-sub" style="margin:16px auto 0;">Enter your trading data below and instantly see if you're passing the funded account consistency rule. No signup needed.</p>
+<!-- PAYMENT CERTIFICATES -->
+<div class="certs-sec" id="certificates">
+  <div class="certs-header">
+    <span class="s-lbl">Proof of Payments</span>
+    <h2>Real payouts.<br>Real traders.</h2>
+    <p>Every certificate below is a verified payout from a funded trader using DubTrading.</p>
   </div>
-
-  <div class="try-layout">
-
-    <!-- LEFT: The Widget -->
-    <div class="cc-widget reveal">
-
-      <div class="cc-section-label">Account Type</div>
-      <div class="cc-type-grid" id="typeGrid">
-        <div class="cc-type-btn" data-type="growth" data-limit="35">
-          <span class="t-name">GROWTH</span>
-          <span class="t-sub">Funding in 1 day · 35% limit</span>
-        </div>
-        <div class="cc-type-btn active" data-type="select" data-limit="40">
-          <span class="t-name">SELECT</span>
-          <span class="t-sub">Funding in 3 days · 40% limit</span>
-        </div>
-        <div class="cc-type-btn" data-type="lightning" data-limit="20">
-          <span class="t-name">LIGHTNING</span>
-          <span class="t-sub">Instant · 20% limit</span>
-        </div>
-      </div>
-
-      <div class="cc-section-label">Account Size</div>
-      <div class="cc-size-grid" id="sizeGrid">
-        <div class="cc-size-btn active" data-size="50000">50K</div>
-        <div class="cc-size-btn" data-size="100000">100K</div>
-        <div class="cc-size-btn" data-size="150000">150K</div>
-      </div>
-
-      <div class="cc-section-label">Days Operated</div>
-      <div class="cc-days-row">
-        <span class="label">Total:</span>
-        <div class="cc-counter">
-          <button id="dayMinus">−</button>
-          <span class="count-val" id="dayCount">3</span>
-          <button id="dayPlus">+</button>
-        </div>
-        <button class="cc-gen-btn" id="genDaysBtn">✦ Generate Days</button>
-      </div>
-
-      <div class="cc-section-label" id="inputsLabel">Day Profits ($)</div>
-      <div class="cc-inputs-grid" id="dayInputs"></div>
-
-      <!-- RESULT -->
-      <div class="cc-result" id="ccResult">
-        <div class="cc-result-top">
-          <div class="cc-score" id="ccScore">—<sup>%</sup></div>
-          <div class="cc-badge" id="ccBadge">● Consistent</div>
-        </div>
-        <div class="cc-bar-wrap">
-          <div class="cc-bar-fill" id="ccBar" style="width:0%"></div>
-          <div class="cc-bar-limits">
-            <span style="position:absolute;left:0;bottom:-14px;font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;">0%</span>
-            <span id="limitLabel" style="position:absolute;right:0;bottom:-14px;font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;">limit: 40%</span>
-          </div>
-        </div>
-        <div style="margin-top:18px;"></div>
-        <div class="cc-stats-grid">
-          <div class="cc-stat-box">
-            <div class="cc-stat-lbl">BEST DAY</div>
-            <div class="cc-stat-val" id="statBest">—</div>
-          </div>
-          <div class="cc-stat-box">
-            <div class="cc-stat-lbl">TOTAL EARNINGS</div>
-            <div class="cc-stat-val" id="statTotal">—</div>
-          </div>
-          <div class="cc-stat-box">
-            <div class="cc-stat-lbl">TOTAL LOSSES</div>
-            <div class="cc-stat-val red" id="statLoss">—</div>
-          </div>
-        </div>
-        <div class="cc-bottom-stats">
-          <div class="cc-stat-box">
-            <div class="cc-stat-lbl">NET P&L</div>
-            <div class="cc-stat-val" id="statNet">—</div>
-          </div>
-          <div class="cc-stat-box">
-            <div class="cc-stat-lbl" id="pctLabel">PROFIT FOR 40%</div>
-            <div class="cc-stat-val white" id="statPct">—</div>
-          </div>
-        </div>
-        <div class="cc-verdict" id="ccVerdict">Enter your day profits to calculate.</div>
-      </div>
-
+  <div class="cert-rows">
+    <!-- Row A — scrolls left -->
+    <div class="cert-track-wrap">
+      <div class="cert-track row-a" id="certRowA"></div>
     </div>
-
-    <!-- RIGHT: Explainer -->
-    <div class="try-explainer reveal">
-      <div>
-        <div class="section-tag">How It Works</div>
-        <div class="section-title" style="font-size: clamp(30px,3vw,44px); margin-bottom:8px;">KNOW YOUR<br>NUMBER BEFORE<br>YOU TRADE.</div>
-        <p style="color:var(--muted);font-size:15px;line-height:1.7;margin-bottom:32px;">The consistency rule means your best single trading day cannot represent more than a set % of your total profits. This calculator does the math instantly.</p>
-      </div>
-
-      <div class="explainer-step">
-        <div class="step-num">1</div>
-        <div>
-          <h4>Select your account type & size</h4>
-          <p>Different funded account programs have different consistency limits — 20%, 35%, or 40%. Pick yours to get the right threshold.</p>
-        </div>
-      </div>
-      <div class="explainer-step">
-        <div class="step-num">2</div>
-        <div>
-          <h4>Enter each day's profit or loss</h4>
-          <p>Type in what you made (or lost) each trading day. Losses count against your total, tightening the rule.</p>
-        </div>
-      </div>
-      <div class="explainer-step">
-        <div class="step-num">3</div>
-        <div>
-          <h4>See your consistency score instantly</h4>
-          <p>The calculator shows you Best Day ÷ Total Earnings. Green means you're passing. Red means one of your days is too large — adjust before you request a payout.</p>
-        </div>
-      </div>
-      <div class="explainer-step">
-        <div class="step-num">4</div>
-        <div>
-          <h4>Use it inside the desktop app too</h4>
-          <p>The full FuturesCalc desktop app has this built in alongside the tick-to-USD converter — all in one compact, beautiful window.</p>
-        </div>
-      </div>
+    <!-- Row B — scrolls right -->
+    <div class="cert-track-wrap">
+      <div class="cert-track row-b" id="certRowB"></div>
     </div>
+  </div>
+</div>
 
+<!-- FAQ -->
+<section class="sec" id="faq">
+  <div class="faq-inner">
+    <span class="s-lbl">FAQ</span>
+    <h2 class="s-ttl" style="margin-bottom:3rem;">Frequently asked questions</h2>
+    <div class="fi2"><div class="fq" onclick="tFaq(this)">Does the bot guarantee passing the evaluation?<span class="ficon">+</span></div><div class="fa">No bot can guarantee results, but DubTrading is designed to maximize the odds by strictly following each firm's rules. Our historical pass rate is 94% on active accounts.</div></div>
+    <div class="fi2"><div class="fq" onclick="tFaq(this)">Does it work with any prop firm?<span class="ficon">+</span></div><div class="fa">DubTrading supports the main firms: Apex Trader Funding, TopStep, Tradeify, Earn2Trade, TopTier and more. Each preset includes the correct parameters for each firm.</div></div>
+    <div class="fi2"><div class="fq" onclick="tFaq(this)">Do I need to keep my computer on?<span class="ficon">+</span></div><div class="fa">For NinjaTrader the platform must stay open. For Tradovate we offer cloud hosting (Premium and Elite plans) so the bot runs 24/5 without depending on your machine.</div></div>
+    <div class="fi2"><div class="fq" onclick="tFaq(this)">Can I use my own strategies?<span class="ficon">+</span></div><div class="fa">Yes, on the Elite plan you can fully customize parameters or integrate your own signals. Standard and Premium include pre-configured, tested strategies.</div></div>
+    <div class="fi2"><div class="fq" onclick="tFaq(this)">What markets does the bot trade?<span class="ficon">+</span></div><div class="fa">DubTrading primarily trades index futures (ES, NQ, MES, MNQ), energy (CL) and metals (GC). Available instruments depend on the platform and selected preset.</div></div>
+    <div class="fi2"><div class="fq" onclick="tFaq(this)">Is there a free trial?<span class="ficon">+</span></div><div class="fa">Yes. All plans include a 7-day free trial with no credit card required. If you are not satisfied, simply don't continue.</div></div>
   </div>
 </section>
 
-<!-- PRICING 
-<section id="pricing">
-  <div class="reveal" style="text-align: center; max-width: 600px; margin: 0 auto;">
-    <div class="section-tag">Pricing</div>
-    <div class="section-title">ONE TOOL.<br>ALL ACCOUNTS.</div>
-    <p class="section-sub" style="margin: 16px auto 0;">Choose the plan that fits your trading journey. Upgrade or cancel anytime.</p>
-  </div>
-
-  <div class="pricing-grid">
-    <div class="pricing-card reveal">
-      <div class="pricing-plan">Starter</div>
-      <div class="pricing-price"><sup>$</sup>0</div>
-      <div class="pricing-period">/ forever free</div>
-      <ul class="pricing-features">
-        <li>Tick ↔ USD Converter</li>
-        <li>ES & MES only</li>
-        <li>Basic calculator mode</li>
-        <li class="dim">All 5 instruments</li>
-        <li class="dim">Consistency tracker</li>
-        <li class="dim">Multi-contract support</li>
-      </ul>
-      <a href="#" class="btn-ghost" style="width: 100%; text-align: center; justify-content: center;">Download Free</a>
+<!-- CTA -->
+<div class="cta-sec">
+  <div class="cta-glow"></div>
+  <div style="position:relative;z-index:1;">
+    <h2>Ready to scale as a<br>funded trader?</h2>
+    <p>Join 500+ traders who trust DubTrading to pass their evaluations and keep their funded capital.</p>
+    <div class="hero-actions">
+      <a href="#pricing" class="btn-p">Start Free 7 Days</a>
+      <a href="#partners" class="btn-s">View platforms</a>
     </div>
-
-    <div class="pricing-card featured reveal">
-      <div class="pricing-badge">Most Popular</div>
-      <div class="pricing-plan">Pro</div>
-      <div class="pricing-price"><sup>$</sup>19</div>
-      <div class="pricing-period">/ per month</div>
-      <ul class="pricing-features">
-        <li>All 5 instruments</li>
-        <li>Tick ↔ USD + USD ↔ Tick</li>
-        <li>Consistency panel</li>
-        <li>Multi-contract support</li>
-        <li>Calculation history</li>
-        <li>All 3 themes</li>
-      </ul>
-      <a href="#" class="btn-primary" style="width: 100%; justify-content: center;">Get Pro</a>
-    </div>
-
-    <div class="pricing-card reveal">
-      <div class="pricing-plan">Lifetime</div>
-      <div class="pricing-price"><sup>$</sup>79</div>
-      <div class="pricing-period">/ one-time</div>
-      <ul class="pricing-features">
-        <li>Everything in Pro</li>
-        <li>All future instruments</li>
-        <li>Priority support</li>
-        <li>Beta feature access</li>
-        <li>Free lifetime updates</li>
-        <li>Discord community</li>
-      </ul>
-      <a href="#" class="btn-ghost" style="width: 100%; text-align: center; justify-content: center;">Buy Lifetime</a>
-    </div>
-  </div>
-</section>
-  -->
-
-<!-- CTA BANNER -->
-<div id="started" class="cta-banner reveal">
-  <div>
-    <h2>READY TO TRADE<br>SMARTER?</h2>
-    <p>Join traders who've stopped guessing and started calculating with precision.</p>
-  </div>
-  <div style="display: flex; flex-direction: column; gap: 12px; align-items: flex-end;">
-    <a href="https://academias.clubreeco.com.mx/ckeditor4/plugins/center/FuturesCalc.zip" class="btn-primary">Download FuturesCalc →</a>
-    <span style="font-size: 12px; color: var(--muted); font-family: 'DM Mono', monospace;">Available for Windows & macOS</span>
   </div>
 </div>
 
 <!-- FOOTER -->
 <footer>
-  <div class="nav-logo" style="font-size: 22px;">Futures<span>Calc</span></div>
-  <p>© 2025 FuturesCalc. Built for funded traders.</p>
-  <p>ES · NQ · MNQ · MES · CL</p>
+  <div class="flogo"><div class="dot"></div>DubTrading</div>
+  <ul class="flinks">
+    <li><a href="#">Terms of Service</a></li>
+    <li><a href="#">Privacy Policy</a></li>
+    <li><a href="#">Contact</a></li>
+    <li><a href="#">Telegram</a></li>
+    <li><a href="#">Docs</a></li>
+  </ul>
+  <span class="fcopy">© 2025 DubTrading. All rights reserved.</span>
 </footer>
 
 <script>
-// ── TICKER DATA ──
-const tickers = [
-  { sym: 'ES', val: '5842.25', chg: '+8.50', up: true },
-  { sym: 'NQ', val: '20341.75', chg: '+42.25', up: true },
-  { sym: 'MNQ', val: '20341.75', chg: '+42.25', up: true },
-  { sym: 'MES', val: '5842.25', chg: '+8.50', up: true },
-  { sym: 'CL', val: '83.47', chg: '-0.31', up: false },
-  { sym: '1 ES tick', val: '$12.50', chg: '→ USD', up: true },
-  { sym: '1 NQ tick', val: '$5.00', chg: '→ USD', up: true },
-  { sym: '1 MNQ tick', val: '$0.50', chg: '→ USD', up: true },
-  { sym: '1 MES tick', val: '$1.25', chg: '→ USD', up: true },
-  { sym: '1 CL tick', val: '$10.00', chg: '→ USD', up: true },
+/* ════════════════════════════════════════════════
+   PARTNERS JSON — Add or remove partners here
+   ════════════════════════════════════════════════ */
+const PARTNERS = [
+  { name: "Tradovate",       img: "./tradovate.png"   },
+  { name: "NinjaTrader",     img: "./ninjatrader.png" },
+  { name: "Tradeify",        img: "./tradeify.png"    },
+  { name: "Apex Trader",     img: "./apex.png"        },
+  { name: "TopStep",         img: "./topstep.png"     },
+  { name: "Rithmic",         img: "./rithmic.png"     },
+  { name: "TopTier Trader",  img: "./toptier.png"     },
+  { name: "Earn2Trade",      img: "./earn2trade.png"  },
+  { name: "FTMO",            img: "./ftmo.png"        },
+  { name: "MyFundedFutures", img: "./mff.png"         },
 ];
 
-function buildTicker() {
-  const doubled = [...tickers, ...tickers];
-  return doubled.map(t => `
-    <div class="ticker-item">
-      <span class="ticker-sym">${t.sym}</span>
-      <span class="ticker-val">${t.val}</span>
-      <span class="${t.up ? 'ticker-up' : 'ticker-down'}">${t.chg}</span>
-    </div>
-  `).join('');
-}
-document.getElementById('ticker').innerHTML = buildTicker();
-
-// ── CHART.JS DEFAULTS ──
-Chart.defaults.color = '#5a7a8a';
-Chart.defaults.borderColor = '#1f3247';
-Chart.defaults.font.family = "'DM Mono', monospace";
-
-// ── P&L CHART ──
-new Chart(document.getElementById('pnlChart'), {
-  type: 'bar',
-  data: {
-    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
-    datasets: [{
-      data: [32, -15, 55, 40, -8, 65, 28, 72, 45, 100],
-      backgroundColor: ctx => ctx.raw >= 0 ? 'rgba(52,199,89,0.7)' : 'rgba(255,59,48,0.7)',
-      borderRadius: 4,
-      borderSkipped: false,
-    }]
-  },
-  options: {
-    responsive: true,
-    plugins: { legend: { display: false } },
-    scales: {
-      x: { grid: { display: false } },
-      y: { grid: { color: '#1a2737' }, ticks: { callback: v => v + ' tk' } }
-    }
-  }
-});
-
-// ── CONSISTENCY DONUT ──
-new Chart(document.getElementById('consistencyDonut'), {
-  type: 'doughnut',
-  data: {
-    labels: ['Compliant', 'At Risk'],
-    datasets: [{
-      data: [87.4, 12.6],
-      backgroundColor: ['rgba(52,199,89,0.85)', 'rgba(31,50,71,0.8)'],
-      borderColor: ['#34c759', '#1f3247'],
-      borderWidth: 2,
-      hoverOffset: 6,
-    }]
-  },
-  options: {
-    responsive: true,
-    cutout: '72%',
-    plugins: {
-      legend: { position: 'bottom', labels: { padding: 16, boxWidth: 12 } },
-    }
-  }
-});
-
-// ── TICK CHART ──
-new Chart(document.getElementById('tickChart'), {
-  type: 'bar',
-  data: {
-    labels: ['MNQ ($0.50)', 'MES ($1.25)', 'NQ ($5.00)', 'CL ($10.00)', 'ES ($12.50)'],
-    datasets: [{
-      label: 'Tick Value (USD)',
-      data: [0.5, 1.25, 5.0, 10.0, 12.5],
-      backgroundColor: [
-        'rgba(26,106,191,0.75)',
-        'rgba(26,106,191,0.75)',
-        'rgba(255,140,43,0.75)',
-        'rgba(255,140,43,0.75)',
-        'rgba(255,140,43,0.75)',
-      ],
-      borderColor: ['#1a6abf','#1a6abf','#ff8c2b','#ff8c2b','#ff8c2b'],
-      borderWidth: 1,
-      borderRadius: 6,
-    }]
-  },
-  options: {
-    indexAxis: 'y',
-    responsive: true,
-    plugins: { legend: { display: false } },
-    scales: {
-      x: {
-        grid: { color: '#1a2737' },
-        ticks: { callback: v => '$' + v }
-      },
-      y: { grid: { display: false } }
-    }
-  }
-});
-
-// ── CONSISTENCY LINE ──
-new Chart(document.getElementById('consistencyLine'), {
-  type: 'line',
-  data: {
-    labels: ['Wk 1', 'Wk 2', 'Wk 3', 'Wk 4', 'Wk 5', 'Wk 6', 'Wk 7', 'Wk 8'],
-    datasets: [
-      {
-        label: 'Consistency %',
-        data: [71, 78, 74, 83, 79, 88, 85, 92],
-        borderColor: '#ff8c2b',
-        backgroundColor: 'rgba(255,140,43,0.08)',
-        fill: true,
-        tension: 0.4,
-        pointBackgroundColor: '#ff8c2b',
-        pointRadius: 5,
-      },
-      {
-        label: 'Threshold',
-        data: [70, 70, 70, 70, 70, 70, 70, 70],
-        borderColor: '#5a7a8a',
-        borderDash: [6, 4],
-        pointRadius: 0,
-        fill: false,
-      }
-    ]
-  },
-  options: {
-    responsive: true,
-    plugins: {
-      legend: { position: 'bottom', labels: { padding: 16, boxWidth: 12 } }
-    },
-    scales: {
-      x: { grid: { display: false } },
-      y: {
-        grid: { color: '#1a2737' },
-        min: 60, max: 100,
-        ticks: { callback: v => v + '%' }
-      }
-    }
-  }
-});
-
-// ── CONSISTENCY CALCULATOR LOGIC ──
-(function() {
-  let limit = 40;
-  let days = 3;
-
-  const typeGrid = document.getElementById('typeGrid');
-  const sizeGrid = document.getElementById('sizeGrid');
-  const dayCountEl = document.getElementById('dayCount');
-  const dayInputsEl = document.getElementById('dayInputs');
-  const limitLabelEl = document.getElementById('limitLabel');
-  const pctLabelEl = document.getElementById('pctLabel');
-
-  // Type buttons
-  typeGrid.querySelectorAll('.cc-type-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      typeGrid.querySelectorAll('.cc-type-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      limit = +btn.dataset.limit;
-      limitLabelEl.textContent = `limit: ${limit}%`;
-      pctLabelEl.textContent = `PROFIT FOR ${limit}%`;
-      recalc();
-    });
+(function buildPartners() {
+  const track = document.getElementById('st');
+  const all = [...PARTNERS, ...PARTNERS];
+  all.forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'pc';
+    card.innerHTML =
+      `<img src="${p.img}" alt="${p.name}"
+            onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+       <span class="pfb">${p.name}</span>
+       <span class="pn">${p.name}</span>`;
+    track.appendChild(card);
   });
-
-  // Size buttons
-  sizeGrid.querySelectorAll('.cc-size-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      sizeGrid.querySelectorAll('.cc-size-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-    });
-  });
-
-  // Day counter
-  document.getElementById('dayMinus').addEventListener('click', () => {
-    if (days > 1) { days--; dayCountEl.textContent = days; renderInputs(); }
-  });
-  document.getElementById('dayPlus').addEventListener('click', () => {
-    if (days < 20) { days++; dayCountEl.textContent = days; renderInputs(); }
-  });
-
-  // Generate days with random sample data
-  document.getElementById('genDaysBtn').addEventListener('click', () => {
-    const inputs = dayInputsEl.querySelectorAll('input');
-    const samples = [1000, 830, 688.9, 450, 1200, 320, 750, 900, 280, 1100, 560, 400];
-    inputs.forEach((inp, i) => {
-      inp.value = samples[i % samples.length];
-    });
-    recalc();
-  });
-
-  function renderInputs() {
-    dayInputsEl.innerHTML = '';
-    for (let i = 1; i <= days; i++) {
-      const row = document.createElement('div');
-      row.className = 'cc-input-row';
-      row.innerHTML = `
-        <span class="cc-input-label">Day ${i} &nbsp;<span style="color:var(--muted);font-size:10px;">$</span></span>
-        <span class="cc-input-sep">|</span>
-        <input type="number" placeholder="0.00" step="0.01" data-day="${i}" />
-      `;
-      dayInputsEl.appendChild(row);
-    }
-    dayInputsEl.querySelectorAll('input').forEach(inp => {
-      inp.addEventListener('input', recalc);
-    });
-    recalc();
-  }
-
-  function fmt(n) {
-    return '$' + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
-  }
-
-  function recalc() {
-    const vals = [...dayInputsEl.querySelectorAll('input')].map(i => parseFloat(i.value) || 0);
-    if (vals.every(v => v === 0)) {
-      document.getElementById('ccScore').textContent = '—';
-      document.getElementById('ccVerdict').textContent = 'Enter your day profits to calculate.';
-      document.getElementById('ccBar').style.width = '0%';
-      return;
-    }
-
-    const positives = vals.filter(v => v > 0);
-    const negatives = vals.filter(v => v < 0);
-    const totalEarnings = positives.reduce((a, b) => a + b, 0);
-    const totalLosses = negatives.reduce((a, b) => a + b, 0);
-    const netPL = totalEarnings + totalLosses;
-    const bestDay = positives.length ? Math.max(...positives) : 0;
-
-    const scoreEl = document.getElementById('ccScore');
-    const badgeEl = document.getElementById('ccBadge');
-    const barEl = document.getElementById('ccBar');
-    const resultEl = document.getElementById('ccResult');
-    const verdictEl = document.getElementById('ccVerdict');
-
-    let pct = 0;
-    let passing = true;
-
-    if (totalEarnings > 0) {
-      pct = (bestDay / totalEarnings) * 100;
-      passing = pct <= limit;
-    }
-
-    scoreEl.innerHTML = `${pct.toFixed(1)}<sup>%</sup>`;
-    scoreEl.className = 'cc-score' + (passing ? '' : ' failing');
-    badgeEl.className = 'cc-badge' + (passing ? '' : ' failing');
-    badgeEl.innerHTML = passing ? '● Consistent' : '● Failing';
-    resultEl.className = 'cc-result' + (passing ? '' : ' failing');
-    barEl.style.width = Math.min(pct, 100) + '%';
-    barEl.className = 'cc-bar-fill' + (passing ? '' : ' failing');
-
-    document.getElementById('statBest').textContent = fmt(bestDay);
-    document.getElementById('statTotal').textContent = fmt(totalEarnings);
-    document.getElementById('statLoss').textContent = totalLosses < 0 ? fmt(totalLosses) : '$0.000';
-    document.getElementById('statNet').textContent = fmt(netPL);
-
-    // What % of payout goal covered
-    const forLimit = totalEarnings > 0 ? (bestDay / (limit / 100)) : 0;
-    document.getElementById('statPct').textContent = passing ? 'OK ✓' : `Max: ${fmt(totalEarnings * limit / 100)}`;
-
-    verdictEl.className = 'cc-verdict' + (passing ? '' : ' failing');
-    if (passing) {
-      verdictEl.textContent = '✓ You follow the rule correctly.';
-    } else {
-      const excess = bestDay - totalEarnings * (limit / 100);
-      verdictEl.textContent = `✗ Best day exceeds limit by ${fmt(excess)}. Reduce or add more trading days.`;
-    }
-  }
-
-  renderInputs();
 })();
 
-// ── SCROLL REVEAL ──
-const observer = new IntersectionObserver(entries => {
-  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
-}, { threshold: 0.1 });
-document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+/* ════════════════════════════════════════════════
+   CERTIFICATES JSON — Add your payment proof images here.
+   Each entry needs:
+     img  : path to your image  (e.g. "./certificate1.png")
+     label: short caption shown as fallback if image missing
+   ════════════════════════════════════════════════ */
+const CERTIFICATES = [
+  { img: "./certificate.png",  label: "Payout #1"  },
+  { img: "./certificate2.png", label: "Payout #2"  },
+  { img: "./certificate3.png", label: "Payout #3"  },
+  { img: "./certificate4.png", label: "Payout #4"  },
+  { img: "./certificate5.png", label: "Payout #5"  },
+  { img: "./certificate6.png", label: "Payout #6"  },
+  { img: "./certificate7.png", label: "Payout #7"  },
+  { img: "./certificate8.png", label: "Payout #8"  },
+];
 
-// ── COUNTER ANIMATION ──
-function animateCount(el, target) {
-  let start = 0;
-  const duration = 1500;
-  const step = timestamp => {
-    if (!start) start = timestamp;
-    const progress = Math.min((timestamp - start) / duration, 1);
-    const ease = 1 - Math.pow(1 - progress, 3);
-    el.textContent = Math.round(ease * target) + (el.dataset.suffix || '');
-    if (progress < 1) requestAnimationFrame(step);
-  };
-  requestAnimationFrame(step);
-}
+(function buildCertificates() {
+  // Split into two rows (A=even indexes, B=odd indexes), duplicate for seamless loop
+  const rowA = CERTIFICATES.filter((_, i) => i % 2 === 0);
+  const rowB = CERTIFICATES.filter((_, i) => i % 2 !== 0);
 
-const statsObserver = new IntersectionObserver(entries => {
-  entries.forEach(e => {
-    if (e.isIntersecting) {
-      const el = e.target.querySelector('[data-target]');
-      if (el && el.dataset.target !== '0') {
-        animateCount(el, +el.dataset.target);
-        statsObserver.unobserve(e.target);
+  // If only one row has items, mirror to the other so both rows are always populated
+  const fillA = rowA.length ? rowA : CERTIFICATES;
+  const fillB = rowB.length ? rowB : CERTIFICATES;
+
+  function makeCard(c) {
+    const card = document.createElement('div');
+    card.className = 'cert-card';
+    card.innerHTML =
+      `<img src="${c.img}" alt="${c.label}"
+            onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+       <div class="cert-ph" style="display:none;">
+         <span class="cert-icon">🏆</span>
+         <span class="cert-label">${c.label}</span>
+       </div>`;
+    return card;
+  }
+
+  const trackA = document.getElementById('certRowA');
+  const trackB = document.getElementById('certRowB');
+
+  // Duplicate each list twice so the seamless loop works at any viewport width
+  [...fillA, ...fillA, ...fillA, ...fillA].forEach(c => trackA.appendChild(makeCard(c)));
+  [...fillB, ...fillB, ...fillB, ...fillB].forEach(c => trackB.appendChild(makeCard(c)));
+})();
+
+/* ════════════════════════════════
+   CANDLESTICK CANVAS
+   ════════════════════════════════ */
+(function() {
+  const canvas = document.getElementById('cv');
+  const ctx    = canvas.getContext('2d');
+
+  function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const CW   = 10;
+  const GAP  = 7;
+  const SPD  = 0.32;
+  const candles = [];
+
+  function rand(a, b) { return a + Math.random() * (b - a); }
+
+  function spawn(x) {
+    return {
+      x,
+      bodyY: rand(80, canvas.height - 120),
+      bodyH: rand(16, 88),
+      wickT: rand(4, 18),
+      wickB: rand(4, 18),
+      isGreen: Math.random() > 0.44,
+      opacity: rand(0.05, 0.08),
+      targetOp: rand(0.12, 0.36),
+    };
+  }
+
+  for (let x = 0; x < window.innerWidth + CW * 2; x += CW + GAP)
+    candles.push(Object.assign(spawn(x), { opacity: rand(0.08, 0.30) }));
+
+  function drawOne(c) {
+    const cx = c.x + CW / 2;
+    const grd = ctx.createLinearGradient(c.x, c.bodyY, c.x, c.bodyY + c.bodyH);
+    if (c.isGreen) {
+      grd.addColorStop(0, `rgba(0,230,118,${c.opacity * 0.9})`);
+      grd.addColorStop(1, `rgba(0,180,80,${c.opacity * 0.25})`);
+    } else {
+      grd.addColorStop(0, `rgba(255,60,90,${c.opacity * 0.9})`);
+      grd.addColorStop(1, `rgba(190,25,55,${c.opacity * 0.25})`);
+    }
+    ctx.beginPath();
+    ctx.moveTo(cx, c.bodyY - c.wickT);
+    ctx.lineTo(cx, c.bodyY + c.bodyH + c.wickB);
+    ctx.strokeStyle = c.isGreen
+      ? `rgba(0,230,118,${c.opacity * 0.55})`
+      : `rgba(255,60,90,${c.opacity * 0.55})`;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.fillStyle = grd;
+    ctx.fillRect(c.x, c.bodyY, CW, c.bodyH);
+  }
+
+  function tick() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let i = candles.length - 1; i >= 0; i--) {
+      const c = candles[i];
+      c.x -= SPD;
+      if (c.opacity < c.targetOp) c.opacity = Math.min(c.opacity + 0.002, c.targetOp);
+      drawOne(c);
+      if (c.x + CW + 2 < 0) {
+        candles.splice(i, 1);
+        const maxX = candles.reduce((m, cc) => Math.max(m, cc.x), 0);
+        candles.push(spawn(maxX + CW + GAP));
       }
     }
-  });
-}, { threshold: 0.5 });
-document.querySelectorAll('.stat-item').forEach(el => statsObserver.observe(el));
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
+
+/* ════════════════════
+   FAQ
+   ════════════════════ */
+function tFaq(el) {
+  const item = el.parentElement;
+  const was  = item.classList.contains('open');
+  document.querySelectorAll('.fi2').forEach(i => i.classList.remove('open'));
+  if (!was) item.classList.add('open');
+}
+
+/* ════════════════════
+   MOBILE MENU
+   ════════════════════ */
+function toggleMenu() { document.getElementById('mmenu').classList.toggle('open'); }
+function closeMenu()  { document.getElementById('mmenu').classList.remove('open'); }
 </script>
 </body>
 </html>
