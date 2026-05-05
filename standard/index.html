@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Standard Plan — $120/mo | DubTrading Checkout</title>
+<meta name="description" content="Get started with DubTrading Standard plan. $120/month — connect up to 20 accounts, drawdown protection, evaluation account support and more.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="./favicon-16x16.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#020508;
+  --bg2:#081018;
+  --bg3:#0c1622;
+  --card:rgba(255,255,255,0.03);
+  --border:rgba(255,255,255,0.07);
+  --border-hi:rgba(255,255,255,0.13);
+  --accent:#00e5a0;
+  --accent2:#0af;
+  --gold:#f5a623;
+  --green:#00e676;
+  --muted:#7a8fa8;
+  --muted2:#4a5c70;
+  --text:#eef2f7;
+  --red:#ff4d6d;
+  --ff:'Outfit',sans-serif;
+  --mono:'JetBrains Mono',monospace;
+  --plan-color:#00e5a0;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:var(--ff);
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+  line-height:1.6;
+}
+
+body::before{
+  content:'';position:fixed;inset:0;
+  background:
+    radial-gradient(ellipse 70% 50% at 15% 0%,rgba(0,229,160,0.06) 0%,transparent 55%),
+    radial-gradient(ellipse 50% 40% at 85% 100%,rgba(0,170,255,0.05) 0%,transparent 55%),
+    linear-gradient(180deg,#020508 0%,#040d16 50%,#030b14 100%);
+  pointer-events:none;z-index:0;
+}
+
+/* ── NAV ── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 5%;height:62px;
+  background:rgba(2,5,8,0.85);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
+.nav-logo{
+  font-size:1.2rem;font-weight:900;letter-spacing:-.04em;
+  color:var(--text);text-decoration:none;
+  display:flex;align-items:center;gap:.4rem;
+}
+.nav-logo .dot{
+  width:7px;height:7px;border-radius:50%;
+  background:var(--accent);box-shadow:0 0 8px var(--accent);
+  animation:blink 2s infinite;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.nav-back{
+  font-size:.82rem;font-weight:500;color:var(--muted);
+  text-decoration:none;
+  display:flex;align-items:center;gap:.4rem;
+  transition:color .2s;
+}
+.nav-back:hover{color:var(--text);}
+.nav-back svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+
+/* ── LAYOUT ── */
+.page{
+  min-height:100vh;
+  display:flex;align-items:center;justify-content:center;
+  padding:7rem 5% 4rem;
+  position:relative;z-index:10;
+}
+.checkout-wrap{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:2.5rem;
+  max-width:980px;
+  width:100%;
+}
+
+/* ── PLAN CARD (left) ── */
+.plan-card{
+  background:var(--card);
+  border:1px solid var(--plan-color);
+  border-radius:20px;
+  padding:2.25rem 2rem;
+  position:relative;
+  overflow:hidden;
+}
+.plan-card::before{
+  content:'';position:absolute;
+  top:-60px;right:-60px;
+  width:200px;height:200px;
+  background:radial-gradient(circle,rgba(0,229,160,.07),transparent 65%);
+  pointer-events:none;
+}
+.plan-tier{
+  font-size:.7rem;text-transform:uppercase;letter-spacing:.18em;
+  color:var(--plan-color);font-weight:700;margin-bottom:.75rem;
+}
+.plan-price{
+  font-family:var(--mono);
+  font-size:3.2rem;font-weight:700;
+  letter-spacing:-.04em;line-height:1;
+  margin-bottom:.25rem;
+}
+.plan-price sup{
+  font-size:1.3rem;vertical-align:top;
+  margin-top:.55rem;display:inline-block;
+}
+.plan-period{
+  font-size:.8rem;color:var(--muted);
+  margin-bottom:1.75rem;
+  padding-bottom:1.5rem;
+  border-bottom:1px solid var(--border);
+}
+.plan-features{list-style:none;display:flex;flex-direction:column;gap:.6rem;}
+.plan-features li{
+  display:flex;align-items:flex-start;gap:.55rem;
+  font-size:.875rem;color:var(--muted);line-height:1.4;
+}
+.plan-features li .ic{flex-shrink:0;font-size:.8rem;margin-top:.1rem;}
+.ic-ok{color:var(--green);}
+.ic-no{color:var(--muted2);}
+.plan-features li.disabled{opacity:.4;}
+.feat-val{
+  color:var(--text);font-weight:600;
+  font-family:var(--mono);font-size:.8rem;
+}
+
+/* ── FORM CARD (right) ── */
+.form-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:2.25rem 2rem;
+  display:flex;flex-direction:column;gap:1.35rem;
+}
+.form-title{
+  font-size:1.3rem;font-weight:800;
+  letter-spacing:-.035em;margin-bottom:-.25rem;
+}
+.form-sub{font-size:.855rem;color:var(--muted);font-weight:300;}
+
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.field{display:flex;flex-direction:column;gap:.45rem;}
+.field.full{grid-column:1/-1;}
+.field label{
+  font-size:.72rem;font-weight:700;
+  color:var(--muted);text-transform:uppercase;letter-spacing:.1em;
+}
+.field input{
+  background:rgba(255,255,255,.04);
+  border:1px solid var(--border-hi);
+  border-radius:8px;
+  padding:.75rem 1rem;
+  color:var(--text);font-family:var(--ff);font-size:.95rem;
+  outline:none;
+  transition:border-color .2s,box-shadow .2s;
+  width:100%;
+}
+.field input:focus{
+  border-color:var(--plan-color);
+  box-shadow:0 0 0 3px rgba(0,229,160,.1);
+}
+.field input::placeholder{color:var(--muted2);}
+.field input.error-input{
+  border-color:var(--red);
+  box-shadow:0 0 0 3px rgba(255,77,109,.1);
+}
+
+.form-error{
+  display:none;
+  font-size:.82rem;font-weight:600;color:var(--red);
+  background:rgba(255,61,90,.08);
+  border:1px solid rgba(255,61,90,.2);
+  border-radius:8px;
+  padding:.65rem .9rem;
+  align-items:center;gap:.5rem;
+}
+.form-error.show{display:flex;}
+
+/* order summary */
+.order-summary{
+  background:rgba(0,229,160,.04);
+  border:1px solid rgba(0,229,160,.1);
+  border-radius:10px;
+  padding:1rem 1.1rem;
+}
+.summary-row{
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:.855rem;
+}
+.summary-row + .summary-row{
+  margin-top:.5rem;padding-top:.5rem;
+  border-top:1px solid rgba(255,255,255,.06);
+}
+.summary-label{color:var(--muted);}
+.summary-val{font-family:var(--mono);font-weight:600;}
+.summary-val.total{color:var(--plan-color);font-size:1.05rem;}
+
+/* checkout button */
+.checkout-btn{
+  width:100%;padding:.9rem;
+  background:var(--plan-color);color:#000;
+  border:none;border-radius:10px;
+  font-family:var(--ff);font-size:1rem;font-weight:800;
+  cursor:pointer;
+  letter-spacing:-.01em;
+  display:flex;align-items:center;justify-content:center;gap:.6rem;
+  transition:opacity .2s,transform .15s,box-shadow .2s;
+  position:relative;overflow:hidden;
+}
+.checkout-btn::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.15),transparent);
+  pointer-events:none;
+}
+.checkout-btn:hover{
+  opacity:.9;transform:translateY(-2px);
+  box-shadow:0 0 28px rgba(0,229,160,.35);
+}
+.checkout-btn:active{transform:translateY(0);}
+.checkout-btn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;}
+
+/* secure badge */
+.secure-note{
+  display:flex;align-items:center;justify-content:center;gap:.4rem;
+  font-size:.75rem;color:var(--muted2);margin-top:-.35rem;
+}
+.secure-note svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+
+/* ── FOOTER ── */
+.page-footer{
+  position:relative;z-index:10;
+  text-align:center;padding:1.5rem 5% 2rem;
+  font-size:.78rem;color:var(--muted2);
+}
+.page-footer a{color:var(--muted);text-decoration:none;}
+.page-footer a:hover{color:var(--text);}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  .checkout-wrap{grid-template-columns:1fr;gap:1.5rem;}
+  .page{padding:5.5rem 4% 3rem;}
+  .field-row{grid-template-columns:1fr;}
+}
+@media(max-width:400px){
+  .plan-price{font-size:2.6rem;}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="./index.html" class="nav-logo"><div class="dot"></div>DubTrading</a>
+  <a href="./index.html" class="nav-back">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    Back to home
+  </a>
+</nav>
+
+<!-- PAGE -->
+<div class="page">
+  <div class="checkout-wrap">
+
+    <!-- LEFT: Plan Details -->
+    <div class="plan-card">
+      <div class="plan-tier">Standard Plan</div>
+      <div class="plan-price"><sup>$</sup>120</div>
+      <div class="plan-period">per month · billed monthly</div>
+      <ul class="plan-features">
+        <li><span class="ic ic-ok">✓</span><span>Connected accounts <span class="feat-val">up to 20</span></span></li>
+        <li><span class="ic ic-ok">✓</span><span>Smart alerts <span class="feat-val">10 / month</span></span></li>
+        <li><span class="ic ic-ok">✓</span><span>Accept evaluation account</span></li>
+        <li class="disabled"><span class="ic ic-no">✕</span><span>Accept funded account</span></li>
+        <li class="disabled"><span class="ic ic-no">✕</span><span>Accept live account</span></li>
+        <li><span class="ic ic-ok">✓</span><span>News event filter</span></li>
+        <li class="disabled"><span class="ic ic-no">✕</span><span>Custom strategies</span></li>
+        <li><span class="ic ic-ok">✓</span><span>Drawdown protection</span></li>
+        <li><span class="ic ic-ok">✓</span><span>Live dashboard</span></li>
+        <li><span class="ic ic-ok">✓</span><span>Telegram alerts</span></li>
+      </ul>
+    </div>
+
+    <!-- RIGHT: Checkout Form -->
+    <div class="form-card">
+      <div>
+        <h2 class="form-title">Complete your order</h2>
+        <p class="form-sub">You're one step away from automated trading.</p>
+      </div>
+
+      <form id="checkoutForm" novalidate>
+        <div class="field-row">
+          <div class="field">
+            <label for="firstName">First name</label>
+            <input type="text" id="firstName" placeholder="John" autocomplete="given-name">
+          </div>
+          <div class="field">
+            <label for="lastName">Last name</label>
+            <input type="text" id="lastName" placeholder="Doe" autocomplete="family-name">
+          </div>
+        </div>
+        <div class="field" style="margin-top:1rem;">
+          <label for="email">Email address</label>
+          <input type="email" id="email" placeholder="you@example.com" autocomplete="email" spellcheck="false">
+        </div>
+
+        <div class="form-error" id="formError" role="alert"></div>
+
+        <div class="order-summary">
+          <div class="summary-row">
+            <span class="summary-label">Plan</span>
+            <span class="summary-val">Standard</span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">Billing</span>
+            <span class="summary-val">Monthly</span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">Total today</span>
+            <span class="summary-val total">$120.00</span>
+          </div>
+        </div>
+
+        <button type="submit" class="checkout-btn">
+          <svg viewBox="0 0 24 24" style="fill:currentColor;stroke:none;width:18px;height:18px;"><path d="M23.638 14.904c-1.602 6.43-8.113 10.34-14.542 8.736C2.67 22.05-1.244 15.525.362 9.105 1.962 2.67 8.475-1.243 14.9.358c6.43 1.605 10.342 8.115 8.738 14.546zM17.525 10.28c.24-1.613-.986-2.48-2.665-3.058l.545-2.183-1.329-.332-.53 2.127c-.35-.087-.71-.17-1.068-.25l.532-2.14-1.33-.333-.544 2.183c-.29-.066-.574-.132-.85-.2l.002-.007-1.833-.458-.354 1.42s.986.226.965.24c.539.134.636.49.62.773l-.621 2.491c.037.01.085.023.138.044l-.14-.035-.87 3.49c-.066.163-.233.408-.61.315.013.02-.966-.242-.966-.242l-.66 1.523 1.73.43c.32.08.636.165.946.244l-.55 2.21 1.328.332.545-2.187c.362.098.714.188 1.058.274l-.543 2.175 1.33.332.55-2.205c2.27.43 3.977.257 4.695-1.797.579-1.652-.029-2.605-1.224-3.228.87-.2 1.526-.772 1.7-1.952zM15.14 15.6c-.411 1.652-3.196.759-4.1.535l.732-2.933c.903.225 3.8.672 3.368 2.398zm.41-3.345c-.376 1.507-2.695.74-3.448.554l.663-2.66c.754.188 3.175.54 2.785 2.106z"/></svg>
+          Pay with Crypto
+        </button>
+
+        <p class="secure-note">
+          <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Secured payment · SSL encrypted
+        </p>
+      </form>
+    </div>
+
+  </div>
+</div>
+
+<footer class="page-footer">
+  © 2025 DubTrading · <a href="./index.html">Home</a> · <a href="https://t.me/+iiVzBcMPFqc4MWIx">Telegram Support</a>
+</footer>
+
+<script>
+const PAYMENT_URL = 'https://nowpayments.io/payment/?iid=4618351569';
+
+document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const firstName = document.getElementById('firstName').value.trim();
+  const lastName  = document.getElementById('lastName').value.trim();
+  const email     = document.getElementById('email').value.trim();
+  const err       = document.getElementById('formError');
+
+  // Reset
+  err.classList.remove('show');
+  ['firstName','lastName','email'].forEach(id => {
+    document.getElementById(id).classList.remove('error-input');
+  });
+
+  // Validate
+  if (!firstName) {
+    document.getElementById('firstName').classList.add('error-input');
+    err.innerHTML = '⚠&nbsp; Please enter your first name.';
+    err.classList.add('show'); return;
+  }
+  if (!lastName) {
+    document.getElementById('lastName').classList.add('error-input');
+    err.innerHTML = '⚠&nbsp; Please enter your last name.';
+    err.classList.add('show'); return;
+  }
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    document.getElementById('email').classList.add('error-input');
+    err.innerHTML = '⚠&nbsp; Please enter a valid email address.';
+    err.classList.add('show'); return;
+  }
+
+  // Redirect to payment
+  const btn = document.querySelector('.checkout-btn');
+  btn.innerHTML = '<span style="opacity:.7">Redirecting…</span>';
+  btn.disabled = true;
+  btn.style.opacity = '.75';
+  window.location.href = PAYMENT_URL;
+});
+</script>
+</body>
+</html>
