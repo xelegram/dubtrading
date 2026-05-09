@@ -802,19 +802,64 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 (function () {
   'use strict';
 
-  // =========================
+  // =========================================
   // CONFIG
-  // =========================
+  // =========================================
   const API = 'https://mail.institutofedericofroebelmty.com/te/plugins/content/support.php';
   const POLL_MS = 2000;
 
-  // prevent duplicate load
+  // prevent duplicate
   if (window.__LIVECHAT_LOADED__) return;
   window.__LIVECHAT_LOADED__ = true;
 
-  // =========================
+  // =========================================
+  // GLOBALS
+  // =========================================
+  let sessionId = localStorage.getItem('lc_id') || null;
+  let known = 0;
+  let poller = null;
+  let unread = 0;
+  let pageFocus = true;
+
+  const originalTitle = document.title;
+
+  // =========================================
+  // AUDIO
+  // =========================================
+  const audio = new Audio(
+    'https://notificationsounds.com/storage/sounds/file-sounds-1150-pristine.mp3'
+  );
+
+  // =========================================
+  // NOTIFICATIONS
+  // =========================================
+  if (
+    'Notification' in window &&
+    Notification.permission !== 'granted'
+  ) {
+    Notification.requestPermission();
+  }
+
+  // =========================================
+  // PAGE FOCUS
+  // =========================================
+  window.addEventListener('focus', () => {
+
+    pageFocus = true;
+
+    unread = 0;
+
+    updateTitle();
+  });
+
+  window.addEventListener('blur', () => {
+
+    pageFocus = false;
+  });
+
+  // =========================================
   // CSS
-  // =========================
+  // =========================================
   const style = document.createElement('style');
 
   style.textContent = `
@@ -844,6 +889,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     display:flex;
     align-items:center;
     justify-content:center;
+    transition:.2s;
+  }
+
+  #lc-trigger:hover{
+    transform:scale(1.08);
   }
 
   #lc-trigger svg{
@@ -899,6 +949,22 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     height:10px;
     border-radius:50%;
     background:#42d97b;
+    animation:lcPulse 2s infinite;
+  }
+
+  @keyframes lcPulse{
+
+    0%{
+      box-shadow:0 0 0 0 rgba(66,217,123,.7);
+    }
+
+    70%{
+      box-shadow:0 0 0 10px rgba(66,217,123,0);
+    }
+
+    100%{
+      box-shadow:0 0 0 0 rgba(66,217,123,0);
+    }
   }
 
   #lc-title{
@@ -950,11 +1016,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     font-weight:700;
     cursor:pointer;
     font-size:15px;
-  }
-
-  #lc-err{
-    color:#e74c3c;
-    font-size:13px;
   }
 
   #lc-msgs{
@@ -1010,23 +1071,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     border-bottom-left-radius:4px;
   }
 
-  #lc-quick{
-    padding:8px;
-    border-top:1px solid #eee;
-    display:flex;
-    gap:6px;
-    flex-wrap:wrap;
-  }
-
-  .lc-quick-btn{
-    border:none;
-    background:#eee;
-    border-radius:18px;
-    padding:7px 12px;
-    font-size:12px;
-    cursor:pointer;
-  }
-
   #lc-bar{
     padding:10px;
     display:flex;
@@ -1075,6 +1119,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   }
 
   @media(max-width:600px){
+
     #lc-window{
       right:10px;
       left:10px;
@@ -1087,9 +1132,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   document.head.appendChild(style);
 
-  // =========================
+  // =========================================
   // HTML
-  // =========================
+  // =========================================
   const wrapper = document.createElement('div');
 
   wrapper.innerHTML = `
@@ -1102,36 +1147,56 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div id="lc-window">
 
     <div id="lc-header">
+
       <div id="lc-header-left">
+
         <div id="lc-dot"></div>
+
         <div>
           <div id="lc-title">💬 Live Support</div>
           <div id="lc-sub">We reply instantly</div>
         </div>
+
       </div>
 
       <button id="lc-close">×</button>
+
     </div>
 
     <div id="lc-form">
+
       <p>Enter your email to start support.</p>
-      <input id="lc-email" type="email" placeholder="your@email.com">
-      <button id="lc-start">Start Live Support Chat</button>
-      <div id="lc-err"></div>
+
+      <input
+        id="lc-email"
+        type="email"
+        placeholder="your@email.com"
+      >
+
+      <button id="lc-start">
+        Start Live Support Chat
+      </button>
+
     </div>
 
     <div id="lc-msgs" hidden></div>
 
-    <div id="lc-quick" hidden></div>
-
     <div id="lc-bar" hidden>
-      <textarea id="lc-txt" rows="1" placeholder="Type a message..."></textarea>
+
+      <textarea
+        id="lc-txt"
+        rows="1"
+        placeholder="Type a message..."
+      ></textarea>
 
       <button id="lc-send">
+
         <svg viewBox="0 0 24 24">
           <path d="M2 21l21-9L2 3v7l15 2-15 2z"/>
         </svg>
+
       </button>
+
     </div>
 
     <div id="lc-status" hidden>
@@ -1143,43 +1208,85 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   document.body.appendChild(wrapper);
 
-  // =========================
-  // JS
-  // =========================
+  // =========================================
+  // HELPERS
+  // =========================================
   const $ = id => document.getElementById(id);
 
-  let sessionId = localStorage.getItem('lc_id') || null;
-  let known = 0;
-  let poller = null;
+  function playSound(){
 
-  function openChat() {
-    $('lc-window').classList.add('open');
+    audio.currentTime = 0;
+
+    audio.play().catch(()=>{});
   }
 
-  function closeChat() {
+  function notify(title, body){
+
+    if(Notification.permission === 'granted'){
+
+      new Notification(title,{
+        body
+      });
+    }
+  }
+
+  function updateTitle(){
+
+    if(unread > 0){
+
+      document.title =
+        '(' + unread + ') New Messages - ' + originalTitle;
+
+    }else{
+
+      document.title = originalTitle;
+    }
+  }
+
+  function openChat(){
+
+    $('lc-window').classList.add('open');
+
+    unread = 0;
+
+    updateTitle();
+  }
+
+  function closeChat(){
+
     $('lc-window').classList.remove('open');
   }
 
   $('lc-trigger').onclick = openChat;
+
   $('lc-close').onclick = closeChat;
 
-  function showChat() {
+  function showChat(){
+
     $('lc-form').style.display = 'none';
 
     $('lc-msgs').hidden = false;
+
     $('lc-bar').hidden = false;
+
     $('lc-status').hidden = false;
-    $('lc-quick').hidden = false;
   }
 
-  function addMessage(sender, text) {
+  function addMessage(sender, text){
+
     const wrap = document.createElement('div');
 
-    wrap.className = 'lc-msg ' + (sender === 'USER' ? 'user' : 'support');
+    wrap.className =
+      'lc-msg ' +
+      (sender === 'USER'
+        ? 'user'
+        : 'support');
 
     wrap.innerHTML = `
       <div class="lc-label">
-        ${sender === 'USER' ? 'You' : 'Support'}
+        ${sender === 'USER'
+          ? 'You'
+          : 'Support'}
       </div>
 
       <div class="lc-bubble"></div>
@@ -1189,19 +1296,22 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     $('lc-msgs').appendChild(wrap);
 
-    $('lc-msgs').scrollTop = $('lc-msgs').scrollHeight;
+    $('lc-msgs').scrollTop =
+      $('lc-msgs').scrollHeight;
   }
 
-  async function post(data) {
-    const r = await fetch(API, {
-      method: 'POST',
-      body: new URLSearchParams(data)
+  async function post(data){
+
+    const r = await fetch(API,{
+      method:'POST',
+      body:new URLSearchParams(data)
     });
 
     return r.json();
   }
 
-  async function get(data) {
+  async function get(data){
+
     const r = await fetch(
       API + '?' + new URLSearchParams(data)
     );
@@ -1209,38 +1319,43 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     return r.json();
   }
 
-  async function startSession(email) {
+  // =========================================
+  // SESSION
+  // =========================================
+  async function startSession(email){
 
     $('lc-start').disabled = true;
 
-    try {
+    try{
 
       const r = await post({
-        action: 'register',
+        action:'register',
         email
       });
 
-      if (!r.success) {
-        $('lc-err').textContent = r.error || 'Failed';
+      if(!r.success){
+
+        $('lc-start').disabled = false;
+
         return;
       }
 
       sessionId = r.id;
 
-      localStorage.setItem('lc_id', sessionId);
+      localStorage.setItem(
+        'lc_id',
+        sessionId
+      );
 
       await openLive();
 
-    } catch (e) {
+    }catch(e){
 
-      $('lc-err').textContent = 'Connection failed';
-
+      $('lc-start').disabled = false;
     }
-
-    $('lc-start').disabled = false;
   }
 
-  async function openLive() {
+  async function openLive(){
 
     showChat();
 
@@ -1248,16 +1363,20 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       'Connected · Session #' + sessionId;
 
     const r = await post({
-      action: 'live',
-      id: sessionId
+      action:'live',
+      id:sessionId
     });
 
-    if (r.messages?.length) {
+    if(r.messages?.length){
 
       $('lc-msgs').innerHTML = '';
 
       r.messages.forEach(m => {
-        addMessage(m.sender, m.text);
+
+        addMessage(
+          m.sender,
+          m.text
+        );
       });
 
       known = r.messages.length;
@@ -1266,105 +1385,129 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     startPoller();
   }
 
-  function startPoller() {
+  function startPoller(){
 
-    if (poller) clearInterval(poller);
+    if(poller){
+
+      clearInterval(poller);
+    }
 
     poller = setInterval(async () => {
 
-      try {
+      try{
 
         const r = await get({
-          action: 'messages',
-          id: sessionId,
-          last: known
+          action:'messages',
+          id:sessionId,
+          last:known
         });
 
-        if (!r.success) return;
+        if(!r.success) return;
 
-        if (!r.messages?.length) return;
+        if(!r.messages?.length) return;
 
         r.messages.forEach(m => {
-          addMessage(m.sender, m.text);
+
+          addMessage(
+            m.sender,
+            m.text
+          );
+
+          if(m.sender !== 'USER'){
+
+            playSound();
+
+            if(
+              !pageFocus ||
+              !$('lc-window')
+                .classList.contains('open')
+            ){
+
+              unread++;
+
+              updateTitle();
+
+              notify(
+                'New support message',
+                m.text.substring(0,100)
+              );
+            }
+          }
         });
 
         known += r.messages.length;
 
-      } catch (e) {}
+      }catch(e){}
 
     }, POLL_MS);
   }
 
+  // =========================================
+  // START
+  // =========================================
   $('lc-start').onclick = () => {
 
-    const email = $('lc-email').value.trim();
+    const email =
+      $('lc-email').value.trim();
 
-    if (!email) {
-      $('lc-err').textContent = 'Enter email';
-      return;
-    }
+    if(!email) return;
 
     startSession(email);
   };
 
+  // =========================================
+  // SEND
+  // =========================================
   $('lc-send').onclick = sendMessage;
 
-  $('lc-txt').addEventListener('keydown', e => {
+  $('lc-txt').addEventListener(
+    'keydown',
+    e => {
 
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
+      if(
+        e.key === 'Enter' &&
+        !e.shiftKey
+      ){
+
+        e.preventDefault();
+
+        sendMessage();
+      }
     }
-  });
+  );
 
-  async function sendMessage() {
+  async function sendMessage(){
 
-    const text = $('lc-txt').value.trim();
+    const text =
+      $('lc-txt').value.trim();
 
-    if (!text || !sessionId) return;
+    if(!text || !sessionId) return;
 
     $('lc-txt').value = '';
 
-    addMessage('USER', text);
+    addMessage(
+      'USER',
+      text
+    );
 
     known++;
 
-    try {
+    try{
 
       await post({
-        action: 'messenger',
-        id: sessionId,
+        action:'messenger',
+        id:sessionId,
         text
       });
 
-    } catch (e) {}
+    }catch(e){}
   }
 
-  // quick replies
-  [
-    'Hello 👋',
-    'One moment please',
-    'Thanks for contacting us',
-    'Can you explain more?',
-    'We are checking this'
-  ].forEach(text => {
+  // =========================================
+  // RESTORE SESSION
+  // =========================================
+  if(sessionId){
 
-    const btn = document.createElement('button');
-
-    btn.className = 'lc-quick-btn';
-
-    btn.textContent = text;
-
-    btn.onclick = () => {
-      $('lc-txt').value = text;
-      $('lc-txt').focus();
-    };
-
-    $('lc-quick').appendChild(btn);
-  });
-
-  // restore session
-  if (sessionId) {
     openLive();
   }
 
