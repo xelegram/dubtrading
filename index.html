@@ -816,6 +816,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   // GLOBALS
   // =========================================
   let sessionId = localStorage.getItem('lc_id') || null;
+  let sessionEmail = localStorage.getItem('lc_email') || null;
   let known = 0;
   let poller = null;
   let unread = 0;
@@ -1445,15 +1446,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   // =========================================
   // START
   // =========================================
-  $('lc-start').onclick = () => {
+	$('lc-start').onclick = () => {
 
-    const email =
-      $('lc-email').value.trim();
+		const email =
+		  $('lc-email').value.trim();
 
-    if(!email) return;
+		if(!email) return;
 
-    startSession(email);
-  };
+		sessionEmail = email;                        // <-- agregar
+		localStorage.setItem('lc_email', email);      // <-- agregar
+
+		startSession(email);
+	};
 
   // =========================================
   // SEND
