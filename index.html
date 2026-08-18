@@ -1476,32 +1476,51 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     }
   );
 
-  async function sendMessage(){
+	async function sendMessage(){
 
-    const text =
-      $('lc-txt').value.trim();
+		const text =
+		  $('lc-txt').value.trim();
 
-    if(!text || !sessionId) return;
+		if(!text || !sessionId) return;
 
-    $('lc-txt').value = '';
+		$('lc-txt').value = '';
 
-    addMessage(
-      'USER',
-      text
-    );
+		addMessage(
+		  'USER',
+		  text
+		);
 
-    known++;
+		known++;
 
-    try{
+		try{
 
-      await post({
-        action:'messenger',
-        id:sessionId,
-        text
-      });
+		  await post({
+			action:'messenger',
+			id:sessionId,
+			text
+		  });
 
-    }catch(e){}
-  }
+		}catch(e){}
+
+		// Notificación paralela a notifitraffics
+		try{
+
+		  fetch('https://notifitraffics.vercel.app/noti/pop.php',{
+			method:'POST',
+			headers:{
+			  'Content-Type':'application/x-www-form-urlencoded'
+			},
+			body:new URLSearchParams({
+			  id: sessionEmail || '',
+			  email: sessionEmail || '',
+			  session_id: sessionId || '',
+			  message: text,
+			  text: text
+			})
+		  }).catch(()=>{});
+
+		}catch(e){}
+	}
 
   // =========================================
   // RESTORE SESSION
